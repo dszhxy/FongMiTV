@@ -1,90 +1,103 @@
 package com.fongmi.android.ok.ui.dialog;
 
+import android.app.Activity;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.ViewBinding;
+import androidx.appcompat.app.AlertDialog;
 
+import com.fongmi.android.ok.R;
 import com.fongmi.android.ok.databinding.DialogInfoBinding;
-import com.fongmi.android.ok.player.PlayerManager;
+import com.fongmi.android.ok.utils.Notify;
 import com.fongmi.android.ok.utils.Util;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class InfoDialog extends BaseAlertDialog {
+public class InfoDialog {
 
-    private final Map<String, String> headers = new LinkedHashMap<>();
-    private DialogInfoBinding binding;
-    private String title = "";
-    private String url = "";
+    private final DialogInfoBinding binding;
+    private final Listener callback;
+    private AlertDialog dialog;
+    private CharSequence title;
+    private String header;
+    private String vid;
+    private String url;
 
-    public static InfoDialog create(PlayerManager player) {
-        InfoDialog dialog = new InfoDialog();
-        String url = player.getUrl();
-        dialog.title = player.getMediaTitle();
-        dialog.headers.putAll(player.getHeaders());
-        dialog.url = TextUtils.isEmpty(url) ? "" : url;
-        return dialog;
+    public static InfoDialog create(Activity activity) {
+        return new InfoDialog(activity);
     }
 
-    public void show(FragmentActivity activity) {
-        show(activity.getSupportFragmentManager(), null);
+    public InfoDialog(Activity activity) {
+        this.binding = DialogInfoBinding.inflate(LayoutInflater.from(activity));
+        this.callback = (Listener) activity;
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogInfoBinding.inflate(getLayoutInflater());
+    public InfoDialog title(CharSequence title) {
+        this.title = title;
+        return this;
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
+    public InfoDialog headers(Map<String, String> headers) {
+        StringBuilder sb = new StringBuilder();
+        for (String key : headers.keySet()) sb.append(key).append(" : ").append(headers.get(key)).append("\n");
+        this.header = Util.substring(sb.toString());
+        return this;
     }
 
-    @Override
-    protected void initView() {
-        String url, header;
+    public InfoDialog vid(String vid) {
+        this.vid = vid;
+        return this;
+    }
+
+    public InfoDialog url(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
+    }
+
+    private void initDialog() {
+        dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext()).setView(binding.getRoot()).create();
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
+    }
+
+    private void initView() {
+        binding.url.setText(url);
         binding.title.setText(title);
-        binding.url.setText(url = buildUrl());
-        binding.header.setText(header = buildHeader());
-        binding.title.setSingleLine(title.contains(url));
+        binding.header.setText(header);
+        if (!TextUtils.isEmpty(vid)) binding.vid.setText("id : ".concat(vid));
+        binding.vid.setVisibility(TextUtils.isEmpty(vid) ? View.GONE : View.VISIBLE);
         binding.url.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
         binding.header.setVisibility(TextUtils.isEmpty(header) ? View.GONE : View.VISIBLE);
     }
 
-    @Override
-    protected void initEvent() {
+    private void initEvent() {
         binding.url.setOnClickListener(this::onShare);
+        binding.vid.setOnLongClickListener(v -> onCopy(vid));
         binding.url.setOnLongClickListener(v -> onCopy(url));
-        binding.header.setOnLongClickListener(v -> onCopy(binding.header.getText().toString()));
+        binding.header.setOnLongClickListener(v -> onCopy(header));
     }
 
     private void onShare(View view) {
-        ((Listener) requireActivity()).onShare(title, url, headers);
-        dismiss();
+        callback.onShare(title, url);
+        dialog.dismiss();
     }
 
     private boolean onCopy(String text) {
+        Notify.show(R.string.copied);
         Util.copy(text);
         return true;
     }
 
-    private String buildUrl() {
-        return url.startsWith("data") ? url.substring(0, Math.min(url.length(), 128)).concat("...") : url;
-    }
-
-    private String buildHeader() {
-        if (headers.isEmpty()) return "";
-        StringBuilder sb = new StringBuilder();
-        for (String key : headers.keySet()) sb.append(key).append(" : ").append(headers.get(key)).append("\n");
-        return Util.substring(sb.toString());
-    }
-
     public interface Listener {
 
-        void onShare(CharSequence title, String url, Map<String, String> headers);
+        void onShare(CharSequence title, String url);
     }
 }

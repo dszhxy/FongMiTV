@@ -6,54 +6,87 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.bean.Vod;
-import com.fongmi.android.ok.databinding.AdapterSearchBinding;
-import com.fongmi.android.ok.utils.ImgUtil;
+import com.fongmi.android.ok.databinding.AdapterVodOneBinding;
+import com.fongmi.android.ok.databinding.AdapterVodRectBinding;
+import com.fongmi.android.ok.ui.base.BaseVodHolder;
+import com.fongmi.android.ok.ui.base.ViewType;
+import com.fongmi.android.ok.ui.holder.VodOneHolder;
+import com.fongmi.android.ok.ui.holder.VodRectHolder;
 
-public class SearchAdapter extends BaseDiffAdapter<Vod, SearchAdapter.ViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final OnClickListener listener;
+public class SearchAdapter extends RecyclerView.Adapter<BaseVodHolder> {
 
-    public SearchAdapter(OnClickListener listener) {
-        this.listener = listener;
+    private final VodAdapter.OnClickListener mListener;
+    private final List<Vod> mItems;
+    private int viewType;
+    private int[] size;
+
+    public SearchAdapter(VodAdapter.OnClickListener listener) {
+        this.mListener = listener;
+        this.mItems = new ArrayList<>();
     }
 
-    public interface OnClickListener {
+    public void setViewType(int viewType, int count) {
+        if (this.viewType > 0 && this.viewType != viewType && count == 1) notifyDataSetChanged();
+        Setting.putViewType(viewType);
+        this.viewType = viewType;
+    }
 
-        void onItemClick(Vod item);
+    public void setSize(int[] size) {
+        this.size = size;
+    }
+
+    public int getWidth() {
+        return size[0];
+    }
+
+    public boolean isList() {
+        return viewType == ViewType.LIST;
+    }
+
+    public boolean isGrid() {
+        return viewType == ViewType.GRID;
+    }
+
+    public void setAll(List<Vod> items) {
+        clear().addAll(items);
+    }
+
+    public void addAll(List<Vod> items) {
+        int position = mItems.size() + 1;
+        mItems.addAll(items);
+        notifyItemRangeInserted(position, items.size());
+    }
+
+    public SearchAdapter clear() {
+        mItems.clear();
+        notifyDataSetChanged();
+        return this;
+    }
+
+    @Override
+    public int getItemCount() {
+        return mItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return viewType;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull BaseVodHolder holder, int position) {
+        holder.initView(mItems.get(position));
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterSearchBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Vod item = getItem(position);
-        holder.binding.name.setText(item.getName());
-        holder.binding.site.setText(item.getSiteName());
-        holder.binding.remark.setText(item.getRemarks());
-        holder.binding.site.setVisibility(item.getSiteVisible());
-        holder.binding.remark.setVisibility(item.getRemarkVisible());
-        holder.binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
-        ImgUtil.load(item.getName(), item.getPic(), holder.binding.image);
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull ViewHolder holder) {
-        Glide.with(holder.binding.image).clear(holder.binding.image);
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        private final AdapterSearchBinding binding;
-
-        ViewHolder(@NonNull AdapterSearchBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
+    public BaseVodHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == ViewType.LIST) return new VodOneHolder(AdapterVodOneBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+        else return new VodRectHolder(AdapterVodRectBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener).size(size);
     }
 }

@@ -13,16 +13,6 @@ import okhttp3.OkHttpClient;
 
 public abstract class Spider {
 
-    public String siteKey;
-
-    public static Dns safeDns() {
-        return OkHttp.dns();
-    }
-
-    public static OkHttpClient client() {
-        return OkHttp.client();
-    }
-
     public void init(Context context) throws Exception {
     }
 
@@ -58,10 +48,6 @@ public abstract class Spider {
         return "";
     }
 
-    public String liveContent(String url) throws Exception {
-        return "";
-    }
-
     public boolean manualVideoCheck() throws Exception {
         return false;
     }
@@ -70,14 +56,18 @@ public abstract class Spider {
         return false;
     }
 
-    public Object[] proxy(Map<String, String> params) throws Exception {
-        return null;
-    }
-
-    public String action(String action) throws Exception {
+    public Object[] proxyLocal(Map<String, String> params) throws Exception {
         return null;
     }
 
     public void destroy() {
+    }
+
+    public static Dns safeDns() {
+        return OkHttp.dns();
+    }
+
+    public OkHttpClient client() {
+        return OkHttp.client();
     }
 }

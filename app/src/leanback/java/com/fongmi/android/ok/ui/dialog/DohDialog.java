@@ -1,67 +1,66 @@
 package com.fongmi.android.ok.ui.dialog;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.ViewBinding;
+import android.app.Activity;
+import android.view.LayoutInflater;
+import android.view.WindowManager;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.fongmi.android.ok.databinding.DialogDohBinding;
+import com.fongmi.android.ok.impl.DohCallback;
 import com.fongmi.android.ok.ui.adapter.DohAdapter;
 import com.fongmi.android.ok.ui.custom.SpaceItemDecoration;
+import com.fongmi.android.ok.utils.ResUtil;
 import com.github.catvod.bean.Doh;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class DohDialog extends BaseAlertDialog implements DohAdapter.OnClickListener {
+public class DohDialog implements DohAdapter.OnClickListener {
 
-    private DialogDohBinding binding;
-    private DohAdapter adapter;
-    private int index;
+    private final DialogDohBinding binding;
+    private final DohCallback callback;
+    private final AlertDialog dialog;
+    private final DohAdapter adapter;
 
-    public static DohDialog create() {
-        return new DohDialog();
+    public static DohDialog create(Activity activity) {
+        return new DohDialog(activity);
     }
 
     public DohDialog index(int index) {
-        this.index = index;
+        adapter.setSelect(index);
         return this;
     }
 
-    public void show(FragmentActivity activity) {
-        show(activity.getSupportFragmentManager(), null);
+    public DohDialog(Activity activity) {
+        this.callback = (DohCallback) activity;
+        this.binding = DialogDohBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
+        this.adapter = new DohAdapter(this);
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogDohBinding.inflate(getLayoutInflater());
+    public void show() {
+        setRecyclerView();
+        setDialog();
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
-    }
-
-    @Override
-    protected void initView() {
-        adapter = new DohAdapter(this);
-        adapter.setSelect(index);
+    private void setRecyclerView() {
         binding.recycler.setAdapter(adapter);
         binding.recycler.setHasFixedSize(true);
         binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 16));
         binding.recycler.post(() -> binding.recycler.scrollToPosition(adapter.getSelect()));
     }
 
+    private void setDialog() {
+        if (adapter.getItemCount() == 0) return;
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = (int) (ResUtil.getScreenWidth() * 0.4f);
+        dialog.getWindow().setAttributes(params);
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
+    }
+
     @Override
     public void onItemClick(Doh item) {
-        ((Listener) requireActivity()).setDoh(item);
-        dismiss();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        setWidth(0.4f);
-    }
-
-    public interface Listener {
-
-        void setDoh(Doh doh);
+        callback.setDoh(item);
+        dialog.dismiss();
     }
 }

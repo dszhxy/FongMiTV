@@ -1,10 +1,15 @@
-# TV
--keep class androidx.leanback.widget.** { *; }
--keep class com.fongmi.quickjs.method.** { *; }
--keep class com.fongmi.android.ok.bean.** { *; }
-
 # Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
 -keep class com.google.gson.** { *; }
+-keep class * extends com.google.gson.TypeAdapter
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+-keepclassmembers,allowobfuscation class * { @com.google.gson.annotations.SerializedName <fields>; }
+-keep,allowobfuscation,allowshrinking class com.google.gson.reflect.TypeToken
+-keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
 
 # SimpleXML
 -keep interface org.simpleframework.xml.core.Label { public *; }
@@ -13,11 +18,8 @@
 -keep class * implements org.simpleframework.xml.core.Parameter { public *; }
 -keep interface org.simpleframework.xml.core.Extractor { public *; }
 -keep class * implements org.simpleframework.xml.core.Extractor { public *; }
--keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Path <fields>; }
--keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Root <fields>; }
 -keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Text <fields>; }
--keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Element <fields>; }
--keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Attribute <fields>; }
+-keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.Path <fields>; }
 -keepclassmembers,allowobfuscation class * { @org.simpleframework.xml.ElementList <fields>; }
 
 # OkHttp
@@ -25,47 +27,42 @@
 -keep class okio.** { *; }
 -keep class okhttp3.** { *; }
 
-# SLF4J
--keeppackagenames org.slf4j.**
--keep class org.slf4j.** { *; }
-
-# Kotlin
--keeppackagenames kotlin.**
--keep class kotlin.** { *; }
-
 # CatVod
--keep class com.github.catvod.Proxy { *; }
 -keep class com.github.catvod.crawler.** { *; }
 -keep class * extends com.github.catvod.crawler.Spider
+
+# Cling
+-keep class org.fourthline.cling.** { *; }
+-keep class javax.xml.** { *; }
+
+# Cronet
+-keep class org.chromium.net.** { *; }
+-keep class com.google.net.cronet.** { *; }
+
+# EXO
+-keep class org.xmlpull.v1.** { *; }
+
+# IJK
+-keep class tv.danmaku.ijk.media.player.** { *; }
 
 # Jianpian
 -keep class com.p2p.** { *; }
 
-# JUPnP
--dontwarn org.jupnp.**
--keep class org.jupnp.** { *; }
--keep class javax.xml.** { *; }
+# Mozilla
+-keep class org.mozilla.javascript.** { *; }
 
 # Nano
 -keep class fi.iki.elonen.** { *; }
 
-# NewPipeExtractor
--keep class javax.script.** { *; }
--keep class jdk.dynalink.** { *; }
--keep class org.mozilla.javascript.* { *; }
--keep class org.mozilla.javascript.** { *; }
--keep class org.mozilla.javascript.engine.** { *; }
--keep class org.mozilla.classfile.ClassFileWriter
--keep class org.schabi.newpipe.extractor.timeago.patterns.** { *; }
--keep class org.schabi.newpipe.extractor.services.youtube.protos.** { *; }
--dontwarn org.mozilla.javascript.JavaToJSONConverters
--dontwarn org.mozilla.javascript.tools.**
--dontwarn com.google.re2j.**
--dontwarn javax.script.**
--dontwarn jdk.dynalink.**
+# QuickJS
+-keep class com.whl.quickjs.** { *; }
 
 # Sardine
 -keep class com.thegrizzlylabs.sardineandroid.** { *; }
+
+# Smbj
+-keep class com.hierynomus.** { *; }
+-keep class net.engio.mbassy.** { *; }
 
 # TVBus
 -keep class com.tvbus.engine.** { *; }
@@ -73,27 +70,13 @@
 # XunLei
 -keep class com.xunlei.downloadlib.** { *; }
 
-# Zxing QRCode ABI
--keep class com.google.zxing.* { *; }
--keep class com.google.zxing.common.BitMatrix { *; }
--keep class com.google.zxing.common.HybridBinarizer { *; }
--keep class com.google.zxing.qrcode.QRCodeReader { *; }
--keep class com.google.zxing.qrcode.QRCodeWriter { *; }
--keep class com.google.zxing.qrcode.decoder.ErrorCorrectionLevel { *; }
+# ZLive
+-keep class com.sun.jna.** { *; }
+-keep class com.east.android.zlive.** { *; }
 
-# Bundled MPV JNI bridge
--keep class is.xyz.mpv.MPVLib { *; }
--keep class is.xyz.mpv.MPVLib$* { *; }
-
-# libplayer.so resolves these ISO callbacks by literal JNI names.
--keep class com.fongmi.android.ok.player.iso.IsoSessionManager {
-    public static long length(long);
-    public static int readAt(long, long, java.nio.ByteBuffer, int);
-    public static void close(long);
-    public static void prepareTrackMetadata(long, int);
+# Zxing
+-keep class com.google.zxing.** { *; }
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
 }
-
-# Keep MPV player lifecycle and the TV adapter intact under R8.
--keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer { *; }
--keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer$* { *; }
--keep,allowobfuscation class com.fongmi.android.ok.player.mpv.MpvPlayerEngine { *; }

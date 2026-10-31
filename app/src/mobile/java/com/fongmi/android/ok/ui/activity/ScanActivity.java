@@ -8,10 +8,12 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.ok.cast.ScanEvent;
 import com.fongmi.android.ok.databinding.ActivityScanBinding;
 import com.fongmi.android.ok.ui.base.BaseActivity;
 import com.fongmi.android.ok.utils.Util;
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.ResultPoint;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.CaptureManager;
@@ -46,9 +48,13 @@ public class ScanActivity extends BaseActivity implements BarcodeCallback {
     }
 
     @Override
+    public void possibleResultPoints(List<ResultPoint> resultPoints) {
+    }
+
+    @Override
     public void barcodeResult(BarcodeResult result) {
         if (!result.getText().startsWith("http")) return;
-        setResult(RESULT_OK, new Intent().putExtra("address", result.getText()));
+        ScanEvent.post(result.getText());
         finish();
     }
 

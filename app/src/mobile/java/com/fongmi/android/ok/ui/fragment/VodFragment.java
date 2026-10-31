@@ -1,8 +1,8 @@
 package com.fongmi.android.ok.ui.fragment;
 
-import android.text.TextUtils;
+import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -15,66 +15,68 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewpager.widget.ViewPager;
 
-import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.App;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.Class;
-import com.fongmi.android.ok.bean.Config;
+import com.fongmi.android.ok.bean.Hot;
 import com.fongmi.android.ok.bean.Result;
 import com.fongmi.android.ok.bean.Site;
 import com.fongmi.android.ok.bean.Value;
 import com.fongmi.android.ok.databinding.FragmentVodBinding;
 import com.fongmi.android.ok.event.CastEvent;
-import com.fongmi.android.ok.event.ConfigEvent;
 import com.fongmi.android.ok.event.RefreshEvent;
-import com.fongmi.android.ok.event.StateEvent;
 import com.fongmi.android.ok.impl.Callback;
-import com.fongmi.android.ok.impl.ConfigListener;
-import com.fongmi.android.ok.impl.FilterListener;
-import com.fongmi.android.ok.impl.SiteListener;
+import com.fongmi.android.ok.impl.FilterCallback;
+import com.fongmi.android.ok.impl.SiteCallback;
 import com.fongmi.android.ok.model.SiteViewModel;
+import com.fongmi.android.ok.ui.activity.CollectActivity;
 import com.fongmi.android.ok.ui.activity.HistoryActivity;
 import com.fongmi.android.ok.ui.activity.KeepActivity;
-import com.fongmi.android.ok.ui.activity.SearchActivity;
+import com.fongmi.android.ok.ui.activity.VideoActivity;
 import com.fongmi.android.ok.ui.adapter.TypeAdapter;
 import com.fongmi.android.ok.ui.base.BaseFragment;
 import com.fongmi.android.ok.ui.dialog.FilterDialog;
-import com.fongmi.android.ok.ui.dialog.HistoryDialog;
 import com.fongmi.android.ok.ui.dialog.LinkDialog;
 import com.fongmi.android.ok.ui.dialog.ReceiveDialog;
 import com.fongmi.android.ok.ui.dialog.SiteDialog;
-import com.fongmi.android.ok.utils.ImgUtil;
-import com.fongmi.android.ok.utils.Notify;
-import com.fongmi.android.ok.utils.ResUtil;
+import com.fongmi.android.ok.utils.FileChooser;
+import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Trans;
+import com.google.common.net.HttpHeaders;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Random;
 
-public class VodFragment extends BaseFragment implements ConfigListener, SiteListener, FilterListener, TypeAdapter.OnClickListener {
+import okhttp3.Call;
+import okhttp3.Headers;
+import okhttp3.Response;
+
+public class VodFragment extends BaseFragment implements SiteCallback, FilterCallback, TypeAdapter.OnClickListener {
 
     private FragmentVodBinding mBinding;
     private SiteViewModel mViewModel;
     private TypeAdapter mAdapter;
+    private Runnable mRunnable;
+    private List<String> mHots;
     private Result mResult;
 
     public static VodFragment newInstance() {
         return new VodFragment();
     }
 
-    private FolderFragment getFragment() {
-        return (FolderFragment) mBinding.pager.getAdapter().instantiateItem(mBinding.pager, mBinding.pager.getCurrentItem());
+    private TypeFragment getFragment() {
+        return (TypeFragment) mBinding.pager.getAdapter().instantiateItem(mBinding.pager, mBinding.pager.getCurrentItem());
     }
 
-    private Site getHome() {
+    private Site getSite() {
         return VodConfig.get().getHome();
-    }
-
-    private Config getConfig() {
-        return VodConfig.get().getConfig();
     }
 
     @Override
@@ -85,34 +87,29 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
-        mBinding.title.setSelected(true);
         setRecyclerView();
         setViewModel();
         showProgress();
-        setTitle();
-        setLogo();
+        initHot();
+        getHot();
     }
 
     @Override
     protected void initEvent() {
+        mBinding.hot.setOnClickListener(this::onHot);
         mBinding.top.setOnClickListener(this::onTop);
-        mBinding.logo.setOnClickListener(this::onLogo);
         mBinding.link.setOnClickListener(this::onLink);
-        mBinding.title.setOnClickListener(this::onSite);
+        mBinding.logo.setOnClickListener(this::onLogo);
+        mBinding.keep.setOnClickListener(this::onKeep);
+        mBinding.retry.setOnClickListener(this::onRetry);
         mBinding.filter.setOnClickListener(this::onFilter);
-        mBinding.filter.setOnLongClickListener(this::onLink);
-        mBinding.toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
-        mBinding.appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            float factor = Math.abs(verticalOffset * 1f / appBarLayout.getTotalScrollRange());
-            int padding = (int) (ResUtil.dp2px(12) * factor);
-            if (mBinding.type.getPaddingTop() == padding) return;
-            mBinding.type.setPadding(mBinding.type.getPaddingStart(), padding, mBinding.type.getPaddingEnd(), mBinding.type.getPaddingBottom());
-        });
+        mBinding.search.setOnClickListener(this::onSearch);
+        mBinding.history.setOnClickListener(this::onHistory);
         mBinding.pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 mBinding.type.smoothScrollToPosition(position);
-                mAdapter.setSelected(position);
+                mAdapter.setActivated(position);
                 setFabVisible(position);
             }
         });
@@ -127,15 +124,43 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
 
     private void setViewModel() {
         mViewModel = new ViewModelProvider(this).get(SiteViewModel.class);
-        mViewModel.getResult().observe(getViewLifecycleOwner(), this::setAdapter);
+        mViewModel.result.observe(getViewLifecycleOwner(), result -> setAdapter(mResult = result));
+    }
+
+    private void initHot() {
+        mHots = Hot.get(Setting.getHot());
+        App.post(mRunnable = this::updateHot, 0);
+    }
+
+    private void getHot() {
+        OkHttp.newCall("https://api.web.360kan.com/v1/rank?cat=1", Headers.of(HttpHeaders.REFERER, "https://www.360kan.com/rank/general")).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                mHots = Hot.get(response.body().string());
+            }
+        });
+    }
+
+    private void updateHot() {
+        App.post(mRunnable, 10 * 1000);
+        if (mHots.isEmpty() || mHots.size() < 10) return;
+        mBinding.hot.setText(mHots.get(new Random().nextInt(11)));
+    }
+
+    private Result handle(Result result) {
+        List<Class> types = new ArrayList<>();
+        for (Class type : result.getTypes()) if (result.getFilters().containsKey(type.getTypeId())) type.setFilters(result.getFilters().get(type.getTypeId()));
+        for (String cate : getSite().getCategories()) for (Class type : result.getTypes()) if (Trans.s2t(cate).equals(type.getTypeName())) types.add(type);
+        result.setTypes(types);
+        return result;
     }
 
     private void setAdapter(Result result) {
-        mAdapter.addAll(mResult = result);
+        mAdapter.addAll(handle(result));
         mBinding.pager.getAdapter().notifyDataSetChanged();
         setFabVisible(0);
         hideProgress();
-        showContent();
+        checkRetry();
     }
 
     private void setFabVisible(int position) {
@@ -143,7 +168,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
             mBinding.top.setVisibility(View.INVISIBLE);
             mBinding.link.setVisibility(View.VISIBLE);
             mBinding.filter.setVisibility(View.GONE);
-        } else if (!mAdapter.get(position).getFilters().isEmpty()) {
+        } else if (mAdapter.get(position).getFilters().size() > 0) {
             mBinding.top.setVisibility(View.INVISIBLE);
             mBinding.link.setVisibility(View.GONE);
             mBinding.filter.show();
@@ -154,10 +179,8 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         }
     }
 
-    private void setTitle() {
-        List<String> items = Arrays.asList(getHome().getName(), getConfig().getName(), getString(R.string.app_name));
-        Optional<String> optional = items.stream().filter(s -> !TextUtils.isEmpty(s)).findFirst();
-        optional.ifPresent(s -> mBinding.title.setText(s));
+    private void checkRetry() {
+        mBinding.retry.setVisibility(mAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
     }
 
     private void onTop(View view) {
@@ -167,48 +190,45 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         else if (mBinding.link.getVisibility() == View.INVISIBLE) mBinding.link.show();
     }
 
-    private boolean onLink(View view) {
-        LinkDialog.show(this);
-        return true;
+    private void onLink(View view) {
+        LinkDialog.create(this).show();
     }
 
     private void onLogo(View view) {
-        // 图标：顶层 Config / 总线路列表。
-        HistoryDialog.create().vod().readOnly().show(this);
+        SiteDialog.create(this).change().show();
     }
 
-    private void onSite(View view) {
-        // 标题文字：当前 Config 里面的真实 Site / 直线路列表，可直接选择。
-        SiteDialog.create().change().show(this);
+    private void onKeep(View view) {
+        KeepActivity.start(getActivity());
+    }
+
+    private void onRetry(View view) {
+        homeContent();
     }
 
     private void onFilter(View view) {
         if (mAdapter.getItemCount() > 0) FilterDialog.create().filter(mAdapter.get(mBinding.pager.getCurrentItem()).getFilters()).show(this);
     }
 
-    private boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.keep) KeepActivity.start(requireActivity());
-        else if (item.getItemId() == R.id.search) SearchActivity.start(requireActivity());
-        else if (item.getItemId() == R.id.history) HistoryActivity.start(requireActivity());
-        return true;
+    private void onHot(View view) {
+        CollectActivity.start(getActivity());
+    }
+
+    private void onSearch(View view) {
+        CollectActivity.start(getActivity(), mBinding.hot.getText().toString());
+    }
+
+    private void onHistory(View view) {
+        HistoryActivity.start(getActivity());
     }
 
     private void showProgress() {
+        mBinding.retry.setVisibility(View.GONE);
         mBinding.progress.getRoot().setVisibility(View.VISIBLE);
     }
 
     private void hideProgress() {
         mBinding.progress.getRoot().setVisibility(View.GONE);
-    }
-
-    private void hideContent() {
-        mBinding.type.setVisibility(View.INVISIBLE);
-        mBinding.pager.setVisibility(View.INVISIBLE);
-    }
-
-    private void showContent() {
-        mBinding.type.setVisibility(View.VISIBLE);
-        mBinding.pager.setVisibility(View.VISIBLE);
     }
 
     private void homeContent() {
@@ -223,37 +243,15 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         return mResult == null ? new Result() : mResult;
     }
 
-    private void setLogo() {
-        ImgUtil.logo(mBinding.logo);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onConfigEvent(ConfigEvent event) {
-        if (event.type() == ConfigEvent.Type.VOD) setLogo();
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
         switch (event.getType()) {
-            case HOME:
-                setTitle();
-            case SIZE:
-                homeContent();
-                break;
-            case CATEGORY:
-                getFragment().onRefresh();
-                break;
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onStateEvent(StateEvent event) {
-        switch (event.type()) {
             case EMPTY:
                 hideProgress();
                 break;
-            case PROGRESS:
-                showProgress();
+            case VIDEO:
+            case SIZE:
+                homeContent();
                 break;
         }
     }
@@ -264,34 +262,19 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     @Override
-    public void setConfig(Config config) {
-        VodConfig.load(config, new Callback() {
-            @Override
-            public void start() {
-                showProgress();
-                hideContent();
-                setTitle();
-                setLogo();
-            }
-
-            @Override
-            public void error(String msg) {
-                Notify.dismiss();
-                Notify.show(msg);
-                showContent();
-            }
-        });
+    public void setSite(Site item) {
+        VodConfig.get().setHome(item);
+        homeContent();
     }
 
     @Override
-    public void setSite(Site item) {
-        VodConfig.get().setHome(item);
+    public void onChanged() {
     }
 
     @Override
     public void onItemClick(int position, Class item) {
         mBinding.pager.setCurrentItem(position);
-        mAdapter.setSelected(position);
+        mAdapter.setActivated(position);
     }
 
     @Override
@@ -300,16 +283,23 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
+        VideoActivity.file(getActivity(), FileChooser.getPathFromUri(getContext(), data.getData()));
+    }
+
+    @Override
     public boolean canBack() {
-        if (mBinding.pager.getAdapter() == null || mBinding.pager.getAdapter().getCount() == 0) return true;
-        if (!getFragment().canBack()) return true;
-        getFragment().goBack();
-        return false;
+        if (mBinding.pager.getAdapter() == null) return true;
+        if (mBinding.pager.getAdapter().getCount() == 0) return true;
+        return getFragment().canBack();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        App.removeCallbacks(mRunnable);
         EventBus.getDefault().unregister(this);
     }
 
@@ -323,7 +313,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         @Override
         public Fragment getItem(int position) {
             Class type = mAdapter.get(position);
-            return FolderFragment.newInstance(getHome().getKey(), type, 4);
+            return TypeFragment.newInstance(getSite().getKey(), type.getTypeId(), type.getStyle(), type.getExtend(true), type.getTypeFlag().equals("1"));
         }
 
         @Override

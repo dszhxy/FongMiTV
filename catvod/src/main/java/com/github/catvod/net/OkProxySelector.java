@@ -1,57 +1,60 @@
 package com.github.catvod.net;
 
-import com.github.catvod.bean.Proxy;
+import android.net.Uri;
+
 import com.github.catvod.utils.Util;
 
 import java.io.IOException;
 import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OkProxySelector extends ProxySelector {
 
-    private final List<Proxy> proxy;
-    private final ProxySelector system;
-    private boolean authSet;
+    private List<String> hosts;
+    private Proxy proxy;
 
-    public OkProxySelector() {
-        proxy = new CopyOnWriteArrayList<>();
-        system = ProxySelector.getDefault();
-        Authenticator.setDefault(new ProxyAuthenticator(this));
+    public void setHosts(List<String> hosts) {
+        this.hosts = hosts;
     }
 
-    public synchronized void addAll(List<Proxy> items) {
-        if (items.isEmpty()) return;
-        items.forEach(Proxy::init);
-        proxy.addAll(items);
-        proxy.sort(null);
-    }
-
-    public synchronized void clear() {
-        Authenticator.setDefault(null);
-        proxy.clear();
-    }
-
-    public List<Proxy> getProxy() {
-        return proxy;
-    }
-
-    private List<java.net.Proxy> fallback(URI uri) {
-        return system != null ? system.select(uri) : List.of(java.net.Proxy.NO_PROXY);
+    public void setProxy(String proxy) {
+        this.proxy = getProxy(proxy);
     }
 
     @Override
-    public List<java.net.Proxy> select(URI uri) {
-        if (proxy.isEmpty() || uri.getHost() == null || "127.0.0.1".equals(uri.getHost())) return fallback(uri);
-        for (Proxy item : proxy) for (String host : item.getHosts()) if (Util.containOrMatch(uri.getHost(), host)) return !item.getProxies().isEmpty() ? item.getProxies() : fallback(uri);
-        return fallback(uri);
+    public List<Proxy> select(URI uri) {
+        if (proxy == null || hosts == null || hosts.isEmpty() || uri.getHost() == null || "127.0.0.1".equals(uri.getHost())) return Collections.singletonList(Proxy.NO_PROXY);
+        for (String host : hosts) if (Util.containOrMatch(uri.getHost(), host)) return Collections.singletonList(proxy);
+        return Collections.singletonList(Proxy.NO_PROXY);
     }
 
     @Override
     public void connectFailed(URI uri, SocketAddress socketAddress, IOException e) {
-        if (system != null) system.connectFailed(uri, socketAddress, e);
+    }
+
+    private Proxy getProxy(String proxy) {
+        Uri uri = Uri.parse(proxy);
+        String userInfo = uri.getUserInfo();
+        if (userInfo != null && userInfo.contains(":")) setAuthenticator(userInfo);
+        if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() <= 0) return Proxy.NO_PROXY;
+        if (uri.getScheme().startsWith("http")) return new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(uri.getHost(), uri.getPort()));
+        if (uri.getScheme().startsWith("socks")) return new Proxy(Proxy.Type.SOCKS, InetSocketAddress.createUnresolved(uri.getHost(), uri.getPort()));
+        return Proxy.NO_PROXY;
+    }
+
+    private void setAuthenticator(String userInfo) {
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(userInfo.split(":")[0], userInfo.split(":")[1].toCharArray());
+            }
+        });
     }
 }

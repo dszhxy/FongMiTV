@@ -13,15 +13,27 @@ import com.fongmi.android.ok.databinding.AdapterVodBinding;
 import com.fongmi.android.ok.utils.ImgUtil;
 import com.fongmi.android.ok.utils.ResUtil;
 
-public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final OnClickListener listener;
+public class KeepAdapter extends RecyclerView.Adapter<KeepAdapter.ViewHolder> {
+
+    private final OnClickListener mListener;
+    private final List<Keep> mItems;
     private int width, height;
     private boolean delete;
 
     public KeepAdapter(OnClickListener listener) {
-        this.listener = listener;
+        this.mItems = new ArrayList<>();
+        this.mListener = listener;
         setLayoutSize();
+    }
+
+    private void setLayoutSize() {
+        int space = ResUtil.dp2px(48) + ResUtil.dp2px(16 * (Product.getColumn() - 1));
+        int base = ResUtil.getScreenWidth() - space;
+        width = base / Product.getColumn();
+        height = (int) (width / 0.75f);
     }
 
     public interface OnClickListener {
@@ -33,11 +45,17 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
         boolean onLongClick();
     }
 
-    private void setLayoutSize() {
-        int space = ResUtil.dp2px(48) + ResUtil.dp2px(16 * (Product.getColumn() - 1));
-        int base = ResUtil.getScreenWidth() - space;
-        width = base / Product.getColumn();
-        height = (int) (width / 0.75f);
+    public void addAll(List<Keep> items) {
+        mItems.clear();
+        mItems.addAll(items);
+        notifyDataSetChanged();
+    }
+
+    public void delete(Keep item) {
+        int index = mItems.indexOf(item);
+        if (index == -1) return;
+        mItems.remove(index);
+        notifyItemRemoved(index);
     }
 
     public boolean isDelete() {
@@ -46,15 +64,12 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
 
     public void setDelete(boolean delete) {
         this.delete = delete;
-        notifyItemRangeChanged(0, getItemCount());
+        notifyItemRangeChanged(0, mItems.size());
     }
 
-    private void setClickListener(View root, Keep item) {
-        root.setOnLongClickListener(view -> listener.onLongClick());
-        root.setOnClickListener(view -> {
-            if (isDelete()) listener.onItemDelete(item);
-            else listener.onItemClick(item);
-        });
+    @Override
+    public int getItemCount() {
+        return mItems.size();
     }
 
     @NonNull
@@ -62,44 +77,42 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ViewHolder holder = new ViewHolder(AdapterVodBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
         holder.binding.getRoot().getLayoutParams().width = width;
-        holder.binding.image.getLayoutParams().height = height;
+        holder.binding.getRoot().getLayoutParams().height = height;
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Keep item = getItem(position);
+        Keep item = mItems.get(position);
+        setFocusListener(holder.binding);
         setClickListener(holder.itemView, item);
         holder.binding.name.setText(item.getVodName());
         holder.binding.remark.setVisibility(View.GONE);
         holder.binding.site.setVisibility(View.VISIBLE);
         holder.binding.site.setText(item.getSiteName());
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
-        ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
+        ImgUtil.loadVod(item.getVodName(), item.getVodPic(), holder.binding.image);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    private void setFocusListener(AdapterVodBinding binding) {
+        binding.getRoot().setOnFocusChangeListener((v, hasFocus) -> binding.name.setSelected(hasFocus));
+    }
+
+    private void setClickListener(View root, Keep item) {
+        root.setOnLongClickListener(view -> mListener.onLongClick());
+        root.setOnClickListener(view -> {
+            if (isDelete()) mListener.onItemDelete(item);
+            else mListener.onItemClick(item);
+        });
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterVodBinding binding;
 
         public ViewHolder(@NonNull AdapterVodBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            setFocusListener();
-        }
-
-        private void setFocusListener() {
-            itemView.setOnFocusChangeListener((v, hasFocus) -> {
-                if (hasFocus) {
-                    v.animate().scaleX(1.1f).scaleY(1.1f).setDuration(150).start();
-                    v.setTranslationZ(10f);
-                    v.setSelected(true);
-                } else {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(150).start();
-                    v.setTranslationZ(0f);
-                    v.setSelected(false);
-                }
-            });
         }
     }
 }

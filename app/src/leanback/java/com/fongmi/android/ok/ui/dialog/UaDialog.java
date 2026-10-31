@@ -1,18 +1,21 @@
 package com.fongmi.android.ok.ui.dialog;
 
+import android.content.DialogInterface;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.databinding.DialogUaBinding;
 import com.fongmi.android.ok.event.ServerEvent;
-import com.fongmi.android.ok.impl.UaListener;
+import com.fongmi.android.ok.impl.UaCallback;
 import com.fongmi.android.ok.server.Server;
-import com.fongmi.android.ok.setting.Setting;
 import com.fongmi.android.ok.ui.custom.CustomTextListener;
 import com.fongmi.android.ok.utils.QRCode;
 import com.fongmi.android.ok.utils.ResUtil;
@@ -23,36 +26,50 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class UaDialog extends BaseAlertDialog {
+public class UaDialog implements DialogInterface.OnDismissListener {
 
-    private DialogUaBinding binding;
-    private boolean append = true;
+    private final DialogUaBinding binding;
+    private final UaCallback callback;
+    private final AlertDialog dialog;
+    private boolean append;
 
-    public static void show(FragmentActivity activity) {
-        new UaDialog().show(activity.getSupportFragmentManager(), null);
+    public static UaDialog create(FragmentActivity activity) {
+        return new UaDialog(activity);
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogUaBinding.inflate(getLayoutInflater());
+    public UaDialog(FragmentActivity activity) {
+        this.callback = (UaCallback) activity;
+        this.binding = DialogUaBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
+        this.append = true;
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
     }
 
-    @Override
-    protected void initView() {
+    private void initDialog() {
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = (int) (ResUtil.getScreenWidth() * 0.55f);
+        dialog.getWindow().setAttributes(params);
+        dialog.getWindow().setDimAmount(0);
+        dialog.setOnDismissListener(this);
+        dialog.show();
+    }
+
+    private void initView() {
         String text = Setting.getUa();
+        String address = Server.get().getAddress();
         binding.text.setText(text);
+        binding.code.setImageBitmap(QRCode.getBitmap(address, 200, 0));
         binding.text.setSelection(TextUtils.isEmpty(text) ? 0 : text.length());
-        binding.code.setImageBitmap(QRCode.getBitmap(Server.get().getAddress(4), 200, 0));
-        binding.info.setText(ResUtil.getString(R.string.push_info, Server.get().getAddress()).replace("\uff0c", "\n"));
+        binding.info.setText(ResUtil.getString(R.string.push_info, address).replace("，", "\n"));
     }
 
-    @Override
-    protected void initEvent() {
+    private void initEvent() {
+        EventBus.getDefault().register(this);
         binding.positive.setOnClickListener(this::onPositive);
         binding.negative.setOnClickListener(this::onNegative);
         binding.text.addTextChangedListener(new CustomTextListener() {
@@ -68,45 +85,37 @@ public class UaDialog extends BaseAlertDialog {
     }
 
     private void detect(String s) {
-        if (append && "c".equalsIgnoreCase(s)) {
+        if (append && s.equalsIgnoreCase("c")) {
             append = false;
             binding.text.setText(Util.CHROME);
-        } else if (append && "o".equalsIgnoreCase(s)) {
+        } else if (append && s.equalsIgnoreCase("o")) {
             append = false;
-            binding.text.setText(Util.OKHTTP);
+            binding.text.setText(okhttp3.internal.Util.userAgent);
         } else if (s.length() > 1) {
             append = false;
-        } else if (s.isEmpty()) {
+        } else if (s.length() == 0) {
             append = true;
         }
     }
 
     private void onPositive(View view) {
-        ((UaListener) requireActivity()).setUa(binding.text.getText().toString().trim());
-        dismiss();
+        callback.setUa(binding.text.getText().toString().trim());
+        dialog.dismiss();
     }
 
     private void onNegative(View view) {
-        dismiss();
+        dialog.dismiss();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
-        if (event.type() != ServerEvent.Type.SETTING) return;
-        binding.text.setText(event.text());
+        if (event.getType() != ServerEvent.Type.SETTING) return;
+        binding.text.setText(event.getText());
         binding.positive.performClick();
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        setWidth(0.55f);
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
+    public void onDismiss(DialogInterface dialogInterface) {
         EventBus.getDefault().unregister(this);
     }
 }

@@ -14,20 +14,23 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.databinding.DialogPassBinding;
-import com.fongmi.android.ok.impl.PassListener;
+import com.fongmi.android.ok.impl.PassCallback;
 import com.fongmi.android.ok.utils.ResUtil;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-public class PassDialog extends BaseBottomSheetDialog {
+public class PassDialog extends BaseDialog {
 
     private DialogPassBinding binding;
+    private PassCallback callback;
 
     public static PassDialog create() {
         return new PassDialog();
     }
 
     public void show(FragmentActivity activity) {
-        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof PassDialog) return;
+        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return;
         show(activity.getSupportFragmentManager(), null);
+        this.callback = (PassCallback) activity;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class PassDialog extends BaseBottomSheetDialog {
 
     private void onPass(View view) {
         String pass = binding.pass.getText().toString().trim();
-        if (!pass.isEmpty()) ((PassListener) requireActivity()).setPass(pass);
+        if (pass.length() > 0) callback.setPass(pass);
         dismiss();
     }
 

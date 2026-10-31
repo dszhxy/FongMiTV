@@ -3,29 +3,22 @@ package com.fongmi.android.ok.bean;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.Product;
 import com.fongmi.android.ok.db.AppDatabase;
-import com.fongmi.android.ok.impl.Diffable;
 import com.fongmi.android.ok.server.Server;
 import com.fongmi.android.ok.utils.UrlUtil;
 import com.fongmi.android.ok.utils.Util;
 import com.google.gson.annotations.SerializedName;
 
-import org.jupnp.model.meta.RemoteDevice;
-
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 @Entity(indices = @Index(value = {"uuid", "name"}, unique = true))
-public class Device implements Diffable<Device>, Comparable<Device> {
+public class Device {
 
     @PrimaryKey(autoGenerate = true)
     @SerializedName("id")
@@ -39,50 +32,17 @@ public class Device implements Diffable<Device>, Comparable<Device> {
     @SerializedName("type")
     private int type;
 
-    @Ignore
-    @SerializedName("serial")
-    private String serial;
-    @Ignore
-    @SerializedName("eth")
-    private String eth;
-    @Ignore
-    @SerializedName("wlan")
-    private String wlan;
-    @Ignore
-    @SerializedName("time")
-    private long time;
-
     public static Device get() {
         Device device = new Device();
-        device.setTime(App.time());
-        device.setSerial(Util.getSerial());
-        device.setEth(Util.getMac("eth0"));
-        device.setWlan(Util.getMac("wlan0"));
-        device.setUuid(Util.getAndroidId());
+        device.setUuid(Util.getDeviceId());
         device.setName(Util.getDeviceName());
         device.setIp(Server.get().getAddress());
         device.setType(Product.getDeviceType());
         return device;
     }
 
-    public static Device get(RemoteDevice item) {
-        Device device = new Device();
-        device.setUuid(item.getIdentity().getUdn().getIdentifierString());
-        device.setName(item.getDetails().getFriendlyName());
-        device.setType(2);
-        return device;
-    }
-
     public static Device objectFrom(String str) {
         return App.gson().fromJson(str, Device.class);
-    }
-
-    public static List<Device> getAll() {
-        return AppDatabase.get().getDeviceDao().findAll();
-    }
-
-    public static void delete() {
-        AppDatabase.get().getDeviceDao().delete();
     }
 
     public Integer getId() {
@@ -125,22 +85,6 @@ public class Device implements Diffable<Device>, Comparable<Device> {
         this.type = type;
     }
 
-    public void setSerial(String serial) {
-        this.serial = serial;
-    }
-
-    public void setEth(String eth) {
-        this.eth = eth;
-    }
-
-    public void setWlan(String wlan) {
-        this.wlan = wlan;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
-
     public boolean isLeanback() {
         return getType() == 0;
     }
@@ -166,36 +110,25 @@ public class Device implements Diffable<Device>, Comparable<Device> {
         return this;
     }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Device it)) return false;
-        return Objects.equals(getUuid(), it.getUuid());
+    public static List<Device> getAll() {
+        return AppDatabase.get().getDeviceDao().findAll();
+    }
+
+    public static void delete() {
+        AppDatabase.get().getDeviceDao().delete();
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(getUuid());
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Device)) return false;
+        Device it = (Device) obj;
+        return getUuid().equals(it.getUuid()) && getName().equals(it.getName());
     }
 
     @NonNull
     @Override
     public String toString() {
         return App.gson().toJson(this);
-    }
-
-    @Override
-    public boolean isSameItem(Device other) {
-        return equals(other);
-    }
-
-    @Override
-    public boolean isSameContent(Device other) {
-        return getName().equals(other.getName()) && getType() == other.getType();
-    }
-
-    @Override
-    public int compareTo(Device other) {
-        return Comparator.comparingInt(Device::getType).thenComparing(Device::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(Device::getUuid).compare(this, other);
     }
 }

@@ -8,9 +8,9 @@ import com.google.common.net.HttpHeaders;
 import com.whl.quickjs.wrapper.JSObject;
 import com.whl.quickjs.wrapper.QuickJSContext;
 
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import okhttp3.Call;
 import okhttp3.FormBody;
@@ -30,7 +30,7 @@ public class Connect {
     }
 
     public static JSObject success(QuickJSContext ctx, Req req, Response res) {
-        try (res) {
+        try {
             JSObject jsObject = ctx.createNewJSObject();
             JSObject jsHeader = ctx.createNewJSObject();
             setHeader(ctx, res, jsHeader);
@@ -39,7 +39,6 @@ public class Connect {
             if (req.getBuffer() == 0) jsObject.setProperty("content", new String(res.body().bytes(), req.getCharset()));
             if (req.getBuffer() == 1) jsObject.setProperty("content", JSUtil.toArray(ctx, res.body().bytes()));
             if (req.getBuffer() == 2) jsObject.setProperty("content", Util.base64(res.body().bytes()));
-            if (req.getBuffer() == 3) jsObject.setProperty("content", res.body().bytes());
             return jsObject;
         } catch (Exception e) {
             return error(ctx);
@@ -66,15 +65,15 @@ public class Connect {
     }
 
     private static RequestBody getPostBody(Req req, String contentType) {
-        if (req.getData() != null && "json".equals(req.getPostType())) return getJsonBody(req);
-        if (req.getData() != null && "form".equals(req.getPostType())) return getFormBody(req);
-        if (req.getData() != null && "form-data".equals(req.getPostType())) return getFormDataBody(req);
+        if (req.getData() != null && req.getPostType().equals("json")) return getJsonBody(req);
+        if (req.getData() != null && req.getPostType().equals("form")) return getFormBody(req);
+        if (req.getData() != null && req.getPostType().equals("form-data")) return getFormDataBody(req);
         if (req.getBody() != null && contentType != null) return RequestBody.create(req.getBody(), MediaType.get(contentType));
-        return RequestBody.create(new byte[0]);
+        return RequestBody.create("", null);
     }
 
     private static RequestBody getJsonBody(Req req) {
-        return RequestBody.create(req.getData().toString(), MediaType.get("application/json; charset=utf-8"));
+        return RequestBody.create(req.getData().toString(), MediaType.get("application/json"));
     }
 
     private static RequestBody getFormBody(Req req) {
@@ -85,7 +84,7 @@ public class Connect {
     }
 
     private static RequestBody getFormDataBody(Req req) {
-        String boundary = "--dio-boundary-" + new SecureRandom().nextInt(42949) + new SecureRandom().nextInt(67296);
+        String boundary = "--dio-boundary-" + new Random().nextInt(42949) + "" + new Random().nextInt(67296);
         MultipartBody.Builder builder = new MultipartBody.Builder(boundary).setType(MultipartBody.FORM);
         Map<String, String> params = Json.toMap(req.getData());
         for (String key : params.keySet()) builder.addFormDataPart(key, params.get(key));

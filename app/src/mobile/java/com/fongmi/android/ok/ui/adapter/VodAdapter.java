@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.ok.bean.Style;
 import com.fongmi.android.ok.bean.Vod;
@@ -16,14 +17,19 @@ import com.fongmi.android.ok.ui.holder.VodListHolder;
 import com.fongmi.android.ok.ui.holder.VodOvalHolder;
 import com.fongmi.android.ok.ui.holder.VodRectHolder;
 
-public class VodAdapter extends BaseDiffAdapter<Vod, BaseVodHolder> {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final OnClickListener listener;
+public class VodAdapter extends RecyclerView.Adapter<BaseVodHolder> {
+
+    private final OnClickListener mListener;
+    private final List<Vod> mItems;
     private final Style style;
     private final int[] size;
 
     public VodAdapter(OnClickListener listener, Style style, int[] size) {
-        this.listener = listener;
+        this.mListener = listener;
+        this.mItems = new ArrayList<>();
         this.style = style;
         this.size = size;
     }
@@ -39,6 +45,22 @@ public class VodAdapter extends BaseDiffAdapter<Vod, BaseVodHolder> {
         return style;
     }
 
+    public void addAll(List<Vod> items) {
+        int position = mItems.size() + 1;
+        mItems.addAll(items);
+        notifyItemRangeInserted(position, items.size());
+    }
+
+    public void clear() {
+        mItems.clear();
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemCount() {
+        return mItems.size();
+    }
+
     @Override
     public int getItemViewType(int position) {
         return style.getViewType();
@@ -46,21 +68,19 @@ public class VodAdapter extends BaseDiffAdapter<Vod, BaseVodHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull BaseVodHolder holder, int position) {
-        holder.initView(getItem(position));
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull BaseVodHolder holder) {
-        holder.unbind();
+        holder.initView(mItems.get(position));
     }
 
     @NonNull
     @Override
     public BaseVodHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return switch (viewType) {
-            case ViewType.LIST -> new VodListHolder(AdapterVodListBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), listener);
-            case ViewType.OVAL -> new VodOvalHolder(AdapterVodOvalBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), listener).size(size);
-            default -> new VodRectHolder(AdapterVodRectBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), listener).size(size);
-        };
+        switch (viewType) {
+            case ViewType.LIST:
+                return new VodListHolder(AdapterVodListBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+            case ViewType.OVAL:
+                return new VodOvalHolder(AdapterVodOvalBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener).size(size);
+            default:
+                return new VodRectHolder(AdapterVodRectBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener).size(size);
+        }
     }
 }

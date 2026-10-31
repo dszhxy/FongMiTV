@@ -1,25 +1,41 @@
 package com.fongmi.android.ok.ui.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fongmi.android.ok.bean.Word;
 import com.fongmi.android.ok.databinding.AdapterSearchWordBinding;
 
-public class WordAdapter extends BaseDiffAdapter<Word.Data, WordAdapter.ViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final OnClickListener listener;
+public class WordAdapter extends RecyclerView.Adapter<WordAdapter.ViewHolder> {
+
+    private final OnClickListener mListener;
+    private final List<String> mItems;
 
     public WordAdapter(OnClickListener listener) {
-        this.listener = listener;
+        this.mItems = new ArrayList<>();
+        this.mListener = listener;
     }
 
     public interface OnClickListener {
 
         void onItemClick(String text);
+    }
+
+    public void addAll(List<String> items) {
+        mItems.clear();
+        mItems.addAll(items);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemCount() {
+        return mItems.size();
     }
 
     @NonNull
@@ -30,18 +46,22 @@ public class WordAdapter extends BaseDiffAdapter<Word.Data, WordAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Word.Data item = getItem(position);
-        holder.binding.text.setText(item.getTitle());
-        holder.binding.text.setOnClickListener(v -> listener.onItemClick(item.getTitle()));
+        holder.binding.word.setText(mItems.get(position));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final AdapterSearchWordBinding binding;
 
         public ViewHolder(@NonNull AdapterSearchWordBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            mListener.onItemClick(mItems.get(getLayoutPosition()));
         }
     }
 }

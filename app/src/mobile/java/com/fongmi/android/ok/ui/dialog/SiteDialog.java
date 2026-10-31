@@ -1,75 +1,97 @@
 package com.fongmi.android.ok.ui.dialog;
 
+import android.app.Activity;
+import android.view.LayoutInflater;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.Site;
 import com.fongmi.android.ok.databinding.DialogSiteBinding;
-import com.fongmi.android.ok.impl.SiteListener;
+import com.fongmi.android.ok.impl.SiteCallback;
 import com.fongmi.android.ok.ui.adapter.SiteAdapter;
 import com.fongmi.android.ok.ui.custom.SpaceItemDecoration;
-import com.fongmi.android.ok.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickListener {
+public class SiteDialog implements SiteAdapter.OnClickListener {
 
+    private final SiteCallback callback;
     private DialogSiteBinding binding;
-    private SiteListener listener;
     private SiteAdapter adapter;
-    private boolean search;
-    private boolean change;
+    private AlertDialog dialog;
 
-    public static SiteDialog create() {
-        return new SiteDialog();
+    public static SiteDialog create(Activity activity) {
+        return new SiteDialog(activity);
+    }
+
+    public static SiteDialog create(Fragment fragment) {
+        return new SiteDialog(fragment);
+    }
+
+    public SiteDialog(Activity activity) {
+        this.callback = (SiteCallback) activity;
+        init(activity);
+    }
+
+    public SiteDialog(Fragment fragment) {
+        this.callback = (SiteCallback) fragment;
+        init(fragment.getActivity());
+    }
+
+    private void init(Activity activity) {
+        this.binding = DialogSiteBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
+        this.adapter = new SiteAdapter(this);
     }
 
     public SiteDialog search() {
-        search = true;
+        this.adapter.search(true);
         return this;
     }
 
     public SiteDialog change() {
-        change = true;
+        this.adapter.change(true);
         return this;
     }
 
-    public void show(Fragment fragment) {
-        show(fragment.getChildFragmentManager(), null);
-        if (fragment instanceof SiteListener) listener = (SiteListener) fragment;
+    public SiteDialog all() {
+        this.adapter.search(true);
+        this.adapter.change(true);
+        return this;
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogSiteBinding.inflate(getLayoutInflater());
+    public void show() {
+        setRecyclerView();
+        setDialog();
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
-    }
-
-    @Override
-    protected void initView() {
-        adapter = new SiteAdapter(this);
+    private void setRecyclerView() {
         binding.recycler.setAdapter(adapter);
-        adapter.search(search).change(change);
         binding.recycler.setItemAnimator(null);
         binding.recycler.setHasFixedSize(true);
         binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 8));
         binding.recycler.post(() -> binding.recycler.scrollToPosition(VodConfig.getHomeIndex()));
     }
 
+    private void setDialog() {
+        if (adapter.getItemCount() == 0) return;
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
+    }
+
     @Override
     public void onTextClick(Site item) {
-        if (listener != null) listener.setSite(item);
-        dismiss();
+        if (callback == null) return;
+        callback.setSite(item);
+        dialog.dismiss();
     }
 
     @Override
     public void onSearchClick(int position, Site item) {
         item.setSearchable(!item.isSearchable()).save();
         adapter.notifyItemChanged(position);
+        callback.onChanged();
     }
 
     @Override
@@ -81,23 +103,17 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     @Override
     public boolean onSearchLongClick(Site item) {
         boolean result = !item.isSearchable();
-        adapter.getItems().forEach(site -> site.setSearchable(result).save());
+        for (Site site : VodConfig.get().getSites()) site.setSearchable(result).save();
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        callback.onChanged();
         return true;
     }
 
     @Override
     public boolean onChangeLongClick(Site item) {
         boolean result = !item.isChangeable();
-        adapter.getItems().forEach(site -> site.setChangeable(result).save());
+        for (Site site : VodConfig.get().getSites()) site.setChangeable(result).save();
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
         return true;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (adapter.getItemCount() == 0) dismiss();
-        else if (ResUtil.isLand(requireContext())) setWidth(0.5f);
     }
 }

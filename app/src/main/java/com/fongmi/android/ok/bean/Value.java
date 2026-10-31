@@ -4,43 +4,28 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
-import androidx.annotation.Nullable;
-
-import com.fongmi.android.ok.impl.Diffable;
 import com.github.catvod.utils.Trans;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Objects;
-
-public class Value implements Parcelable, Diffable<Value> {
+public class Value implements Parcelable {
 
     @SerializedName("n")
     private String n;
     @SerializedName("v")
     private String v;
-    private transient boolean selected;
 
-    private Value(String v) {
+    private boolean activated;
+
+    public Value() {
+    }
+
+    public Value(String v) {
         this.v = v;
     }
 
-    private Value(String n, String v) {
-        this.n = n;
+    public Value(String n, String v) {
+        this.n = Trans.s2t(n);
         this.v = v;
-    }
-
-    protected Value(Parcel in) {
-        this.n = in.readString();
-        this.v = in.readString();
-        this.selected = in.readByte() != 0;
-    }
-
-    public static Value create(String v) {
-        return new Value(v);
-    }
-
-    public static Value create(String n, String v) {
-        return new Value(n, v).trans();
     }
 
     public String getN() {
@@ -48,48 +33,37 @@ public class Value implements Parcelable, Diffable<Value> {
     }
 
     public String getV() {
-        return TextUtils.isEmpty(v) ? "" : v.trim();
+        return TextUtils.isEmpty(v) ? "" : v;
     }
 
     public void setV(String v) {
         this.v = v;
     }
 
-    public boolean isSelected() {
-        return selected;
+    public boolean isActivated() {
+        return activated;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
 
-    public void setSelected(Value item) {
+    public void setActivated(Value item) {
         boolean equal = item.equals(this);
-        if (selected && equal) selected = false;
-        else selected = equal;
+        if (activated && equal) activated = false;
+        else activated = equal;
     }
 
-    public Value copy() {
-        Value copy = new Value(n, v);
-        copy.selected = this.selected;
-        return copy;
-    }
-
-    public Value trans() {
+    public void trans() {
         this.n = Trans.s2t(n);
-        return this;
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Value it)) return false;
-        return Objects.equals(getV(), it.getV());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getV());
+        if (!(obj instanceof Value)) return false;
+        Value it = (Value) obj;
+        return getV().equals(it.getV());
     }
 
     @Override
@@ -101,17 +75,13 @@ public class Value implements Parcelable, Diffable<Value> {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.n);
         dest.writeString(this.v);
-        dest.writeByte(this.selected ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.activated ? (byte) 1 : (byte) 0);
     }
 
-    @Override
-    public boolean isSameItem(Value other) {
-        return equals(other);
-    }
-
-    @Override
-    public boolean isSameContent(Value other) {
-        return equals(other);
+    protected Value(Parcel in) {
+        this.n = in.readString();
+        this.v = in.readString();
+        this.activated = in.readByte() != 0;
     }
 
     public static final Creator<Value> CREATOR = new Creator<>() {

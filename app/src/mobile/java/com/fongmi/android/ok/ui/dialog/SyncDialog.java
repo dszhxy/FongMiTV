@@ -1,14 +1,8 @@
 package com.fongmi.android.ok.ui.dialog;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.res.TypedArray;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,66 +12,69 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.Constant;
 import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.bean.Device;
 import com.fongmi.android.ok.bean.History;
 import com.fongmi.android.ok.bean.Keep;
+import com.fongmi.android.ok.cast.ScanEvent;
+import com.fongmi.android.ok.cast.ScanTask;
 import com.fongmi.android.ok.databinding.DialogDeviceBinding;
 import com.fongmi.android.ok.impl.Callback;
-import com.fongmi.android.ok.setting.Setting;
 import com.fongmi.android.ok.ui.activity.ScanActivity;
 import com.fongmi.android.ok.ui.adapter.DeviceAdapter;
-import com.fongmi.android.ok.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.ok.utils.Notify;
-import com.fongmi.android.ok.utils.ResUtil;
-import com.fongmi.android.ok.utils.ScanTask;
-import com.fongmi.android.ok.utils.Task;
 import com.github.catvod.net.OkHttp;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
-import java.util.Locale;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
-public class SyncDialog extends BaseBottomSheetDialog implements DeviceAdapter.OnClickListener, ScanTask.Listener {
+public class SyncDialog extends BaseDialog implements DeviceAdapter.OnClickListener, ScanTask.Listener {
 
+    private final FormBody.Builder body;
     private final OkHttpClient client;
-    private final TypedArray mode;
-
     private DialogDeviceBinding binding;
     private DeviceAdapter adapter;
-    private ScanTask scanTask;
     private String type;
-
-    public SyncDialog() {
-        scanTask = new ScanTask(this);
-        client = OkHttp.client(Constant.TIMEOUT_SYNC);
-        mode = ResUtil.getTypedArray(R.array.cast_mode);
-    }
 
     public static SyncDialog create() {
         return new SyncDialog();
     }
 
+    public SyncDialog() {
+        client = OkHttp.client(Constant.TIMEOUT_SYNC);
+        body = new FormBody.Builder();
+    }
+
     public SyncDialog history() {
-        return type("history");
+        type = "history";
+        body.add("device", Device.get().toString());
+        body.add("targets", App.gson().toJson(History.get()));
+        if (VodConfig.getUrl() != null) body.add("url", VodConfig.getUrl());
+        return this;
     }
 
     public SyncDialog keep() {
-        return type("keep");
+        type = "keep";
+        body.add("device", Device.get().toString());
+        body.add("targets", App.gson().toJson(Keep.getVod()));
+        body.add("configs", App.gson().toJson(Config.findUrls()));
+        return this;
     }
 
     public void show(FragmentActivity activity) {
-        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof SyncDialog) return;
+        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return;
         show(activity.getSupportFragmentManager(), null);
-    }
-
-    private SyncDialog type(String type) {
-        this.type = type;
-        return this;
     }
 
     @Override
@@ -87,102 +84,63 @@ public class SyncDialog extends BaseBottomSheetDialog implements DeviceAdapter.O
 
     @Override
     protected void initView() {
-        binding.mode.setVisibility(View.VISIBLE);
+        EventBus.getDefault().register(this);
         setRecyclerView();
         getDevice();
-        setMode();
     }
 
     @Override
     protected void initEvent() {
-        binding.mode.setOnClickListener(v -> onMode());
         binding.scan.setOnClickListener(v -> onScan());
         binding.refresh.setOnClickListener(v -> onRefresh());
     }
 
     private void setRecyclerView() {
-        binding.recycler.setHasFixedSize(false);
+        binding.recycler.setHasFixedSize(true);
         binding.recycler.setAdapter(adapter = new DeviceAdapter(this));
-        binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 16));
     }
 
     private void getDevice() {
-        adapter.setItems(Device.getAll(), () -> {
-            if (adapter.getItemCount() == 0) onRefresh();
-            else binding.recycler.setVisibility(View.VISIBLE);
-        });
-    }
-
-    private void setMode() {
-        int index = Setting.getSyncMode();
-        binding.mode.setImageResource(mode.getResourceId(index, 0));
-        binding.mode.setTag(String.valueOf(index));
-    }
-
-    private void onMode() {
-        int index = Setting.getSyncMode();
-        Setting.putSyncMode(index = index == mode.length() - 1 ? 0 : ++index);
-        binding.mode.setImageResource(mode.getResourceId(index, 0));
-        binding.mode.setTag(String.valueOf(index));
-    }
-
-    private void onScan() {
-        launcher.launch(new Intent(requireActivity(), ScanActivity.class));
+        adapter.addAll(Device.getAll());
+        if (adapter.getItemCount() == 0) App.post(this::onRefresh, 1000);
     }
 
     private void onRefresh() {
-        adapter.clear(() -> {
-            Device.delete();
-            scanTask.start();
-            binding.recycler.setVisibility(View.GONE);
-        });
+        ScanTask.create(this).start(adapter.getIps());
+        adapter.clear();
+    }
+
+    private void onScan() {
+        ScanActivity.start(getActivity());
     }
 
     private void onSuccess() {
         dismiss();
     }
 
+    private void onError() {
+        Notify.show(R.string.device_offline);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onScanEvent(ScanEvent event) {
+        ScanTask.create(this).start(event.getAddress());
+    }
+
     @Override
-    public void onFind(Device device) {
-        binding.recycler.setVisibility(View.VISIBLE);
-        adapter.sort(device);
+    public void onFind(List<Device> devices) {
+        if (devices.size() > 0) adapter.addAll(devices);
     }
 
     @Override
     public void onItemClick(Device item) {
-        send(item, binding.mode.getTag().toString(), false);
+        OkHttp.newCall(client, item.getIp().concat("/action?do=sync&mode=0&type=").concat(type), body.build()).enqueue(getCallback());
     }
 
     @Override
     public boolean onLongClick(Device item) {
-        String mode = binding.mode.getTag().toString();
-        if (mode.equals("0")) return false;
-        send(item, mode, true);
+        OkHttp.newCall(client, item.getIp().concat("/action?do=sync&mode=1&type=").concat(type), body.build()).enqueue(getCallback());
         return true;
-    }
-
-    private void send(Device item, String mode, boolean force) {
-        String url = String.format(Locale.getDefault(), "%s/action?do=sync&mode=%s&type=%s%s", item.getIp(), mode, type, force ? "&force=true" : "");
-        Runnable request = () -> OkHttp.newCall(client, url, buildBody()).enqueue(getCallback());
-        if (type.equals("history")) Task.executeSerial(request);
-        else request.run();
-    }
-
-    private FormBody buildBody() {
-        if (type.equals("history")) {
-            Config config = Config.vod();
-            FormBody.Builder body = new FormBody.Builder();
-            body.add("device", Device.get().toString());
-            body.add("config", config.toString());
-            body.add("targets", App.gson().toJson(History.get(config.getId())));
-            return body.build();
-        } else {
-            FormBody.Builder body = new FormBody.Builder();
-            body.add("device", Device.get().toString());
-            body.add("targets", App.gson().toJson(Keep.getVod()));
-            body.add("configs", App.gson().toJson(Config.findUrls()));
-            return body.build();
-        }
     }
 
     private Callback getCallback() {
@@ -194,7 +152,7 @@ public class SyncDialog extends BaseBottomSheetDialog implements DeviceAdapter.O
 
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                App.post(() -> Notify.show(e.getMessage()));
+                App.post(() -> onError());
             }
         };
     }
@@ -202,10 +160,6 @@ public class SyncDialog extends BaseBottomSheetDialog implements DeviceAdapter.O
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        scanTask.stop();
+        EventBus.getDefault().unregister(this);
     }
-
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) scanTask.start(result.getData().getStringExtra("address"));
-    });
 }

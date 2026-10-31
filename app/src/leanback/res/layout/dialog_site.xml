@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="24dp">
+    android:padding="16dp">
 
     <com.fongmi.android.ok.ui.custom.CustomRecyclerView
         android:id="@+id/recycler"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:clipChildren="false"
-        android:clipToPadding="false"
         android:overScrollMode="never"
         app:maxHeight="264dp"
         tools:itemCount="5"
         tools:listitem="@layout/adapter_site" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:id="@+id/action"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -28,71 +26,70 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:id="@+id/search"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/selector_chip_round"
+            android:background="@drawable/selector_text"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:nextFocusUp="@id/search"
             android:nextFocusDown="@id/change"
             android:padding="8dp"
             android:src="@drawable/ic_site_search"
-            app:tint="@color/white" />
+            app:tint="@color/text" />
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:id="@+id/change"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/selector_chip_round"
+            android:background="@drawable/selector_text"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:nextFocusUp="@id/search"
-            android:nextFocusDown="@id/select"
+            android:nextFocusDown="@id/record"
             android:padding="8dp"
             android:src="@drawable/ic_site_change"
-            app:tint="@color/white" />
+            app:tint="@color/text" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/select"
+        <ImageView
+            android:id="@+id/record"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/selector_chip_round"
+            android:background="@drawable/selector_text"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:nextFocusUp="@id/change"
-            android:nextFocusDown="@id/cancel"
+            android:nextFocusDown="@id/check"
             android:padding="8dp"
-            android:src="@drawable/ic_site_select" />
+            android:src="@drawable/ic_site_record"
+            app:tint="@color/text" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/cancel"
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/check"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/selector_chip_round"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:nextFocusUp="@id/select"
+            android:background="@drawable/selector_text"
+            android:checked="true"
+            android:nextFocusUp="@id/record"
             android:nextFocusDown="@id/mode"
-            android:padding="8dp"
-            android:src="@drawable/ic_site_cancel" />
+            app:buttonTint="@color/white" />
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:id="@+id/mode"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/selector_chip_round"
+            android:background="@drawable/selector_text"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:nextFocusUp="@id/cancel"
+            android:nextFocusUp="@id/check"
             android:nextFocusDown="@id/mode"
             android:padding="8dp"
             tools:src="@drawable/ic_site_list" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
+</LinearLayout>

@@ -1,15 +1,15 @@
 package com.fongmi.android.ok.ui.dialog;
 
-import android.content.Intent;
-import android.net.Uri;
+import android.Manifest;
+import android.content.DialogInterface;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.R;
 import com.fongmi.android.ok.api.config.LiveConfig;
@@ -18,77 +18,79 @@ import com.fongmi.android.ok.api.config.WallConfig;
 import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.databinding.DialogConfigBinding;
 import com.fongmi.android.ok.event.ServerEvent;
-import com.fongmi.android.ok.impl.ConfigListener;
+import com.fongmi.android.ok.impl.ConfigCallback;
 import com.fongmi.android.ok.server.Server;
 import com.fongmi.android.ok.ui.custom.CustomTextListener;
-import com.fongmi.android.ok.utils.FileChooser;
 import com.fongmi.android.ok.utils.QRCode;
 import com.fongmi.android.ok.utils.ResUtil;
-import com.fongmi.android.ok.utils.UrlUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.permissionx.guolindev.PermissionX;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class ConfigDialog extends BaseAlertDialog {
+public class ConfigDialog implements DialogInterface.OnDismissListener {
 
-    private DialogConfigBinding binding;
-    private boolean append = true;
+    private final DialogConfigBinding binding;
+    private final FragmentActivity activity;
+    private final ConfigCallback callback;
+    private final AlertDialog dialog;
+    private boolean append;
     private boolean edit;
     private String url;
     private int type;
 
-    public static ConfigDialog create() {
-        return new ConfigDialog();
+    public static ConfigDialog create(FragmentActivity activity) {
+        return new ConfigDialog(activity);
     }
 
-    public ConfigDialog vod() {
-        type = 0;
-        return this;
-    }
-
-    public ConfigDialog live() {
-        type = 1;
-        return this;
-    }
-
-    public ConfigDialog wall() {
-        type = 2;
+    public ConfigDialog type(int type) {
+        this.type = type;
         return this;
     }
 
     public ConfigDialog edit() {
-        edit = true;
+        this.edit = true;
         return this;
     }
 
-    public void show(FragmentActivity activity) {
-        show(activity.getSupportFragmentManager(), null);
+    public ConfigDialog(FragmentActivity activity) {
+        this.activity = activity;
+        this.callback = (ConfigCallback) activity;
+        this.binding = DialogConfigBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
+        this.append = true;
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogConfigBinding.inflate(getLayoutInflater());
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
+    private void initDialog() {
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = (int) (ResUtil.getScreenWidth() * 0.55f);
+        dialog.getWindow().setAttributes(params);
+        dialog.getWindow().setDimAmount(0);
+        dialog.setOnDismissListener(this);
+        dialog.show();
     }
 
-    @Override
-    protected void initView() {
+    private void initView() {
+        String address = Server.get().getAddress();
         binding.text.setText(url = getUrl());
+        binding.code.setImageBitmap(QRCode.getBitmap(address, 200, 0));
         binding.text.setSelection(TextUtils.isEmpty(url) ? 0 : url.length());
         binding.positive.setText(edit ? R.string.dialog_edit : R.string.dialog_positive);
-        binding.code.setImageBitmap(QRCode.getBitmap(Server.get().getAddress(4), 200, 0));
-        binding.info.setText(ResUtil.getString(R.string.push_info, Server.get().getAddress()).replace("\uff0c", "\n"));
+        binding.info.setText(ResUtil.getString(R.string.push_info, address).replace("，", "\n"));
+        binding.storage.setVisibility(PermissionX.isGranted(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) ? View.GONE : View.VISIBLE);
     }
 
-    @Override
-    protected void initEvent() {
-        binding.choose.setOnClickListener(this::onChoose);
+    private void initEvent() {
+        EventBus.getDefault().register(this);
+        binding.storage.setOnClickListener(this::onStorage);
         binding.positive.setOnClickListener(this::onPositive);
         binding.negative.setOnClickListener(this::onNegative);
         binding.text.addTextChangedListener(new CustomTextListener() {
@@ -104,75 +106,60 @@ public class ConfigDialog extends BaseAlertDialog {
     }
 
     private String getUrl() {
-        return switch (type) {
-            case 0 -> VodConfig.getUrl();
-            case 1 -> LiveConfig.getUrl();
-            case 2 -> WallConfig.getUrl();
-            default -> "";
-        };
+        switch (type) {
+            case 0:
+                return VodConfig.getUrl();
+            case 1:
+                return LiveConfig.getUrl();
+            case 2:
+                return WallConfig.getUrl();
+            default:
+                return "";
+        }
     }
 
-    private void onChoose(View view) {
-        FileChooser.from(launcher).show();
+    private void onStorage(View view) {
+        PermissionX.init(activity).permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE).request((allGranted, grantedList, deniedList) -> binding.storage.setVisibility(allGranted ? View.GONE : View.VISIBLE));
     }
 
     private void detect(String s) {
-        if (append && "h".equalsIgnoreCase(s)) {
+        if (append && s.equalsIgnoreCase("h")) {
             append = false;
             binding.text.append("ttp://");
-        } else if (append && "f".equalsIgnoreCase(s)) {
+        } else if (append && s.equalsIgnoreCase("f")) {
             append = false;
             binding.text.append("ile://");
-        } else if (append && "a".equalsIgnoreCase(s)) {
+        } else if (append && s.equalsIgnoreCase("a")) {
             append = false;
             binding.text.append("ssets://");
         } else if (s.length() > 1) {
             append = false;
-        } else if (s.isEmpty()) {
+        } else if (s.length() == 0) {
             append = true;
         }
     }
 
     private void onPositive(View view) {
-        String name = binding.name.getText().toString().trim();
         String text = binding.text.getText().toString().trim();
         if (edit) Config.find(url, type).url(text).update();
         if (text.isEmpty()) Config.delete(url, type);
-        if (name.isEmpty()) ((ConfigListener) requireActivity()).setConfig(Config.find(text, type));
-        else ((ConfigListener) requireActivity()).setConfig(Config.find(text, name, type));
-        dismiss();
+        callback.setConfig(Config.find(text, type));
+        dialog.dismiss();
     }
 
     private void onNegative(View view) {
-        dismiss();
+        dialog.dismiss();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
-        if (event.type() != ServerEvent.Type.SETTING) return;
-        binding.name.setText(event.name());
-        binding.text.setText(event.text());
+        if (event.getType() != ServerEvent.Type.SETTING) return;
+        binding.text.setText(event.getText());
         binding.text.setSelection(binding.text.getText().length());
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        setWidth(0.55f);
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
+    public void onDismiss(DialogInterface dialogInterface) {
         EventBus.getDefault().unregister(this);
-    }
-
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> FileChooser.getUri(result, this::setConfig));
-
-    private void setConfig(Uri uri) {
-        if (!isAdded()) return;
-        ((ConfigListener) requireActivity()).setConfig(Config.find(UrlUtil.toLocalUrl(uri), type));
-        dismiss();
     }
 }

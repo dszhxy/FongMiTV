@@ -2,43 +2,39 @@ package com.fongmi.android.ok.api.config;
 
 import android.text.TextUtils;
 
+import com.fongmi.android.ok.App;
+import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.api.Decoder;
-import com.fongmi.android.ok.api.LiveApi;
-import com.fongmi.android.ok.api.loader.BaseLoader;
-import com.fongmi.android.ok.api.parser.LiveParser;
+import com.fongmi.android.ok.api.LiveParser;
 import com.fongmi.android.ok.bean.Channel;
 import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.bean.Depot;
 import com.fongmi.android.ok.bean.Group;
 import com.fongmi.android.ok.bean.Keep;
 import com.fongmi.android.ok.bean.Live;
-import com.fongmi.android.ok.bean.Rule;
 import com.fongmi.android.ok.db.AppDatabase;
-import com.fongmi.android.ok.event.ConfigEvent;
 import com.fongmi.android.ok.impl.Callback;
-import com.fongmi.android.ok.setting.LiveSetting;
-import com.fongmi.android.ok.utils.UrlUtil;
-import com.github.catvod.bean.Header;
-import com.github.catvod.bean.Proxy;
+import com.fongmi.android.ok.ui.activity.LiveActivity;
+import com.fongmi.android.ok.utils.Notify;
 import com.github.catvod.utils.Json;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public class LiveConfig extends BaseConfig {
+public class LiveConfig {
 
-    private static final String TAG = LiveConfig.class.getSimpleName();
-
-    private Live home;
     private List<Live> lives;
-    private List<Rule> rules;
-    private List<String> ads;
+    private Config config;
+    private boolean sync;
+    private Live home;
+
+    private static class Loader {
+        static volatile LiveConfig INSTANCE = new LiveConfig();
+    }
 
     public static LiveConfig get() {
         return Loader.INSTANCE;
@@ -69,7 +65,7 @@ public class LiveConfig extends BaseConfig {
     }
 
     public static boolean hasUrl() {
-        return !TextUtils.isEmpty(getUrl());
+        return getUrl() != null && getUrl().length() > 0;
     }
 
     public static void load(Config config, Callback callback) {
@@ -77,183 +73,151 @@ public class LiveConfig extends BaseConfig {
     }
 
     public LiveConfig init() {
+        this.home = null;
         return config(Config.live());
     }
 
     public LiveConfig config(Config config) {
         this.config = config;
-        if (config.isEmpty()) return this;
+        if (config.getUrl() == null) return this;
         this.sync = config.getUrl().equals(VodConfig.getUrl());
         return this;
     }
 
     public LiveConfig clear() {
-        ads = null;
-        home = null;
-        lives = null;
-        rules = null;
-        RuleConfig.get().invalidate();
+        getLives().clear();
+        this.home = null;
         return this;
     }
 
-    @Override
-    protected String getTag() {
-        return TAG;
+    public void load() {
+        if (isEmpty()) load(new Callback());
     }
 
-    @Override
-    protected Config defaultConfig() {
-        return Config.live();
+    public void load(Callback callback) {
+        App.execute(() -> loadConfig(callback));
     }
 
-    @Override
-    protected void postEvent() {
-        super.postEvent();
-        ConfigEvent.live();
-    }
-
-    @Override
-    protected void load(Config config) throws Throwable {
-        String json = Decoder.getJson(UrlUtil.convert(config.getUrl()), TAG);
-        if (Json.isObj(json)) checkJson(config, Json.parse(json).getAsJsonObject());
-        else parseText(config, json);
-    }
-
-    @Override
-    protected boolean isLoaded() {
-        return !getLives().isEmpty() && !getHome().getGroups().isEmpty();
-    }
-
-    @Override
-    public synchronized void ensureLoaded() {
+    private void loadConfig(Callback callback) {
         try {
-            if (isLoaded()) return;
-            super.ensureLoaded();
-            LiveApi.parse(getHome());
-            LiveApi.parseXml(getHome());
+            parseConfig(Decoder.getJson(config.getUrl()), callback);
         } catch (Throwable e) {
+            if (TextUtils.isEmpty(config.getUrl())) App.post(() -> callback.error(""));
+            else App.post(() -> callback.error(Notify.getError(R.string.error_config_get, e)));
             e.printStackTrace();
         }
     }
 
-    public void load() {
-        if (sync) return;
-        load(new Callback());
-    }
-
-    private void parseText(Config config, String text) {
-        Live live = new Live(UrlUtil.getName(config.getUrl()), config.getUrl()).sync();
-        lives = new ArrayList<>(List.of(live));
-        LiveParser.text(live, text);
-        setHome(config, live, false);
-    }
-
-    private void checkJson(Config config, JsonObject object) throws Throwable {
-        if (object.has("msg")) {
-            throw new Exception(object.get("msg").getAsString());
-        } else if (object.has("urls")) {
-            parseDepot(config, object);
+    private void parseConfig(String text, Callback callback) {
+        if (Json.invalid(text)) {
+            parseText(text, callback);
         } else {
-            parseConfig(config, object);
+            checkJson(JsonParser.parseString(text).getAsJsonObject(), callback);
         }
     }
 
-    private void parseDepot(Config config, JsonObject object) throws Throwable {
-        List<Depot> items = Depot.arrayFrom(object.getAsJsonArray("urls").toString());
-        List<Config> configs = new ArrayList<>();
-        for (Depot item : items) configs.add(Config.find(item, LIVE));
-        if (configs.isEmpty()) throw new Exception("Depot urls is empty");
-        load(this.config = configs.get(0));
-        Config.delete(config.getUrl());
+    private void parseText(String text, Callback callback) {
+        Live live = new Live(config.getUrl()).sync();
+        LiveParser.text(live, text);
+        getLives().remove(live);
+        getLives().add(live);
+        setHome(live, true);
+        App.post(callback::success);
     }
 
-    private void parseConfig(Config config, JsonObject object) {
-        initList(object);
-        initLive(config, object);
+    private void checkJson(JsonObject object, Callback callback) {
+        if (object.has("urls")) {
+            parseDepot(object, callback);
+        } else {
+            parseConfig(object, callback);
+        }
+    }
+
+    private void parseDepot(JsonObject object, Callback callback) {
+        List<Depot> items = Depot.arrayFrom(object.getAsJsonArray("urls").toString());
+        List<Config> configs = new ArrayList<>();
+        for (Depot item : items) configs.add(Config.find(item, 1));
+        Config.delete(config.getUrl());
+        config = configs.get(0);
+        loadConfig(callback);
+    }
+
+    private void parseConfig(JsonObject object, Callback callback) {
+        List<JsonElement> lives = Json.safeListElement(object, "lives");
+        if (lives.size() > 0) for (JsonElement element : lives) add(Live.objectFrom(element).check());
+        for (Live live : getLives()) if (live.getName().equals(config.getHome())) setHome(live, true);
+        if (home == null) setHome(getLives().isEmpty() ? new Live() : getLives().get(0), true);
+        if (callback != null) App.post(callback::success);
+    }
+
+    private void add(Live live) {
+        if (!getLives().contains(live)) getLives().add(live.sync());
+    }
+
+    private void bootLive() {
+        Setting.putBootLive(false);
+        LiveActivity.start(App.get());
     }
 
     public void parse(JsonObject object) {
-        initLive(getConfig(), object);
+        parseConfig(object, null);
     }
 
-    private void initList(JsonObject object) {
-        setHeaders(Header.arrayFrom(fetchArray(object, "headers")));
-        setProxy(Proxy.arrayFrom(fetchArray(object, "proxy")));
-        setRules(Rule.arrayFrom(fetchArray(object, "rules")));
-        setHosts(Json.safeListString(object, "hosts"));
-        setAds(Json.safeListString(object, "ads"));
+    private void setKeep(List<Group> items) {
+        List<String> key = new ArrayList<>();
+        for (Keep keep : Keep.getLive()) key.add(keep.getKey());
+        for (Group group : items) {
+            if (group.isKeep()) continue;
+            for (Channel channel : group.getChannel()) {
+                if (key.contains(channel.getName())) {
+                    items.get(0).add(channel);
+                }
+            }
+        }
     }
 
-    private void initLive(Config config, JsonObject object) {
-        String spider = Json.safeString(object, "spider");
-        BaseLoader.get().parseJar(spider, false);
-        setLives(Json.safeListElement(object, "lives").stream().map(e -> Live.objectFrom(e, spider)).distinct().collect(Collectors.toCollection(ArrayList::new)));
-        Map<String, Live> items = Live.findAll().stream().collect(Collectors.toMap(Live::getName, Function.identity()));
-        getLives().forEach(live -> live.sync(items.get(live.getName())));
-        setHome(config, getLives().isEmpty() ? new Live() : getLives().stream().filter(item -> item.getName().equals(config.getHome())).findFirst().orElse(getLives().get(0)), false);
-    }
-
-    public void setKeep(Channel channel) {
-        if (home != null && !channel.getGroup().isHidden()) home.keep(channel).save();
-    }
-
-    public void applyKeepsToGroups(List<Group> items) {
-        Set<String> key = Keep.getLive().stream().map(Keep::getKey).collect(Collectors.toSet());
-        items.stream().filter(group -> !group.isKeep())
-                .flatMap(group -> group.getChannel().stream())
-                .filter(channel -> key.contains(channel.getName()))
-                .forEach(channel -> items.get(0).add(channel));
-    }
-
-    public int[] findKeepPosition(List<Group> items) {
-        String[] splits = getHome().getKeep().split(AppDatabase.SYMBOL);
-        if (splits.length < 3) return new int[]{1, 0};
+    private int[] getKeep(List<Group> items) {
+        String[] splits = Setting.getKeep().split(AppDatabase.SYMBOL);
+        if (splits.length < 4 || !home.getName().equals(splits[0])) return new int[]{1, 0};
         for (int i = 0; i < items.size(); i++) {
             Group group = items.get(i);
-            if (group.getName().equals(splits[0])) {
-                int j = group.find(splits[1]);
-                if (j != -1) {
-                    group.getChannel().get(j).setIndex(splits[2]);
-                    return new int[]{i, j};
-                }
+            if (group.getName().equals(splits[1])) {
+                int j = group.find(splits[2]);
+                if (j != -1 && splits.length == 4) group.getChannel().get(j).setLine(splits[3]);
+                if (j != -1) return new int[]{i, j};
             }
         }
         return new int[]{1, 0};
     }
 
-    public int[] findByChannelNumber(String number, List<Group> items) {
-        int num = Integer.parseInt(number);
+    public void setKeep(Channel channel) {
+        if (home == null || channel.getGroup().isHidden() || channel.getUrls().isEmpty()) return;
+        Setting.putKeep(home.getName() + AppDatabase.SYMBOL + channel.getGroup().getName() + AppDatabase.SYMBOL + channel.getName() + AppDatabase.SYMBOL + channel.getCurrent());
+    }
+
+    public int[] find(List<Group> items) {
+        setKeep(items);
+        return getKeep(items);
+    }
+
+    public int[] find(String number, List<Group> items) {
         for (int i = 0; i < items.size(); i++) {
-            int j = items.get(i).find(num);
+            int j = items.get(i).find(Integer.parseInt(number));
             if (j != -1) return new int[]{i, j};
         }
         return new int[]{-1, -1};
+    }
+
+    public boolean needSync(String url) {
+        return sync || TextUtils.isEmpty(config.getUrl()) || url.equals(config.getUrl());
     }
 
     public List<Live> getLives() {
         return lives == null ? lives = new ArrayList<>() : lives;
     }
 
-    private void setLives(List<Live> lives) {
-        this.lives = lives;
-    }
-
-    public List<Rule> getRules() {
-        return rules == null ? Collections.emptyList() : rules;
-    }
-
-    private void setRules(List<Rule> rules) {
-        this.rules = rules;
-        RuleConfig.get().invalidate();
-    }
-
-    public List<String> getAds() {
-        return ads == null ? Collections.emptyList() : ads;
-    }
-
-    private void setAds(List<String> ads) {
-        this.ads = ads;
-        RuleConfig.get().invalidate();
+    public Config getConfig() {
+        return config == null ? Config.live() : config;
     }
 
     public Live getHome() {
@@ -261,23 +225,15 @@ public class LiveConfig extends BaseConfig {
     }
 
     public void setHome(Live home) {
-        setHome(getConfig(), home, true);
+        setHome(home, false);
     }
 
-    public Live getLive(String key) {
-        return getLives().stream().filter(item -> item.getName().equals(key)).findFirst().orElse(new Live());
-    }
-
-    private void setHome(Config config, Live live, boolean save) {
-        home = live;
-        home.setSelected(true);
-        config.setHome(home.getName());
-        if (save) config.save();
-        getLives().forEach(item -> item.setSelected(home));
-        if (!save && (home.isBoot() || LiveSetting.isBoot())) ConfigEvent.boot();
-    }
-
-    private static class Loader {
-        static volatile LiveConfig INSTANCE = new LiveConfig();
+    private void setHome(Live home, boolean check) {
+        this.home = home;
+        this.home.setActivated(true);
+        config.home(home.getName()).update();
+        for (Live item : getLives()) item.setActivated(home);
+        if (App.activity() != null && App.activity() instanceof LiveActivity) return;
+        if (check) if (home.isBoot() || Setting.isBootLive()) App.post(this::bootLive);
     }
 }

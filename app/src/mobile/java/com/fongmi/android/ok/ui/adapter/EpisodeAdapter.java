@@ -9,17 +9,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fongmi.android.ok.bean.Episode;
 import com.fongmi.android.ok.databinding.AdapterEpisodeGridBinding;
 import com.fongmi.android.ok.databinding.AdapterEpisodeHoriBinding;
+import com.fongmi.android.ok.databinding.AdapterEpisodeVertBinding;
 import com.fongmi.android.ok.ui.base.BaseEpisodeHolder;
 import com.fongmi.android.ok.ui.base.ViewType;
 import com.fongmi.android.ok.ui.holder.EpisodeGridHolder;
 import com.fongmi.android.ok.ui.holder.EpisodeHoriHolder;
+import com.fongmi.android.ok.ui.holder.EpisodeVertHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
 
-    private final OnClickListener listener;
+    private final OnClickListener mListener;
     private final List<Episode> mItems;
     private final int viewType;
 
@@ -28,7 +30,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
     }
 
     public EpisodeAdapter(OnClickListener listener, int viewType, ArrayList<Episode> items) {
-        this.listener = listener;
+        this.mListener = listener;
         this.viewType = viewType;
         this.mItems = items;
     }
@@ -45,7 +47,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
     }
 
     public int getPosition() {
-        for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isSelected()) return i;
+        for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isActivated()) return i;
         return 0;
     }
 
@@ -96,10 +98,13 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
     @NonNull
     @Override
     public BaseEpisodeHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == ViewType.HORI) {
-            return new EpisodeHoriHolder(AdapterEpisodeHoriBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), listener);
-        } else {
-            return new EpisodeGridHolder(AdapterEpisodeGridBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), listener);
+        switch (viewType) {
+            case ViewType.HORI:
+                return new EpisodeHoriHolder(AdapterEpisodeHoriBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+            case ViewType.VERT:
+                return new EpisodeVertHolder(AdapterEpisodeVertBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+            default:
+                return new EpisodeGridHolder(AdapterEpisodeGridBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
         }
     }
 }

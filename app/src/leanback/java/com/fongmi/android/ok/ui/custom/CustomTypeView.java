@@ -7,12 +7,12 @@ import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.utils.KeyUtil;
-import com.google.android.material.textview.MaterialTextView;
 
-public class CustomTypeView extends MaterialTextView {
+public class CustomTypeView extends AppCompatTextView {
 
     private Listener listener;
     private boolean coolDown;
@@ -30,12 +30,12 @@ public class CustomTypeView extends MaterialTextView {
     }
 
     private boolean hasEvent(KeyEvent event) {
-        return !coolDown && KeyUtil.isActionDown(event) && KeyUtil.isUpKey(event);
+        return !coolDown && event.getAction() == KeyEvent.ACTION_DOWN && KeyUtil.isUpKey(event);
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (listener != null && hasEvent(event)) return onKeyDown();
+        if (hasEvent(event)) return onKeyDown();
         else return super.dispatchKeyEvent(event);
     }
 

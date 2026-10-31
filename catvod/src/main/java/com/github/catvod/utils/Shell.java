@@ -1,26 +1,26 @@
 package com.github.catvod.utils;
 
-import com.orhanobut.logger.Logger;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.DataOutputStream;
 
 public class Shell {
 
-    private static final String TAG = Shell.class.getSimpleName();
+    private static final String COMMAND_SH = "sh";
+    private static final String COMMAND_EXIT = "exit\n";
+    private static final String COMMAND_LINE_END = "\n";
 
-    public static String exec(String command) {
+    public static void exec(String command) {
         try {
-            StringBuilder sb = new StringBuilder();
-            Process p = Runtime.getRuntime().exec(command);
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = br.readLine()) != null) sb.append(line).append("\n");
-            Logger.t(TAG).d("Shell command '%s' with exit code '%s'", command, p.waitFor());
-            return Util.substring(sb.toString());
+            Process p = Runtime.getRuntime().exec(COMMAND_SH);
+            DataOutputStream dos = new DataOutputStream(p.getOutputStream());
+            dos.write(command.getBytes());
+            dos.writeBytes(COMMAND_LINE_END);
+            dos.writeBytes(COMMAND_EXIT);
+            dos.flush();
+            dos.close();
+            p.waitFor();
+            p.destroy();
         } catch (Exception e) {
             e.printStackTrace();
-            return "";
         }
     }
 }

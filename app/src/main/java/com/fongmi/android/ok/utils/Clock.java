@@ -4,16 +4,17 @@ import android.widget.TextView;
 
 import com.fongmi.android.ok.App;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Clock {
 
-    private DateTimeFormatter format;
+    private SimpleDateFormat format;
     private Callback callback;
+    private final Date date;
     private TextView view;
     private Timer timer;
 
@@ -26,6 +27,7 @@ public class Clock {
     }
 
     public Clock() {
+        this.date = new Date();
     }
 
     public Clock view(TextView view) {
@@ -34,7 +36,7 @@ public class Clock {
     }
 
     public Clock format(String format) {
-        this.format = DateTimeFormatter.ofPattern(format, Locale.getDefault());
+        this.format = new SimpleDateFormat(format, Locale.getDefault());
         return this;
     }
 
@@ -54,9 +56,9 @@ public class Clock {
 
     private void doJob() {
         try {
-            long time = System.currentTimeMillis();
-            if (callback != null) callback.onTimeChanged(time);
-            if (view != null) view.setText(format.format(LocalDateTime.now()));
+            date.setTime(System.currentTimeMillis());
+            if (callback != null) callback.onTimeChanged();
+            if (view != null) view.setText(format.format(date));
         } catch (Exception ignored) {
         }
     }
@@ -73,6 +75,6 @@ public class Clock {
 
     public interface Callback {
 
-        void onTimeChanged(long time);
+        void onTimeChanged();
     }
 }

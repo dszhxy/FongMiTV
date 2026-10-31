@@ -1,20 +1,16 @@
 package com.fongmi.android.ok.bean;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.Signature;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import com.fongmi.android.ok.server.Server;
 import com.fongmi.android.ok.utils.UrlUtil;
-import com.fongmi.hook.Hook;
-import com.github.catvod.net.OkHttp;
-import com.google.gson.Gson;
+import com.fongmi.hook.PackageManager;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Collections;
-import java.util.List;
-
-public class Core {
+public class Core extends PackageManager {
 
     @SerializedName("auth")
     private String auth;
@@ -24,8 +20,6 @@ public class Core {
     private String pass;
     @SerializedName("broker")
     private String broker;
-    @SerializedName("domain")
-    private String domain;
     @SerializedName("resp")
     private String resp;
     @SerializedName("sign")
@@ -34,83 +28,55 @@ public class Core {
     private String pkg;
     @SerializedName("so")
     private String so;
-    @SerializedName("key")
-    private String key;
-    @SerializedName("option")
-    private List<Option> option;
-
-    public static Core objectFrom(String str) {
-        return new Gson().fromJson(str, Core.class);
-    }
-
-    public static String getString(String value) {
-        return (value = UrlUtil.convert(value)).startsWith("http") ? OkHttp.string(value) : value;
-    }
 
     public String getAuth() {
-        return !getResp().isEmpty() ? Server.get().getAddress("/tvbus") : TextUtils.isEmpty(auth) ? "" : UrlUtil.convert(auth);
+        return TextUtils.isEmpty(auth) ? "" : UrlUtil.convert(auth);
     }
 
     public String getName() {
-        return TextUtils.isEmpty(name) ? "" : getString(name);
+        return TextUtils.isEmpty(name) ? "" : name;
     }
 
     public String getPass() {
-        return TextUtils.isEmpty(pass) ? "" : getString(pass);
+        return TextUtils.isEmpty(pass) ? "" : pass;
     }
 
     public String getBroker() {
-        return TextUtils.isEmpty(broker) ? "" : UrlUtil.convert(broker);
-    }
-
-    public String getDomain() {
-        return TextUtils.isEmpty(domain) ? "" : getString(domain);
+        return TextUtils.isEmpty(broker) ? "" : broker;
     }
 
     public String getResp() {
-        return TextUtils.isEmpty(resp) ? "" : getString(resp);
+        return TextUtils.isEmpty(resp) ? "" : resp;
     }
 
     public String getSign() {
-        return TextUtils.isEmpty(sign) ? "" : getString(sign);
+        return TextUtils.isEmpty(sign) ? "" : sign;
     }
 
     public String getPkg() {
-        return TextUtils.isEmpty(pkg) ? "" : getString(pkg);
+        return TextUtils.isEmpty(pkg) ? "" : pkg;
     }
 
     public String getSo() {
-        return TextUtils.isEmpty(so) ? "" : UrlUtil.convert(so);
+        return TextUtils.isEmpty(so) ? "" : so;
     }
 
-    public List<Option> getOption() {
-        return option == null ? Collections.emptyList() : option;
+    public boolean hook() {
+        return getPkg().length() > 0 && getSign().length() > 0;
     }
 
-    public Hook getHook() {
-        return !getPkg().isEmpty() && !getSign().isEmpty() ? new Hook(getSign(), getPkg()) : null;
+    @Override
+    public PackageInfo getPackageInfo(String packageName, int flags) {
+        PackageInfo info = super.getPackageInfo(packageName, flags);
+        info.signatures = new Signature[]{new Signature(getSign())};
+        return info;
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Core it)) return false;
-        return getSign().equals(it.getSign());
-    }
-
-    public static class Option {
-
-        @SerializedName("key")
-        private String key;
-        @SerializedName("values")
-        private List<String> values;
-
-        public String getKey() {
-            return TextUtils.isEmpty(key) ? "" : key;
-        }
-
-        public List<String> getValues() {
-            return values == null ? Collections.emptyList() : values;
-        }
+        if (!(obj instanceof Core)) return false;
+        Core it = (Core) obj;
+        return getSo().equals(it.getSo());
     }
 }

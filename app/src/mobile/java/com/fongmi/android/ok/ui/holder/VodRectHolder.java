@@ -2,7 +2,6 @@ package com.fongmi.android.ok.ui.holder;
 
 import androidx.annotation.NonNull;
 
-import com.bumptech.glide.Glide;
 import com.fongmi.android.ok.bean.Vod;
 import com.fongmi.android.ok.databinding.AdapterVodRectBinding;
 import com.fongmi.android.ok.ui.adapter.VodAdapter;
@@ -21,28 +20,23 @@ public class VodRectHolder extends BaseVodHolder {
     }
 
     public VodRectHolder size(int[] size) {
-        binding.image.getLayoutParams().height = size[1];
         binding.getRoot().getLayoutParams().width = size[0];
+        binding.getRoot().getLayoutParams().height = size[1];
         return this;
     }
 
     @Override
     public void initView(Vod item) {
-        binding.name.setText(item.getName());
-        binding.year.setText(item.getYear());
+        binding.name.setText(item.getVodName());
+        binding.year.setText(item.getVodYear());
         binding.site.setText(item.getSiteName());
-        binding.remark.setText(item.getRemarks());
+        binding.remark.setText(item.getVodRemarks());
         binding.site.setVisibility(item.getSiteVisible());
         binding.name.setVisibility(item.getNameVisible());
         binding.year.setVisibility(item.getYearVisible());
         binding.remark.setVisibility(item.getRemarkVisible());
         binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
         binding.getRoot().setOnLongClickListener(v -> listener.onLongClick(item));
-        ImgUtil.load(item.getName(), item.getPic(), binding.image);
-    }
-
-    @Override
-    public void unbind() {
-        Glide.with(binding.image).clear(binding.image);
+        ImgUtil.rect(item.getVodName(), item.getVodPic(), binding.image);
     }
 }

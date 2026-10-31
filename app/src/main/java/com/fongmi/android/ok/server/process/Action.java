@@ -9,15 +9,11 @@ import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.bean.Device;
 import com.fongmi.android.ok.bean.History;
 import com.fongmi.android.ok.bean.Keep;
-import com.fongmi.android.ok.bean.Vod;
 import com.fongmi.android.ok.event.CastEvent;
 import com.fongmi.android.ok.event.RefreshEvent;
 import com.fongmi.android.ok.event.ServerEvent;
 import com.fongmi.android.ok.impl.Callback;
 import com.fongmi.android.ok.server.Nano;
-import com.fongmi.android.ok.server.Server;
-import com.fongmi.android.ok.server.impl.Process;
-import com.fongmi.android.ok.service.PlaybackService;
 import com.fongmi.android.ok.utils.FileUtil;
 import com.fongmi.android.ok.utils.Notify;
 import com.github.catvod.net.OkHttp;
@@ -27,51 +23,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import fi.iki.elonen.NanoHTTPD.IHTTPSession;
-import fi.iki.elonen.NanoHTTPD.Response;
+import fi.iki.elonen.NanoHTTPD;
 import okhttp3.FormBody;
 
 public class Action implements Process {
 
     @Override
-    public boolean isRequest(IHTTPSession session, String url) {
-        return url.startsWith("/action");
+    public boolean isRequest(NanoHTTPD.IHTTPSession session, String path) {
+        return path.equals("/action");
     }
 
     @Override
-    public Response doResponse(IHTTPSession session, String url, Map<String, String> files) {
+    public NanoHTTPD.Response doResponse(NanoHTTPD.IHTTPSession session, String path, Map<String, String> files) {
         Map<String, String> params = session.getParms();
-        String param = params.get("do");
-        if (!TextUtils.isEmpty(param)) doJob(param, params);
-        return Nano.ok();
-    }
-
-    private void doJob(String param, Map<String, String> params) {
-        switch (param) {
-            case "file" -> onFile(params);
-            case "push" -> onPush(params);
-            case "cast" -> onCast(params);
-            case "sync" -> onSync(params);
-            case "search" -> onSearch(params);
-            case "setting" -> onSetting(params);
-            case "refresh" -> onRefresh(params);
-            case "control" -> onControl(params);
-            case "danmaku" -> onDanmaku(params);
+        switch (Objects.requireNonNullElse(params.get("do"), "")) {
+            case "search":
+                onSearch(params);
+                return Nano.success();
+            case "push":
+                onPush(params);
+                return Nano.success();
+            case "setting":
+                onSetting(params);
+                return Nano.success();
+            case "file":
+                onFile(params);
+                return Nano.success();
+            case "refresh":
+                onRefresh(params);
+                return Nano.success();
+            case "cast":
+                onCast(params);
+                return Nano.success();
+            case "sync":
+                onSync(params);
+                return Nano.success();
+            default:
+                return Nano.error(null);
         }
-    }
-
-    private void onFile(Map<String, String> params) {
-        String path = params.get("path");
-        if (TextUtils.isEmpty(path)) return;
-        if (path.endsWith(".apk")) FileUtil.openFile(Path.local(path));
-        else if (path.endsWith(".srt") || path.endsWith(".ssa") || path.endsWith(".ass")) RefreshEvent.subtitle(path);
-        else ServerEvent.setting(path);
-    }
-
-    private void onPush(Map<String, String> params) {
-        String url = params.get("url");
-        if (TextUtils.isEmpty(url)) return;
-        ServerEvent.push(url);
     }
 
     private void onSearch(Map<String, String> params) {
@@ -80,89 +69,77 @@ public class Action implements Process {
         ServerEvent.search(word);
     }
 
+    private void onPush(Map<String, String> params) {
+        String url = params.get("url");
+        if (TextUtils.isEmpty(url)) return;
+        ServerEvent.push(url);
+    }
+
     private void onSetting(Map<String, String> params) {
         String text = params.get("text");
-        String name = params.get("name");
         if (TextUtils.isEmpty(text)) return;
-        ServerEvent.setting(text, name);
+        ServerEvent.setting(text);
+    }
+
+    private void onFile(Map<String, String> params) {
+        String path = params.get("path");
+        if (TextUtils.isEmpty(path)) return;
+        if (path.endsWith(".xml")) RefreshEvent.danmaku(path);
+        else if (path.endsWith(".apk")) FileUtil.openFile(Path.local(path));
+        else if (path.endsWith(".srt") || path.endsWith(".ssa") || path.endsWith(".ass")) RefreshEvent.subtitle(path);
+        else ServerEvent.setting(path);
     }
 
     private void onRefresh(Map<String, String> params) {
         String type = params.get("type");
         String path = params.get("path");
-        String json = params.get("json");
         if (TextUtils.isEmpty(type)) return;
         switch (type) {
-            case "live" -> RefreshEvent.live();
-            case "detail" -> RefreshEvent.detail();
-            case "player" -> RefreshEvent.player();
-            case "category" -> RefreshEvent.category();
-            case "danmaku" -> RefreshEvent.danmaku(path);
-            case "subtitle" -> RefreshEvent.subtitle(path);
-            case "vod" -> RefreshEvent.vod(Vod.objectFrom(json));
+            case "detail":
+                RefreshEvent.detail();
+                break;
+            case "player":
+                RefreshEvent.player();
+                break;
+            case "danmaku":
+                RefreshEvent.danmaku(path);
+                break;
+            case "subtitle":
+                RefreshEvent.subtitle(path);
+                break;
         }
-    }
-
-    private void onControl(Map<String, String> params) {
-        String type = params.get("type");
-        PlaybackService service = Server.get().getService();
-        if (service == null || TextUtils.isEmpty(type)) return;
-        switch (type) {
-            case "play" -> App.post(() -> service.player().play());
-            case "pause" -> App.post(() -> service.player().pause());
-            case "stop" -> App.post(service::dispatchStop);
-            case "prev" -> App.post(service::dispatchPrev);
-            case "next" -> App.post(service::dispatchNext);
-            case "repeat" -> App.post(service::dispatchRepeat);
-            case "replay" -> App.post(service::dispatchReplay);
-        }
-    }
-
-    private void onDanmaku(Map<String, String> params) {
-        String text = params.get("text");
-        PlaybackService service = Server.get().getService();
-        if (service == null || TextUtils.isEmpty(text)) return;
-        App.post(() -> service.player().sendDanmaku(text));
     }
 
     private void onCast(Map<String, String> params) {
-        Config config = Config.objectFrom(params.get("config"));
+        Config config = Config.find(params.get("url"), 0);
         Device device = Device.objectFrom(params.get("device"));
         History history = History.objectFrom(params.get("history"));
-        CastEvent.post(Config.find(config), device, history);
+        CastEvent.post(config, device, history);
     }
 
     private void onSync(Map<String, String> params) {
-        String type = params.get("type");
-        boolean force = Objects.equals(params.get("force"), "true");
-        String mode = Objects.requireNonNullElse(params.get("mode"), "0");
-        if (params.get("device") != null && (mode.equals("0") || mode.equals("2"))) {
-            Device device = Device.objectFrom(params.get("device"));
-            if ("history".equals(type)) sendHistory(device, params);
-            else if ("keep".equals(type)) sendKeep(device);
+        boolean sync = Objects.equals(params.get("mode"), "0");
+        boolean keep = Objects.equals(params.get("type"), "keep");
+        boolean history = Objects.equals(params.get("type"), "history");
+        Device device = Device.objectFrom(params.get("device"));
+        if (params.get("device") != null && sync) {
+            if (history) sendHistory(device, params);
+            else if (keep) sendKeep(device);
         }
-        if (mode.equals("0") || mode.equals("1")) {
-            if ("history".equals(type)) syncHistory(params, force);
-            else if ("keep".equals(type)) syncKeep(params, force);
-        }
-    }
-
-    private void post(Device device, String type, FormBody.Builder body) {
-        try {
-            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=" + type), body.build()).execute();
-        } catch (Exception e) {
-            App.post(() -> Notify.show(e.getMessage()));
+        if (history) {
+            syncHistory(params);
+        } else if (keep) {
+            syncKeep(params);
         }
     }
 
     private void sendHistory(Device device, Map<String, String> params) {
         try {
-            Config config = Config.find(Config.objectFrom(params.get("config")));
-            if (config.getUrl() == null) config = Config.vod();
+            String url = Objects.requireNonNullElse(params.get("url"), VodConfig.getUrl());
             FormBody.Builder body = new FormBody.Builder();
-            body.add("config", config.toString());
-            body.add("targets", App.gson().toJson(History.get(config.getId())));
-            post(device, "history", body);
+            body.add("url", url);
+            body.add("targets", App.gson().toJson(History.get(Config.find(url, 0).getId())));
+            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=history"), body.build()).execute();
         } catch (Exception e) {
             App.post(() -> Notify.show(e.getMessage()));
         }
@@ -173,32 +150,33 @@ public class Action implements Process {
             FormBody.Builder body = new FormBody.Builder();
             body.add("targets", App.gson().toJson(Keep.getVod()));
             body.add("configs", App.gson().toJson(Config.findUrls()));
-            post(device, "keep", body);
+            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=keep"), body.build()).execute();
         } catch (Exception e) {
             App.post(() -> Notify.show(e.getMessage()));
         }
     }
 
-    public void syncHistory(Map<String, String> params, boolean force) {
-        Config config = Config.find(Config.objectFrom(params.get("config")));
+    public void syncHistory(Map<String, String> params) {
+        String url = params.get("url");
+        if (TextUtils.isEmpty(url)) return;
+        Config config = Config.find(url, 0);
+        boolean replace = Objects.equals(params.get("mode"), "1");
         List<History> targets = History.arrayFrom(params.get("targets"));
-        if (config.getUrl() == null) return;
-        if (config.getUrl().equals(VodConfig.getUrl())) {
-            if (force) History.delete(config.getId());
+        if (VodConfig.get().getConfig().equals(config)) {
+            if (replace) History.delete(config.getId());
             History.sync(targets);
-            RefreshEvent.history();
         } else {
-            VodConfig.load(config, getCallback(targets, force, config.getId()));
+            VodConfig.load(config, getCallback(targets));
         }
     }
 
-    private Callback getCallback(List<History> targets, boolean force, int cid) {
+    private Callback getCallback(List<History> targets) {
         return new Callback() {
             @Override
             public void success() {
-                if (force) History.delete(cid);
+                RefreshEvent.config();
+                RefreshEvent.video();
                 History.sync(targets);
-                RefreshEvent.history();
             }
 
             @Override
@@ -208,25 +186,26 @@ public class Action implements Process {
         };
     }
 
-    private void syncKeep(Map<String, String> params, boolean force) {
-        List<Keep> targets = Keep.arrayFrom(params.get("targets"));
+    private void syncKeep(Map<String, String> params) {
         List<Config> configs = Config.arrayFrom(params.get("configs"));
-        if (TextUtils.isEmpty(VodConfig.getUrl()) && !configs.isEmpty()) {
-            VodConfig.load(Config.find(configs.get(0)), getCallback(configs, targets, force));
+        List<Keep> targets = Keep.arrayFrom(params.get("targets"));
+        boolean replace = Objects.equals(params.get("mode"), "1");
+        if (VodConfig.getUrl().isEmpty() && configs.size() > 0) {
+            VodConfig.load(Config.find(configs.get(0), 0), getCallback(configs, targets));
         } else {
-            if (force) Keep.deleteAll();
+            if (replace) Keep.deleteAll();
             Keep.sync(configs, targets);
-            RefreshEvent.keep();
         }
     }
 
-    private Callback getCallback(List<Config> configs, List<Keep> targets, boolean force) {
+    private Callback getCallback(List<Config> configs, List<Keep> targets) {
         return new Callback() {
             @Override
             public void success() {
-                if (force) Keep.deleteAll();
+                RefreshEvent.history();
+                RefreshEvent.config();
+                RefreshEvent.video();
                 Keep.sync(configs, targets);
-                RefreshEvent.keep();
             }
 
             @Override

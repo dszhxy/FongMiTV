@@ -1,14 +1,12 @@
 package com.fongmi.android.ok.player.extractor;
 
-import android.net.Uri;
-
-import com.fongmi.android.ok.utils.UrlUtil;
+import com.fongmi.android.ok.player.Source;
 
 public class Video implements Source.Extractor {
 
     @Override
-    public boolean match(Uri uri) {
-        return "video".equals(UrlUtil.scheme(uri));
+    public boolean match(String scheme, String host) {
+        return scheme.equals("video");
     }
 
     @Override

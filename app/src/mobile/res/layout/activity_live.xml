@@ -15,41 +15,50 @@
         android:focusable="true">
 
         <androidx.media3.ui.PlayerView
-            android:id="@+id/player"
+            android:id="@+id/surface"
             style="@style/Player.Live"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:surface_type="none" />
+            android:visibility="gone"
+            app:surface_type="surface_view" />
 
-        <include
-            android:id="@+id/widget"
-            layout="@layout/view_widget_live"
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/texture"
+            style="@style/Player.Live"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:surface_type="texture_view" />
 
-        <include
-            android:id="@+id/control"
-            layout="@layout/view_control_live"
+        <tv.danmaku.ijk.media.player.ui.IjkVideoView
+            android:id="@+id/ijk"
+            style="@style/Player.Live"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <include
-            android:id="@+id/progress"
-            layout="@layout/view_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
     </FrameLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <include
+        android:id="@+id/widget"
+        layout="@layout/view_widget_live"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <include
+        android:id="@+id/control"
+        layout="@layout/view_control_live"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <LinearLayout
         android:id="@+id/recycler"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@drawable/shape_live_list"
         android:orientation="horizontal"
-        android:visibility="gone"
-        tools:visibility="visible">
+        android:visibility="gone">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/group"
@@ -62,29 +71,24 @@
             tools:itemCount="5"
             tools:listitem="@layout/adapter_group" />
 
+        <View
+            android:id="@+id/divide"
+            android:layout_width="0.3dp"
+            android:layout_height="match_parent"
+            android:background="@color/grey_700"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/channel"
-            android:layout_width="0dp"
+            android:layout_width="280dp"
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:padding="8dp"
-            android:translationX="-16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="5"
             tools:listitem="@layout/adapter_channel" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/epgData"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:padding="8dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="5"
-            tools:listitem="@layout/adapter_epg_data" />
-
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 </FrameLayout>
 

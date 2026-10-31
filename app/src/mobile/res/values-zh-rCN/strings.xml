@@ -9,18 +9,12 @@
     <string name="nav_live">直播</string>
     <string name="nav_setting">设置</string>
 
-    <!-- Menu -->
-    <string name="menu_sync">同步</string>
-    <string name="menu_delete">删除</string>
-    <string name="menu_search">搜索</string>
-    <string name="menu_site">站点</string>
-    <string name="menu_reset">重置</string>
-
     <!-- Vod -->
     <string name="vod_home">推荐</string>
 
     <!-- Detail -->
     <string name="detail_flag">线路</string>
+    <string name="detail_more">更多</string>
     <string name="detail_episode">选集</string>
     <string name="detail_quality">画质</string>
     <string name="detail_content">简介</string>
@@ -51,11 +45,12 @@
     <string name="timer_cancel">取消定时器</string>
 
     <!-- Hint -->
+    <string name="copied">已复制</string>
     <string name="shortcut"> 已于主萤幕新增捷径。</string>
 
     <string-array name="select_background">
-        <item>关</item>
-        <item>开</item>
+        <item>关闭</item>
+        <item>开启</item>
         <item>画中画</item>
     </string-array>
 

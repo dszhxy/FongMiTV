@@ -4,10 +4,7 @@ import com.xunlei.downloadlib.Util;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TorrentInfo {
 
@@ -26,11 +23,14 @@ public class TorrentInfo {
         return mFile;
     }
 
-    private List<TorrentFileInfo> getSubFileList() {
-        return mSubFileInfo == null ? Collections.emptyList() : Arrays.asList(mSubFileInfo);
+    private TorrentFileInfo[] getSubFileInfo() {
+        return mSubFileInfo == null ? new TorrentFileInfo[0] : mSubFileInfo;
     }
 
     public List<TorrentFileInfo> getMedias() {
-        return getSubFileList().stream().filter(item -> Util.isMedia(item.getExt(), item.getFileSize())).map(item -> item.file(getFile())).sorted().toList();
+        List<TorrentFileInfo> items = new ArrayList<>();
+        for (TorrentFileInfo item : getSubFileInfo()) if (Util.isMedia(item.getExt(), item.getFileSize())) items.add(item.file(getFile()));
+        TorrentFileInfo.Sorter.sort(items);
+        return items;
     }
 }

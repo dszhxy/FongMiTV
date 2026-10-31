@@ -1,6 +1,5 @@
 package com.fongmi.android.ok.ui.adapter;
 
-import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -8,95 +7,76 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.ok.bean.Collect;
+import com.fongmi.android.ok.bean.Vod;
 import com.fongmi.android.ok.databinding.AdapterCollectBinding;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-public class CollectAdapter extends BaseDiffAdapter<Collect, CollectAdapter.ViewHolder> {
+public class CollectAdapter extends RecyclerView.Adapter<CollectAdapter.ViewHolder> {
 
-    public interface OnClickListener {
-        void onItemClick(int position, Collect item);
-        void onItemDoubleClick(int position, Collect item);
-    }
-
-    private static final long DOUBLE_CLICK_MS = 520L;
-
-    private final OnClickListener listener;
-    private final Set<String> blocked = new HashSet<>();
-    private long lastClickTime;
-    private String lastClickKey = "";
+    private final OnClickListener mListener;
+    private final List<Collect> mItems;
 
     public CollectAdapter(OnClickListener listener) {
-        this.listener = listener;
+        this.mListener = listener;
+        this.mItems = new ArrayList<>();
+    }
+
+    public interface OnClickListener {
+
+        void onItemClick(int position, Collect item);
+    }
+
+    public void clear() {
+        mItems.clear();
+        mItems.add(Collect.all());
+        notifyDataSetChanged();
+    }
+
+    public void add(Collect item) {
+        mItems.add(item);
+        notifyItemInserted(mItems.size() - 1);
+    }
+
+    public void add(List<Vod> items) {
+        mItems.get(0).getList().addAll(items);
     }
 
     public int getPosition() {
-        for (int i = 0; i < getItemCount(); i++) if (getItem(i).isSelected()) return i;
+        for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isActivated()) return i;
         return 0;
     }
 
     public Collect getActivated() {
-        return getItems().get(getPosition());
+        return mItems.get(getPosition());
     }
 
-    public void setSelected(int position) {
-        for (int i = 0; i < getItemCount(); i++) getItem(i).setSelected(i == position);
-        notifyItemRangeChanged(0, getItemCount());
+    public void setActivated(int position) {
+        for (int i = 0; i < mItems.size(); i++) mItems.get(i).setActivated(i == position);
+        notifyDataSetChanged();
     }
 
-    public void setBlocked(Set<String> values) {
-        blocked.clear();
-        if (values != null) blocked.addAll(values);
-        if (getItemCount() > 0) notifyItemRangeChanged(0, getItemCount());
+    @Override
+    public int getItemCount() {
+        return mItems.size();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(
-                AdapterCollectBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false)
-        );
+        return new ViewHolder(AdapterCollectBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Collect item = getItem(position);
-        String key = item.getSite().getKey();
-        boolean isAll = "all".equals(key);
-        boolean isBlocked = !isAll && blocked.contains(key);
-
-        holder.binding.text.setSelected(item.isSelected());
-        holder.binding.text.setText(
-                isBlocked ? "⛔ " + item.getSite().getName() : item.getSite().getName()
-        );
-        holder.binding.text.setAlpha(isBlocked ? 0.55f : 1.0f);
-
-        holder.binding.text.setOnClickListener(v -> {
-            int p = holder.getBindingAdapterPosition();
-            if (p == RecyclerView.NO_POSITION) return;
-
-            Collect clicked = getItem(p);
-            String clickedKey = clicked.getSite().getKey();
-            long now = SystemClock.elapsedRealtime();
-
-            boolean doubleClick = !"all".equals(clickedKey)
-                    && clickedKey.equals(lastClickKey)
-                    && now - lastClickTime <= DOUBLE_CLICK_MS;
-
-            if (doubleClick) {
-                lastClickTime = 0L;
-                lastClickKey = "";
-                listener.onItemDoubleClick(p, clicked);
-            } else {
-                lastClickTime = now;
-                lastClickKey = clickedKey;
-                listener.onItemClick(p, clicked);
-            }
-        });
+        Collect item = mItems.get(position);
+        holder.binding.text.setActivated(item.isActivated());
+        holder.binding.text.setText(item.getSite().getName());
+        holder.binding.text.setOnClickListener(v -> mListener.onItemClick(position, item));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterCollectBinding binding;
 

@@ -1,23 +1,26 @@
 package com.fongmi.android.ok.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
+import android.content.res.Resources;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import androidx.annotation.AnimRes;
 import androidx.annotation.ArrayRes;
-import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
@@ -27,51 +30,61 @@ import com.fongmi.android.ok.App;
 public class ResUtil {
 
     public static DisplayMetrics getDisplayMetrics() {
-        return getDisplayMetrics(App.get());
+        return App.get().getResources().getDisplayMetrics();
     }
 
-    public static DisplayMetrics getDisplayMetrics(Context context) {
-        return context.getResources().getDisplayMetrics();
+    public static WindowManager getWindowManager(Context context) {
+        return (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public static boolean hasNavigationBar(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            Display display = getWindowManager(context).getDefaultDisplay();
+            Point size = new Point();
+            Point realSize = new Point();
+            display.getSize(size);
+            display.getRealSize(realSize);
+            return realSize.x != size.x || realSize.y != size.y;
+        } else {
+            boolean menu = ViewConfiguration.get(context).hasPermanentMenuKey();
+            boolean back = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+            return !(menu || back);
+        }
+    }
+
+    public static int getNavigationBarHeight(Context context) {
+        if (!hasNavigationBar(context)) return 0;
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        return resources.getDimensionPixelSize(resourceId);
     }
 
     public static int getScreenWidth() {
-        return getScreenWidth(App.get());
+        return getDisplayMetrics().widthPixels;
     }
 
     public static int getScreenWidth(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        if (windowManager == null) {
-            return getDisplayMetrics(context).widthPixels;
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Rect rect = windowManager.getCurrentWindowMetrics().getBounds();
-            return isLand(context) ? Math.max(rect.width(), rect.height()) : Math.min(rect.width(), rect.height());
-        } else {
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            return displayMetrics.widthPixels;
-        }
+        return context.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenWidthNav() {
+        return getDisplayMetrics().widthPixels + getNavigationBarHeight(App.get());
     }
 
     public static int getScreenHeight() {
-        return getScreenHeight(App.get());
+        return getDisplayMetrics().heightPixels;
     }
 
     public static int getScreenHeight(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        if (windowManager == null) {
-            return getDisplayMetrics(context).heightPixels;
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Rect rect = windowManager.getCurrentWindowMetrics().getBounds();
-            return isLand(context) ? Math.min(rect.width(), rect.height()) : Math.max(rect.width(), rect.height());
-        } else {
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            return displayMetrics.heightPixels;
-        }
+        return context.getResources().getDisplayMetrics().heightPixels;
     }
 
-    public static boolean isEdge(Context context, MotionEvent e, int edge) {
-        return e.getRawX() < edge || e.getRawX() > getScreenWidth(context) - edge || e.getRawY() < edge || e.getRawY() > getScreenHeight(context) - edge;
+    public static int getScreenHeightNav() {
+        return getDisplayMetrics().heightPixels + getNavigationBarHeight(App.get());
+    }
+
+    public static boolean isEdge(MotionEvent e, int edge) {
+        return e.getRawX() < edge || e.getRawX() > getScreenWidthNav() - edge || e.getRawY() < edge || e.getRawY() > getScreenHeightNav() - edge;
     }
 
     public static boolean isLand(Context context) {
@@ -79,11 +92,7 @@ public class ResUtil {
     }
 
     public static boolean isPad() {
-        return isPad(App.get());
-    }
-
-    public static boolean isPad(Context context) {
-        return context.getResources().getConfiguration().smallestScreenWidthDp >= 600;
+        return App.get().getResources().getConfiguration().smallestScreenWidthDp >= 600;
     }
 
     public static int sp2px(int sp) {
@@ -94,36 +103,32 @@ public class ResUtil {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getDisplayMetrics());
     }
 
+    public static int getDrawable(String resId) {
+        return App.get().getResources().getIdentifier(resId, "drawable", App.get().getPackageName());
+    }
+
     public static String getString(@StringRes int resId) {
-        return App.get().getResources().getString(resId);
+        return App.get().getString(resId);
     }
 
     public static String getString(@StringRes int resId, Object... formatArgs) {
-        return App.get().getResources().getString(resId, formatArgs);
+        return App.get().getString(resId, formatArgs);
     }
 
     public static String[] getStringArray(@ArrayRes int resId) {
         return App.get().getResources().getStringArray(resId);
     }
 
-    public static TypedArray getTypedArray(@ArrayRes int resId) {
-        return App.get().getResources().obtainTypedArray(resId);
-    }
-
     public static Drawable getDrawable(@DrawableRes int resId) {
         return ContextCompat.getDrawable(App.get(), resId);
-    }
-
-    public static int getColor(@ColorRes int resId) {
-        return ContextCompat.getColor(App.get(), resId);
     }
 
     public static Animation getAnim(@AnimRes int resId) {
         return AnimationUtils.loadAnimation(App.get(), resId);
     }
 
-    public static Display getDisplay(Context context) {
-        return ContextCompat.getDisplayOrDefault(context);
+    public static Display getDisplay(Activity activity) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ? activity.getDisplay() : activity.getWindowManager().getDefaultDisplay();
     }
 
     public static int getTextWidth(String content, int size) {

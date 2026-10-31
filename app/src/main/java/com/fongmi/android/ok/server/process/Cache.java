@@ -3,19 +3,18 @@ package com.fongmi.android.ok.server.process;
 import android.text.TextUtils;
 
 import com.fongmi.android.ok.server.Nano;
-import com.fongmi.android.ok.server.impl.Process;
 import com.github.catvod.utils.Prefers;
 
 import java.util.Map;
+import java.util.Objects;
 
-import fi.iki.elonen.NanoHTTPD.IHTTPSession;
-import fi.iki.elonen.NanoHTTPD.Response;
+import fi.iki.elonen.NanoHTTPD;
 
 public class Cache implements Process {
 
     @Override
-    public boolean isRequest(IHTTPSession session, String url) {
-        return url.startsWith("/cache");
+    public boolean isRequest(NanoHTTPD.IHTTPSession session, String path) {
+        return path.equals("/cache");
     }
 
     private String getKey(String rule, String key) {
@@ -23,14 +22,21 @@ public class Cache implements Process {
     }
 
     @Override
-    public Response doResponse(IHTTPSession session, String url, Map<String, String> files) {
+    public NanoHTTPD.Response doResponse(NanoHTTPD.IHTTPSession session, String path, Map<String, String> files) {
         Map<String, String> params = session.getParms();
-        String action = params.get("do");
         String rule = params.get("rule");
         String key = params.get("key");
-        if ("get".equals(action)) return Nano.ok(Prefers.getString(getKey(rule, key)));
-        if ("set".equals(action)) Prefers.put(getKey(rule, key), params.get("value"));
-        if ("del".equals(action)) Prefers.remove(getKey(rule, key));
-        return Nano.ok();
+        switch (Objects.requireNonNullElse(params.get("do"), "")) {
+            case "get":
+                return Nano.success(Prefers.getString(getKey(rule, key)));
+            case "set":
+                Prefers.put(getKey(rule, key), params.get("value"));
+                return Nano.success();
+            case "del":
+                Prefers.remove(getKey(rule, key));
+                return Nano.success();
+            default:
+                return Nano.error(null);
+        }
     }
 }

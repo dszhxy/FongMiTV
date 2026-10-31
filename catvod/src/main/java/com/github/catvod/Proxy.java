@@ -4,7 +4,7 @@ import com.github.catvod.utils.Util;
 
 public class Proxy {
 
-    private static int port = -1;
+    private static int port = 9978;
 
     public static void set(int port) {
         Proxy.port = port;

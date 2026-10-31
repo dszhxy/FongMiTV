@@ -1,116 +1,100 @@
 package com.fongmi.android.ok.player.extractor;
 
-import android.net.Uri;
-
 import com.fongmi.android.ok.App;
-import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.api.config.LiveConfig;
 import com.fongmi.android.ok.bean.Core;
 import com.fongmi.android.ok.exception.ExtractException;
-import com.fongmi.android.ok.setting.LiveSetting;
-import com.fongmi.android.ok.utils.Download;
-import com.fongmi.android.ok.utils.ResUtil;
-import com.fongmi.android.ok.utils.UrlUtil;
-import com.github.catvod.utils.Path;
+import com.fongmi.android.ok.player.Source;
 import com.google.gson.JsonObject;
-import com.orhanobut.logger.Logger;
 import com.tvbus.engine.Listener;
 import com.tvbus.engine.TVCore;
 
-import java.io.File;
-import java.util.concurrent.CountDownLatch;
-
 public class TVBus implements Source.Extractor, Listener {
 
-    private static final String TAG = TVBus.class.getSimpleName();
-    private CountDownLatch latch;
     private TVCore tvcore;
     private String hls;
     private Core core;
 
     @Override
-    public boolean match(Uri uri) {
-        return "tvbus".equals(UrlUtil.scheme(uri));
+    public boolean match(String scheme, String host) {
+        return scheme.equals("tvbus");
     }
 
     private void init(Core core) {
-        try {
-            App.get().setHook(core.getHook());
-            tvcore = new TVCore(getPath(core.getSo())).listener(this).auth(core.getAuth()).name(core.getName()).pass(core.getPass()).domain(core.getDomain()).broker(core.getBroker());
-            for (Core.Option option : core.getOption()) tvcore.option(option.getKey(), option.getValues());
-            tvcore.serv(0).play(8902).mode(1).init();
-        } catch (Exception ignored) {
-        } finally {
-            App.get().setHook(null);
-        }
-    }
-
-    private String getPath(String url) {
-        File so = new File(Path.so(), UrlUtil.path(url));
-        if (!Path.exists(so)) Download.create(url, so).get();
-        return so.getAbsolutePath();
+        App.get().setHook(core.hook());
+        tvcore = new TVCore(core.getSo());
+        tvcore.auth(core.getAuth()).broker(core.getBroker());
+        tvcore.name(core.getName()).pass(core.getPass());
+        tvcore.serv(0).play(8902).mode(1).listener(this);
+        App.get().setHook(false);
+        tvcore.init();
     }
 
     @Override
     public String fetch(String url) throws Exception {
-        Core c = LiveConfig.get().getHome().getCore();
-        if (core != null && !core.equals(c)) change();
-        if (tvcore == null) init(core = c);
-        latch = new CountDownLatch(1);
+        if (core != null && !core.equals(LiveConfig.get().getHome().getCore())) change();
+        if (tvcore == null) init(core = LiveConfig.get().getHome().getCore());
         tvcore.start(url);
-        latch.await();
-        return check();
+        onWait();
+        onCheck();
+        return hls;
     }
 
-    private void change() throws Exception {
-        LiveSetting.putBoot(true);
-        App.post(() -> System.exit(0), 100);
-        throw new ExtractException(ResUtil.getString(R.string.error_play_url));
+    private void onCheck() throws Exception {
+        if (hls.startsWith("-")) throw new ExtractException("Error Code : " + hls);
     }
 
-    private String check() throws Exception {
-        if (hls == null) return "";
-        if (!hls.startsWith("-")) return hls;
-        throw new ExtractException(ResUtil.getString(R.string.error_play_tvbus, hls));
+    private void onWait() throws InterruptedException {
+        synchronized (this) {
+            wait();
+        }
+    }
+
+    private void onNotify() {
+        synchronized (this) {
+            notify();
+        }
+    }
+
+    private void change() {
+        Setting.putBootLive(true);
+        App.post(() -> System.exit(0), 250);
     }
 
     @Override
     public void stop() {
         if (tvcore != null) tvcore.stop();
-        hls = null;
+        if (hls != null) hls = null;
     }
 
     @Override
     public void exit() {
-        if (tvcore != null) tvcore.stop();
-        hls = null;
+        if (tvcore != null) tvcore.quit();
+        tvcore = null;
     }
 
     @Override
     public void onPrepared(String result) {
-        Logger.t(TAG).d(result);
         JsonObject json = App.gson().fromJson(result, JsonObject.class);
         if (json.get("hls") == null) return;
         hls = json.get("hls").getAsString();
-        latch.countDown();
+        onNotify();
     }
 
     @Override
     public void onStop(String result) {
-        Logger.t(TAG).d(result);
         JsonObject json = App.gson().fromJson(result, JsonObject.class);
         hls = json.get("errno").getAsString();
-        if (hls.startsWith("-")) latch.countDown();
+        if (hls.startsWith("-")) onNotify();
     }
 
     @Override
     public void onInited(String result) {
-        Logger.t(TAG).d(result);
     }
 
     @Override
     public void onStart(String result) {
-        Logger.t(TAG).d(result);
     }
 
     @Override

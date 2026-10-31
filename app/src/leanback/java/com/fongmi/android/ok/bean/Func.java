@@ -1,12 +1,11 @@
 package com.fongmi.android.ok.bean;
 
-import androidx.annotation.Nullable;
+import android.annotation.SuppressLint;
 
 import com.fongmi.android.ok.R;
-import com.fongmi.android.ok.impl.Diffable;
 import com.fongmi.android.ok.utils.ResUtil;
 
-public class Func implements Diffable<Func> {
+public class Func {
 
     private final int resId;
     private int drawable;
@@ -32,29 +31,27 @@ public class Func implements Diffable<Func> {
         return ResUtil.getString(resId);
     }
 
+    @SuppressLint("NonConstantResourceId")
     public void setDrawable() {
-        if (resId == R.string.home_vod) this.drawable = R.drawable.ic_home_vod;
-        else if (resId == R.string.home_live) this.drawable = R.drawable.ic_home_live;
-        else if (resId == R.string.home_keep) this.drawable = R.drawable.ic_home_keep;
-        else if (resId == R.string.home_push) this.drawable = R.drawable.ic_home_push;
-        else if (resId == R.string.home_search) this.drawable = R.drawable.ic_home_search;
-        else if (resId == R.string.home_setting) this.drawable = R.drawable.ic_home_setting;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Func it)) return false;
-        return getResId() == it.getResId();
-    }
-
-    @Override
-    public boolean isSameItem(Func other) {
-        return equals(other);
-    }
-
-    @Override
-    public boolean isSameContent(Func other) {
-        return equals(other);
+        switch (resId) {
+            case R.string.home_vod:
+                this.drawable = R.drawable.ic_home_vod;
+                break;
+            case R.string.home_live:
+                this.drawable = R.drawable.ic_home_live;
+                break;
+            case R.string.home_keep:
+                this.drawable = R.drawable.ic_home_keep;
+                break;
+            case R.string.home_push:
+                this.drawable = R.drawable.ic_home_push;
+                break;
+            case R.string.home_search:
+                this.drawable = R.drawable.ic_home_search;
+                break;
+            case R.string.home_setting:
+                this.drawable = R.drawable.ic_home_setting;
+                break;
+        }
     }
 }

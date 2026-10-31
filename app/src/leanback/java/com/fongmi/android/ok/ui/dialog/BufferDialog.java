@@ -1,53 +1,53 @@
 package com.fongmi.android.ok.ui.dialog;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.ViewBinding;
+import android.view.LayoutInflater;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.databinding.DialogBufferBinding;
-import com.fongmi.android.ok.impl.BufferListener;
-import com.fongmi.android.ok.setting.PlayerSetting;
+import com.fongmi.android.ok.impl.BufferCallback;
 import com.fongmi.android.ok.utils.KeyUtil;
-import com.fongmi.android.ok.utils.SliderUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class BufferDialog extends BaseAlertDialog {
+public class BufferDialog {
 
-    private DialogBufferBinding binding;
+    private final DialogBufferBinding binding;
+    private final BufferCallback callback;
+    private final AlertDialog dialog;
 
-    public static void show(FragmentActivity activity) {
-        new BufferDialog().show(activity.getSupportFragmentManager(), null);
+    public static BufferDialog create(FragmentActivity activity) {
+        return new BufferDialog(activity);
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogBufferBinding.inflate(getLayoutInflater());
+    public BufferDialog(FragmentActivity activity) {
+        this.callback = (BufferCallback) activity;
+        this.binding = DialogBufferBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
     }
 
-    @Override
-    protected void initView() {
-        SliderUtil.setValue(binding.slider, PlayerSetting.getBuffer());
+    private void initDialog() {
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.show();
     }
 
-    @Override
-    protected void initEvent() {
-        binding.slider.addOnChangeListener((slider, value, fromUser) -> {
-            if (fromUser) ((BufferListener) requireActivity()).setBuffer(Math.round(SliderUtil.snap(slider, value)));
-        });
+    private void initView() {
+        binding.slider.setValue(Setting.getBuffer());
+    }
+
+    private void initEvent() {
+        binding.slider.addOnChangeListener((slider, value, fromUser) -> callback.setBuffer((int) value));
         binding.slider.setOnKeyListener((view, keyCode, event) -> {
             boolean enter = KeyUtil.isEnterKey(event);
-            if (enter) dismiss();
+            if (enter) dialog.dismiss();
             return enter;
         });
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
     }
 }

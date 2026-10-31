@@ -6,27 +6,42 @@
     android:layout_height="match_parent"
     android:tag="port">
 
-    <View
-        android:id="@+id/statusBar"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/black" />
-
     <FrameLayout
         android:id="@+id/video"
         android:layout_width="match_parent"
         android:layout_height="220dp"
-        android:layout_below="@+id/statusBar"
         android:background="@color/black"
         android:clickable="true"
         android:focusable="true">
 
         <androidx.media3.ui.PlayerView
-            android:id="@+id/player"
+            android:id="@+id/surface"
             style="@style/Player.Vod"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:surface_type="none" />
+            android:visibility="gone"
+            app:surface_type="surface_view" />
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/texture"
+            style="@style/Player.Vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:surface_type="texture_view" />
+
+        <tv.danmaku.ijk.media.player.ui.IjkVideoView
+            android:id="@+id/ijk"
+            style="@style/Player.Vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <master.flame.danmaku.ui.widget.DanmakuView
+            android:id="@+id/danmaku"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
         <include
             android:id="@+id/widget"
@@ -41,19 +56,13 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <include
-            android:id="@+id/progress"
-            layout="@layout/view_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
     </FrameLayout>
 
-    <View
+    <include
+        layout="@layout/view_shadow"
         android:layout_width="match_parent"
         android:layout_height="4dp"
-        android:layout_below="@+id/video"
-        android:background="@drawable/shadow" />
+        android:layout_below="@+id/video" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeLayout"
@@ -72,7 +81,7 @@
                 android:layout_height="match_parent"
                 android:fillViewport="true">
 
-                <androidx.appcompat.widget.LinearLayoutCompat
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipChildren="false"
@@ -81,19 +90,20 @@
                     android:paddingTop="16dp"
                     android:paddingBottom="8dp">
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:ellipsize="end"
-                        android:maxLines="3"
+                        android:maxLines="2"
                         android:textColor="@color/white"
                         android:textSize="20sp"
+                        android:textStyle="bold"
                         tools:text="慶餘年第二季" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/remark"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -105,7 +115,7 @@
                         android:textSize="14sp"
                         tools:text="更新到第二季" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/site"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -117,7 +127,7 @@
                         android:textSize="14sp"
                         tools:text="站源：泥巴" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/other"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -129,7 +139,7 @@
                         android:textSize="14sp"
                         tools:text="年份：2022 地區：台灣 類型：科幻" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/director"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -141,7 +151,7 @@
                         android:textSize="14sp"
                         tools:text="導演：FongMi" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/actor"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -154,7 +164,7 @@
                         android:textSize="14sp"
                         tools:text="演員：FongMi" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
@@ -162,7 +172,8 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/detail_flag"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/flag"
@@ -176,7 +187,7 @@
                         android:paddingEnd="16dp"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/quality_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -186,6 +197,7 @@
                         android:text="@string/detail_quality"
                         android:textColor="@color/white"
                         android:textSize="16sp"
+                        android:textStyle="bold"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
@@ -203,7 +215,7 @@
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:visibility="visible" />
 
-                    <androidx.appcompat.widget.LinearLayoutCompat
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
@@ -211,20 +223,21 @@
                         android:layout_marginEnd="12dp"
                         android:gravity="center_vertical">
 
-                        <com.google.android.material.textview.MaterialTextView
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/detail_episode"
                             android:textColor="@color/white"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
-                        <androidx.appcompat.widget.AppCompatImageView
+                        <ImageView
                             android:id="@+id/reverse"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_marginStart="8dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_action_reverse"
+                            android:src="@drawable/ic_detail_reverse"
                             android:visibility="gone"
                             tools:visibility="visible" />
 
@@ -233,16 +246,19 @@
                             android:layout_height="0dp"
                             android:layout_weight="1" />
 
-                        <androidx.appcompat.widget.AppCompatImageView
+                        <TextView
                             android:id="@+id/more"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_action_more"
+                            android:gravity="center"
+                            android:text="@string/detail_more"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
                             android:visibility="gone"
+                            app:drawableEndCompat="@drawable/ic_detail_more"
                             tools:visibility="visible" />
 
-                    </androidx.appcompat.widget.LinearLayoutCompat>
+                    </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/episode"
@@ -257,13 +273,13 @@
                         android:paddingEnd="16dp"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                    <androidx.appcompat.widget.LinearLayoutCompat
+                    <LinearLayout
                         android:id="@+id/content_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
-                        <com.google.android.material.textview.MaterialTextView
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
@@ -271,9 +287,10 @@
                             android:layout_marginEnd="16dp"
                             android:text="@string/detail_content"
                             android:textColor="@color/white"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
-                        <com.google.android.material.textview.MaterialTextView
+                        <TextView
                             android:id="@+id/content"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -283,12 +300,12 @@
                             android:layout_marginBottom="8dp"
                             android:ellipsize="end"
                             android:lineSpacingExtra="4dp"
-                            android:maxLines="3"
+                            android:maxLines="2"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             tools:text="一個身世神秘的少年范閒（張若昀飾），因對自身身世的好奇而離開故鄉澹州，前赴南慶京都。范閒在京中各大勢力之間遊走，以探查自己屢遭刺殺的原因。其間結識靖王世子、二皇子，與太子、長公主等人對抗，並遊歷四方、闖蕩江湖，卻意外發現這世界隱藏著的秘密。本劇第一季上半部主要描述范閒在南慶京都追查刺殺的幕後黑手，京中各式人等對范閒繼承內庫的態度和應對，以及監察院院長陳萍萍希望范閒接掌監察院所做的一切舉動。下半部劇情發生在北齊上京。南慶駐北齊上京諜報首領言冰雲被北齊官方抓獲，慶帝與陳萍萍同意用已被關在監察院大牢多年的前北魏諜報首領肖恩交換言冰雲，並派范閒親率南慶使團負責此事。" />
 
-                    </androidx.appcompat.widget.LinearLayoutCompat>
+                    </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/quick"
@@ -305,7 +322,7 @@
                         tools:listitem="@layout/adapter_quick"
                         tools:visibility="visible" />
 
-                </androidx.appcompat.widget.LinearLayoutCompat>
+                </LinearLayout>
             </androidx.core.widget.NestedScrollView>
         </com.fongmi.android.ok.ui.custom.ProgressLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

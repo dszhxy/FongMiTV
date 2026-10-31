@@ -2,10 +2,7 @@ package com.fongmi.android.ok.bean;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
@@ -35,31 +32,15 @@ public class Config {
     private String json;
     @SerializedName("name")
     private String name;
-    @SerializedName("logo")
-    private String logo;
     @SerializedName("home")
     private String home;
     @SerializedName("parse")
     private String parse;
 
-    @Ignore
-    @SerializedName("notice")
-    private String notice;
-    @Ignore
-    @SerializedName("danmaku")
-    private String danmaku;
-    @Ignore
-    @SerializedName("assrt")
-    private String assrt;
-
     public static List<Config> arrayFrom(String str) {
-        Type listType = TypeToken.getParameterized(List.class, Config.class).getType();
+        Type listType = new TypeToken<List<Config>>() {}.getType();
         List<Config> items = App.gson().fromJson(str, listType);
         return items == null ? Collections.emptyList() : items;
-    }
-
-    public static Config objectFrom(String str) {
-        return App.gson().fromJson(str, Config.class);
     }
 
     public static Config create(int type) {
@@ -72,73 +53,6 @@ public class Config {
 
     public static Config create(int type, String url, String name) {
         return new Config().type(type).url(url).name(name).insert();
-    }
-
-    public static List<Config> getAll(int type) {
-        return AppDatabase.get().getConfigDao().findByType(type);
-    }
-
-    public static List<Config> findUrls() {
-        return AppDatabase.get().getConfigDao().findUrlByType(0);
-    }
-
-    public static void delete(String url) {
-        AppDatabase.get().getConfigDao().delete(url);
-    }
-
-    public static void delete(String url, int type) {
-        AppDatabase.get().getConfigDao().delete(url, type);
-    }
-
-    public static Config vod() {
-        Config item = AppDatabase.get().getConfigDao().findOne(0);
-
-        // OK影视内置多线路入口：chenlong.jpg 实际为 urls[] depot。
-        if (item == null) {
-            return create(0, BuiltinDepot.URL, BuiltinDepot.NAME);
-        }
-
-        // 覆盖安装时保留数据库，同时补齐 depot 中的关联 Config 与 yyy 聚合配置。
-        BuiltinDepot.ensure();
-        return item;
-    }
-
-    public static Config live() {
-        Config item = AppDatabase.get().getConfigDao().findOne(1);
-        return item == null ? create(1) : item;
-    }
-
-    public static Config wall() {
-        Config item = AppDatabase.get().getConfigDao().findOne(2);
-        return item == null ? create(2) : item;
-    }
-
-    public static Config find(int id) {
-        return AppDatabase.get().getConfigDao().findById(id);
-    }
-
-    public static Config find(String url, int type) {
-        Config item = AppDatabase.get().getConfigDao().find(url, type);
-        return item == null ? create(type, url) : item.type(type);
-    }
-
-    public static Config find(String url, String name, int type) {
-        Config item = AppDatabase.get().getConfigDao().find(url, type);
-        return item == null ? create(type, url, name) : item.type(type).name(name);
-    }
-
-    public static Config find(Config config) {
-        return find(config, config.getType());
-    }
-
-    public static Config find(Config config, int type) {
-        Config item = AppDatabase.get().getConfigDao().find(config.getUrl(), type);
-        return item == null ? create(type, config.getUrl(), config.getName()) : item.type(type).name(config.getName());
-    }
-
-    public static Config find(Depot depot, int type) {
-        Config item = AppDatabase.get().getConfigDao().find(depot.getUrl(), type);
-        return item == null ? create(type, depot.getUrl(), depot.getName()) : item.type(type).name(depot.getName());
     }
 
     public int getId() {
@@ -165,14 +79,6 @@ public class Config {
         this.url = url;
     }
 
-    public String getJson() {
-        return json;
-    }
-
-    public void setJson(String json) {
-        this.json = json;
-    }
-
     public String getName() {
         return name;
     }
@@ -181,12 +87,12 @@ public class Config {
         this.name = name;
     }
 
-    public String getLogo() {
-        return logo;
+    public String getJson() {
+        return json;
     }
 
-    public void setLogo(String logo) {
-        this.logo = logo;
+    public void setJson(String json) {
+        this.json = json;
     }
 
     public String getHome() {
@@ -213,30 +119,6 @@ public class Config {
         this.time = time;
     }
 
-    public String getNotice() {
-        return notice;
-    }
-
-    public void setNotice(String notice) {
-        this.notice = notice;
-    }
-
-    public String getDanmaku() {
-        return danmaku;
-    }
-
-    public void setDanmaku(String danmaku) {
-        this.danmaku = danmaku;
-    }
-
-    public String getAssrt() {
-        return assrt;
-    }
-
-    public void setAssrt(String assrt) {
-        this.assrt = assrt;
-    }
-
     public Config type(int type) {
         setType(type);
         return this;
@@ -247,13 +129,23 @@ public class Config {
         return this;
     }
 
+    public Config name(String name) {
+        setName(name);
+        return this;
+    }
+
     public Config json(String json) {
         setJson(json);
         return this;
     }
 
-    public Config name(String name) {
-        setName(name);
+    public Config home(String home) {
+        setHome(home);
+        return this;
+    }
+
+    public Config parse(String parse) {
+        setParse(parse);
         return this;
     }
 
@@ -267,15 +159,65 @@ public class Config {
         return "";
     }
 
+    public static List<Config> getAll(int type) {
+        return AppDatabase.get().getConfigDao().findByType(type);
+    }
+
+    public static List<Config> findUrls() {
+        return AppDatabase.get().getConfigDao().findUrlByType(0);
+    }
+
+    public static void delete(String url) {
+        AppDatabase.get().getConfigDao().delete(url);
+    }
+
+    public static void delete(String url, int type) {
+        if (type == 2) AppDatabase.get().getConfigDao().delete(type);
+        else AppDatabase.get().getConfigDao().delete(url, type);
+    }
+
+    public static Config vod() {
+        Config item = AppDatabase.get().getConfigDao().findOne(0);
+        return item == null ? create(0) : item;
+    }
+
+    public static Config live() {
+        Config item = AppDatabase.get().getConfigDao().findOne(1);
+        return item == null ? create(1) : item;
+    }
+
+    public static Config wall() {
+        Config item = AppDatabase.get().getConfigDao().findOne(2);
+        return item == null ? create(2) : item;
+    }
+
+    public static Config find(int id) {
+        return AppDatabase.get().getConfigDao().findById(id);
+    }
+
+    public static Config find(String url, int type) {
+        Config item = AppDatabase.get().getConfigDao().find(url, type);
+        return item == null ? create(type, url) : item.type(type);
+    }
+
+    public static Config find(String url, String name, int type) {
+        Config item = AppDatabase.get().getConfigDao().find(url, type);
+        return item == null ? create(type, url, name) : item.type(type).name(name);
+    }
+
+    public static Config find(Config config, int type) {
+        Config item = AppDatabase.get().getConfigDao().find(config.getUrl(), type);
+        return item == null ? create(type, config.getUrl(), config.getName()) : item.type(type).name(config.getName());
+    }
+
+    public static Config find(Depot depot, int type) {
+        Config item = AppDatabase.get().getConfigDao().find(depot.getUrl(), type);
+        return item == null ? create(type, depot.getUrl(), depot.getName()) : item.type(type).name(depot.getName());
+    }
+
     public Config insert() {
         if (isEmpty()) return this;
         setId(Math.toIntExact(AppDatabase.get().getConfigDao().insert(this)));
-        return this;
-    }
-
-    public Config save() {
-        if (isEmpty()) return this;
-        AppDatabase.get().getConfigDao().insertOrUpdate(this);
         return this;
     }
 
@@ -283,7 +225,8 @@ public class Config {
         if (isEmpty()) return this;
         setTime(System.currentTimeMillis());
         Prefers.put("config_" + getType(), getUrl());
-        return save();
+        AppDatabase.get().getConfigDao().update(this);
+        return this;
     }
 
     public void delete() {
@@ -292,16 +235,11 @@ public class Config {
         Keep.delete(getId());
     }
 
-    @NonNull
     @Override
-    public String toString() {
-        return App.gson().toJson(this);
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Config it)) return false;
+        if (!(obj instanceof Config)) return false;
+        Config it = (Config) obj;
         return getId() == it.getId();
     }
 }

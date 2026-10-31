@@ -12,27 +12,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.os.HandlerCompat;
 
+import com.fongmi.android.ok.api.config.LiveConfig;
+import com.fongmi.android.ok.ui.activity.CrashActivity;
 import com.fongmi.android.ok.utils.Notify;
-import com.fongmi.hook.Hook;
 import com.github.catvod.Init;
+import com.github.catvod.bean.Doh;
+import com.github.catvod.net.OkHttp;
 import com.google.gson.Gson;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.LogAdapter;
+import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.PrettyFormatStrategy;
 
-public class App extends Application implements Application.ActivityLifecycleCallbacks {
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-    private static volatile App instance;
+import cat.ereza.customactivityoncrash.config.CaocConfig;
 
+public class App extends Application {
+
+    private final ExecutorService executor;
     private final Handler handler;
-    private final Gson gson;
-    private final long time;
-
+    private static App instance;
     private Activity activity;
-    private Hook hook;
+    private final Gson gson;
+    private boolean hook;
 
     public App() {
         instance = this;
-        gson = new Gson();
-        time = System.currentTimeMillis();
+        executor = Executors.newFixedThreadPool(Constant.THREAD_POOL * 2);
         handler = HandlerCompat.createAsync(Looper.getMainLooper());
+        gson = new Gson();
     }
 
     public static App get() {
@@ -43,12 +53,12 @@ public class App extends Application implements Application.ActivityLifecycleCal
         return get().gson;
     }
 
-    public static long time() {
-        return get().time;
-    }
-
     public static Activity activity() {
         return get().activity;
+    }
+
+    public static void execute(Runnable runnable) {
+        get().executor.execute(runnable);
     }
 
     public static void post(Runnable runnable) {
@@ -68,8 +78,21 @@ public class App extends Application implements Application.ActivityLifecycleCal
         for (Runnable r : runnable) get().handler.removeCallbacks(r);
     }
 
-    public void setHook(Hook hook) {
+    public void setHook(boolean hook) {
         this.hook = hook;
+    }
+
+    private void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    private LogAdapter getLogAdapter() {
+        return new AndroidLogAdapter(PrettyFormatStrategy.newBuilder().methodCount(0).showThreadInfo(false).tag("").build()) {
+            @Override
+            public boolean isLoggable(int priority, String tag) {
+                return true;
+            }
+        };
     }
 
     @Override
@@ -82,46 +105,56 @@ public class App extends Application implements Application.ActivityLifecycleCal
     public void onCreate() {
         super.onCreate();
         Notify.createChannel();
-        registerActivityLifecycleCallbacks(this);
+        Logger.addLogAdapter(getLogAdapter());
+        OkHttp.get().setProxy(Setting.getProxy());
+        OkHttp.get().setDoh(Doh.objectFrom(Setting.getDoh()));
+        CaocConfig.Builder.create().backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT).errorActivity(CrashActivity.class).apply();
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+                if (activity != activity()) setActivity(activity);
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+                if (activity != activity()) setActivity(activity);
+            }
+
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+                if (activity != activity()) setActivity(activity);
+            }
+
+            @Override
+            public void onActivityPaused(@NonNull Activity activity) {
+                if (activity == activity()) setActivity(null);
+            }
+
+            @Override
+            public void onActivityStopped(@NonNull Activity activity) {
+                if (activity == activity()) setActivity(null);
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull Activity activity) {
+                if (activity == activity()) setActivity(null);
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+            }
+        });
     }
 
     @Override
     public PackageManager getPackageManager() {
-        return hook != null ? hook : getBaseContext().getPackageManager();
+        if (!hook) return getBaseContext().getPackageManager();
+        return LiveConfig.get().getHome().getCore();
     }
 
     @Override
     public String getPackageName() {
-        return hook != null ? hook.getPackageName() : getBaseContext().getPackageName();
-    }
-
-    @Override
-    public void onActivityResumed(@NonNull Activity activity) {
-        if (activity != activity()) this.activity = activity;
-    }
-
-    @Override
-    public void onActivityPaused(@NonNull Activity activity) {
-        if (activity == activity()) this.activity = null;
-    }
-
-    @Override
-    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-    }
-
-    @Override
-    public void onActivityDestroyed(@NonNull Activity activity) {
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-    }
-
-    @Override
-    public void onActivityStarted(@NonNull Activity activity) {
-    }
-
-    @Override
-    public void onActivityStopped(@NonNull Activity activity) {
+        if (!hook) return getBaseContext().getPackageName();
+        return LiveConfig.get().getHome().getCore().getPkg();
     }
 }

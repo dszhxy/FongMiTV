@@ -1,46 +1,54 @@
 package com.fongmi.android.ok.ui.dialog;
 
 import android.content.DialogInterface;
+import android.view.LayoutInflater;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.databinding.DialogBufferBinding;
-import com.fongmi.android.ok.impl.BufferListener;
-import com.fongmi.android.ok.setting.PlayerSetting;
-import com.fongmi.android.ok.utils.SliderUtil;
+import com.fongmi.android.ok.impl.BufferCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class BufferDialog extends BaseAlertDialog {
+public class BufferDialog {
 
-    private DialogBufferBinding binding;
+    private final DialogBufferBinding binding;
+    private final BufferCallback callback;
     private int value;
 
-    public static void show(Fragment fragment) {
-        new BufferDialog().show(fragment.getChildFragmentManager(), null);
+    public static BufferDialog create(Fragment fragment) {
+        return new BufferDialog(fragment);
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogBufferBinding.inflate(getLayoutInflater());
+    public BufferDialog(Fragment fragment) {
+        this.callback = (BufferCallback) fragment;
+        this.binding = DialogBufferBinding.inflate(LayoutInflater.from(fragment.getContext()));
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setTitle(R.string.player_buffer).setView(getBinding().getRoot()).setPositiveButton(R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, this::onNegative);
+    public void show() {
+        initDialog();
+        initView();
     }
 
-    @Override
-    protected void initView() {
-        SliderUtil.setValue(binding.slider, value = PlayerSetting.getBuffer());
+    private void initDialog() {
+        AlertDialog dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext()).setTitle(R.string.player_exo_buffer).setView(binding.getRoot()).setPositiveButton(R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, this::onNegative).create();
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
+    }
+
+    private void initView() {
+        binding.slider.setValue(value = Setting.getBuffer());
     }
 
     private void onPositive(DialogInterface dialog, int which) {
-        ((BufferListener) requireParentFragment()).setBuffer(Math.round(SliderUtil.snap(binding.slider, binding.slider.getValue())));
+        callback.setBuffer((int) binding.slider.getValue());
+        dialog.dismiss();
     }
 
     private void onNegative(DialogInterface dialog, int which) {
-        ((BufferListener) requireParentFragment()).setBuffer(value);
+        callback.setBuffer(value);
+        dialog.dismiss();
     }
 }

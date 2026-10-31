@@ -1,29 +1,33 @@
 package com.fongmi.android.ok.api.config;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.fongmi.android.ok.App;
+import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.bean.Config;
-import com.fongmi.android.ok.event.ConfigEvent;
+import com.fongmi.android.ok.event.RefreshEvent;
 import com.fongmi.android.ok.impl.Callback;
-import com.fongmi.android.ok.setting.Setting;
-import com.fongmi.android.ok.utils.Download;
 import com.fongmi.android.ok.utils.FileUtil;
-import com.fongmi.android.ok.utils.ResUtil;
-import com.fongmi.android.ok.utils.UrlUtil;
+import com.fongmi.android.ok.utils.ImgUtil;
+import com.fongmi.android.ok.utils.Notify;
+import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Asset;
 import com.github.catvod.utils.Path;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 
-public class WallConfig extends BaseConfig {
+public class WallConfig {
 
-    private static final String TAG = WallConfig.class.getSimpleName();
+    private Drawable drawable;
+    private Config config;
+    private boolean sync;
+
+    private static class Loader {
+        static volatile WallConfig INSTANCE = new WallConfig();
+    }
 
     public static WallConfig get() {
         return Loader.INSTANCE;
@@ -37,8 +41,14 @@ public class WallConfig extends BaseConfig {
         return get().getConfig().getDesc();
     }
 
+    public static Drawable drawable(Drawable drawable) {
+        if (get().drawable != null) return drawable;
+        get().setDrawable(drawable);
+        return drawable;
+    }
+
     public static void load(Config config, Callback callback) {
-        get().config(config).load(callback);
+        get().clear().config(config).load(callback);
     }
 
     public WallConfig init() {
@@ -47,87 +57,56 @@ public class WallConfig extends BaseConfig {
 
     public WallConfig config(Config config) {
         this.config = config;
-        if (config.isEmpty()) return this;
+        if (config.getUrl() == null) return this;
         this.sync = config.getUrl().equals(VodConfig.get().getWall());
         return this;
     }
 
-    public void load() {
-        if (sync) return;
-        load(new Callback());
+    public WallConfig clear() {
+        this.config = null;
+        return this;
     }
 
-    @Override
-    protected String getTag() {
-        return TAG;
+    public Config getConfig() {
+        return config == null ? Config.wall() : config;
     }
 
-    @Override
-    protected Config defaultConfig() {
-        return Config.wall();
+    public void setDrawable(Drawable drawable) {
+        this.drawable = drawable;
     }
 
-    @Override
-    protected void postEvent() {
-        super.postEvent();
-        ConfigEvent.wall();
+    public void load(Callback callback) {
+        App.execute(() -> loadConfig(callback));
     }
 
-    @Override
-    protected void load(Config config) throws Throwable {
-        File file = Path.wall(0);
-        checkUrl(config.getUrl(), file);
-        setWallType(file);
-        setSnapshot(file);
-    }
-
-    @Override
-    protected boolean isLoaded() {
-        return false;
-    }
-
-    private void checkUrl(String url, File file) throws Throwable {
-        if (url.startsWith("file")) FileUtil.copyAtomically(Path.local(url), file);
-        else Download.create(UrlUtil.convert(url), file).tag(TAG).get();
-        if (!Path.exists(file)) throw new FileNotFoundException();
-    }
-
-    private void setWallType(File file) {
-        Setting.putWallType(0);
-        if (isGif(file)) Setting.putWallType(1);
-        else if (isVideo(file)) Setting.putWallType(2);
-    }
-
-    private void setSnapshot(File file) throws Throwable {
-        Bitmap bitmap = Glide.with(App.get()).asBitmap().frame(0).load(file).override(ResUtil.getScreenWidth(), ResUtil.getScreenHeight()).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).submit().get();
-        try (FileOutputStream fos = new FileOutputStream(Path.wallCache())) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-        } finally {
-            bitmap.recycle();
-        }
-    }
-
-    private boolean isVideo(File file) {
-        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
-            retriever.setDataSource(file.getAbsolutePath());
-            return "yes".equalsIgnoreCase(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean isGif(File file) {
+    private void loadConfig(Callback callback) {
         try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-            return "image/gif".equals(options.outMimeType);
-        } catch (Exception e) {
-            return false;
+            File file = write(FileUtil.getWall(0));
+            if (file.exists() && file.length() > 0) refresh(0);
+            else config(Config.find(VodConfig.get().getWall(), 2));
+            App.post(callback::success);
+            config.update();
+        } catch (Throwable e) {
+            App.post(() -> callback.error(Notify.getError(R.string.error_config_parse, e)));
+            config(Config.find(VodConfig.get().getWall(), 2));
+            e.printStackTrace();
         }
     }
 
-    private static class Loader {
-        static volatile WallConfig INSTANCE = new WallConfig();
+    private File write(File file) throws IOException {
+        if (getUrl().startsWith("file")) Path.copy(Path.local(getUrl()), file);
+        else if (getUrl().startsWith("assets")) Path.copy(Asset.open(getUrl()), file);
+        else if (getUrl().startsWith("http")) Path.write(file, ImgUtil.resize(OkHttp.newCall(getUrl()).execute().body().bytes()));
+        else file.delete();
+        return file;
+    }
+
+    public boolean needSync(String url) {
+        return sync || TextUtils.isEmpty(config.getUrl()) || url.equals(config.getUrl());
+    }
+
+    public static void refresh(int index) {
+        Setting.putWall(index);
+        RefreshEvent.wall();
     }
 }

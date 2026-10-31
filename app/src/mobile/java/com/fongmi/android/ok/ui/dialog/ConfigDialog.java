@@ -1,16 +1,13 @@
 package com.fongmi.android.ok.ui.dialog;
 
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.R;
 import com.fongmi.android.ok.api.config.LiveConfig;
@@ -18,68 +15,63 @@ import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.api.config.WallConfig;
 import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.databinding.DialogConfigBinding;
-import com.fongmi.android.ok.impl.ConfigListener;
+import com.fongmi.android.ok.impl.ConfigCallback;
 import com.fongmi.android.ok.ui.custom.CustomTextListener;
 import com.fongmi.android.ok.utils.FileChooser;
-import com.fongmi.android.ok.utils.UrlUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class ConfigDialog extends BaseAlertDialog {
+public class ConfigDialog {
 
-    private DialogConfigBinding binding;
-    private boolean append = true;
+    private final DialogConfigBinding binding;
+    private final ConfigCallback callback;
+    private final Fragment fragment;
+    private AlertDialog dialog;
+    private boolean append;
     private boolean edit;
     private String ori;
     private int type;
 
-    public static ConfigDialog create() {
-        return new ConfigDialog();
+    public static ConfigDialog create(Fragment fragment) {
+        return new ConfigDialog(fragment);
     }
 
-    public ConfigDialog vod() {
-        type = 0;
-        return this;
-    }
-
-    public ConfigDialog live() {
-        type = 1;
-        return this;
-    }
-
-    public ConfigDialog wall() {
-        type = 2;
+    public ConfigDialog type(int type) {
+        this.type = type;
         return this;
     }
 
     public ConfigDialog edit() {
-        edit = true;
+        this.edit = true;
         return this;
     }
 
-    public void show(Fragment fragment) {
-        show(fragment.getChildFragmentManager(), null);
+    public ConfigDialog(Fragment fragment) {
+        this.fragment = fragment;
+        this.callback = (ConfigCallback) fragment;
+        this.binding = DialogConfigBinding.inflate(LayoutInflater.from(fragment.getContext()));
+        this.append = true;
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogConfigBinding.inflate(getLayoutInflater());
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setTitle(type == 0 ? R.string.setting_vod : type == 1 ? R.string.setting_live : R.string.setting_wall).setView(getBinding().getRoot()).setPositiveButton(edit ? R.string.dialog_edit : R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, null);
+    private void initDialog() {
+        dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext()).setTitle(type == 0 ? R.string.setting_vod : type == 1 ? R.string.setting_live : R.string.setting_wall).setView(binding.getRoot()).setPositiveButton(edit ? R.string.dialog_edit : R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, this::onNegative).create();
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
     }
 
-    @Override
-    protected void initView() {
+    private void initView() {
         binding.name.setText(getConfig().getName());
         binding.url.setText(ori = getConfig().getUrl());
         binding.input.setVisibility(edit ? View.VISIBLE : View.GONE);
         binding.url.setSelection(TextUtils.isEmpty(ori) ? 0 : ori.length());
     }
 
-    @Override
-    protected void initEvent() {
+    private void initEvent() {
         binding.choose.setEndIconOnClickListener(this::onChoose);
         binding.url.addTextChangedListener(new CustomTextListener() {
             @Override
@@ -88,37 +80,42 @@ public class ConfigDialog extends BaseAlertDialog {
             }
         });
         binding.url.setOnEditorActionListener((textView, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) onPositive(null, 0);
+            if (actionId == EditorInfo.IME_ACTION_DONE) dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
             return true;
         });
     }
 
     private Config getConfig() {
-        return switch (type) {
-            case 0 -> VodConfig.get().getConfig();
-            case 1 -> LiveConfig.get().getConfig();
-            case 2 -> WallConfig.get().getConfig();
-            default -> null;
-        };
+        switch (type) {
+            case 0:
+                return VodConfig.get().getConfig();
+            case 1:
+                return LiveConfig.get().getConfig();
+            case 2:
+                return WallConfig.get().getConfig();
+            default:
+                return null;
+        }
     }
 
     private void onChoose(View view) {
-        FileChooser.from(launcher).show();
+        FileChooser.from(fragment).show();
+        dialog.dismiss();
     }
 
     private void detect(String s) {
-        if (append && "h".equalsIgnoreCase(s)) {
+        if (append && s.equalsIgnoreCase("h")) {
             append = false;
             binding.url.append("ttp://");
-        } else if (append && "f".equalsIgnoreCase(s)) {
+        } else if (append && s.equalsIgnoreCase("f")) {
             append = false;
             binding.url.append("ile://");
-        } else if (append && "a".equalsIgnoreCase(s)) {
+        } else if (append && s.equalsIgnoreCase("a")) {
             append = false;
             binding.url.append("ssets://");
         } else if (s.length() > 1) {
             append = false;
-        } else if (s.isEmpty()) {
+        } else if (s.length() == 0) {
             append = true;
         }
     }
@@ -128,15 +125,11 @@ public class ConfigDialog extends BaseAlertDialog {
         String name = binding.name.getText().toString().trim();
         if (edit) Config.find(ori, type).url(url).name(name).update();
         if (url.isEmpty()) Config.delete(ori, type);
-        ((ConfigListener) requireParentFragment()).setConfig(Config.find(url, type));
-        dismiss();
+        callback.setConfig(Config.find(url, type));
+        dialog.dismiss();
     }
 
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> FileChooser.getUri(result, this::setConfig));
-
-    private void setConfig(Uri uri) {
-        if (!isAdded()) return;
-        ((ConfigListener) requireParentFragment()).setConfig(Config.find(UrlUtil.toLocalUrl(uri), type));
-        dismiss();
+    private void onNegative(DialogInterface dialog, int which) {
+        dialog.dismiss();
     }
 }

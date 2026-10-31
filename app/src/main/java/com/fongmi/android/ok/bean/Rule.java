@@ -23,23 +23,17 @@ public class Rule {
     private List<String> regex;
     @SerializedName("script")
     private List<String> script;
-    @SerializedName("exclude")
-    private List<String> exclude;
-
-    public Rule(String name) {
-        this.name = name;
-    }
 
     public static Rule create(String name) {
         return new Rule(name);
     }
 
-    public static Rule empty() {
-        return new Rule("");
+    public Rule(String name) {
+        this.name = name;
     }
 
     public static List<Rule> arrayFrom(JsonElement element) {
-        Type listType = TypeToken.getParameterized(List.class, Rule.class).getType();
+        Type listType = new TypeToken<List<Rule>>() {}.getType();
         List<Rule> items = App.gson().fromJson(element, listType);
         return items == null ? Collections.emptyList() : items;
     }
@@ -60,14 +54,11 @@ public class Rule {
         return script == null ? Collections.emptyList() : script;
     }
 
-    public List<String> getExclude() {
-        return exclude == null ? Collections.emptyList() : exclude;
-    }
-
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Rule it)) return false;
+        if (!(obj instanceof Rule)) return false;
+        Rule it = (Rule) obj;
         return getName().equals(it.getName());
     }
 }

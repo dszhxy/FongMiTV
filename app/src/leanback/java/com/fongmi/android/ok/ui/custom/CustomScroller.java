@@ -22,36 +22,23 @@ public class CustomScroller extends RecyclerView.OnScrollListener {
 
     @Override
     public void onScrollStateChanged(@NonNull RecyclerView view, int newState) {
-        if (newState != RecyclerView.SCROLL_STATE_IDLE || !isBottom(view)) return;
-        loadMore();
+        if (isDisable() || isLoading() || newState != RecyclerView.SCROLL_STATE_IDLE) return;
+        if (isBottom(view)) callback.onLoadMore(String.valueOf(++page));
     }
 
     private boolean isBottom(RecyclerView view) {
         if (view == null || view.getLayoutManager() == null || view.getLayoutManager().getItemCount() == 0) return false;
         View lastChild = view.getLayoutManager().getChildAt(view.getLayoutManager().getChildCount() - 1);
-        return lastChild != null && view.getLayoutManager().getPosition(lastChild) == view.getLayoutManager().getItemCount() - 1;
-    }
-
-    public void checkMore() {
-        loadMore();
-    }
-
-    public void checkMore(RecyclerView view) {
-        if (isBottom(view)) loadMore();
-    }
-
-    private void loadMore() {
-        if (isDisable() || isLoading() || callback == null) return;
-        if (callback.onLoadMore(String.valueOf(page + 1))) {
-            page++;
-            setLoading(true);
-        }
+        int lastPosition = view.getLayoutManager().getPosition(lastChild);
+        return lastPosition == view.getLayoutManager().getItemCount() - 1;
     }
 
     public void reset() {
-        loading = false;
-        enable = true;
         page = 1;
+    }
+
+    public int addPage() {
+        return ++page;
     }
 
     public boolean first() {
@@ -62,7 +49,7 @@ public class CustomScroller extends RecyclerView.OnScrollListener {
         return loading;
     }
 
-    private void setLoading(boolean loading) {
+    public void setLoading(boolean loading) {
         this.loading = loading;
     }
 
@@ -80,12 +67,7 @@ public class CustomScroller extends RecyclerView.OnScrollListener {
         setLoading(false);
     }
 
-    public void endLoading(boolean hasMore) {
-        enable = hasMore;
-        setLoading(false);
-    }
-
     public interface Callback {
-        boolean onLoadMore(String page);
+        void onLoadMore(String page);
     }
 }

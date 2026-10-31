@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="24dp">
+    android:padding="16dp">
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/pass"
@@ -20,11 +20,11 @@
         android:singleLine="true"
         android:textSize="16sp" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/positive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/selector_button"
+        android:background="@drawable/selector_text"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:gravity="center"
@@ -33,4 +33,4 @@
         android:textColor="@color/white"
         android:textSize="14sp" />
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

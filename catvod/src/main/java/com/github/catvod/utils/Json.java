@@ -1,12 +1,11 @@
 package com.github.catvod.utils;
 
-import android.text.TextUtils;
+import androidx.collection.ArrayMap;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -16,17 +15,8 @@ import java.util.Map;
 
 public class Json {
 
-    public static JsonElement parse(String json) {
+    public static boolean valid(String text) {
         try {
-            return JsonParser.parseString(json);
-        } catch (Throwable e) {
-            return new JsonParser().parse(json);
-        }
-    }
-
-    public static boolean isObj(String text) {
-        try {
-            if (TextUtils.isEmpty(text)) return false;
             new JSONObject(text);
             return true;
         } catch (Exception e) {
@@ -34,23 +24,8 @@ public class Json {
         }
     }
 
-    public static boolean isArray(String text) {
-        try {
-            if (TextUtils.isEmpty(text)) return false;
-            new JSONArray(text);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public static boolean isEmpty(JsonObject obj, String key) {
-        if (!obj.has(key)) return true;
-        JsonElement element = obj.get(key);
-        if (element.isJsonNull()) return true;
-        if (element.isJsonArray()) return element.getAsJsonArray().isEmpty();
-        if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) return element.getAsString().trim().isEmpty();
-        return true;
+    public static boolean invalid(String text) {
+        return !valid(text);
     }
 
     public static String safeString(JsonObject obj, String key) {
@@ -73,27 +48,36 @@ public class Json {
         List<JsonElement> result = new ArrayList<>();
         if (!obj.has(key)) return result;
         if (obj.get(key).isJsonObject()) result.add(obj.get(key).getAsJsonObject());
-        else for (JsonElement opt : obj.getAsJsonArray(key)) result.add(opt.getAsJsonObject());
+        for (JsonElement opt : obj.getAsJsonArray(key)) result.add(opt.getAsJsonObject());
         return result;
     }
 
     public static JsonObject safeObject(JsonElement element) {
         try {
-            if (element.isJsonPrimitive()) element = parse(element.getAsJsonPrimitive().getAsString());
+            if (element.isJsonPrimitive()) element = JsonParser.parseString(element.getAsJsonPrimitive().getAsString());
             return element.getAsJsonObject();
         } catch (Exception e) {
             return new JsonObject();
         }
     }
 
-    public static Map<String, String> toMap(String json) {
-        return TextUtils.isEmpty(json) ? null : toMap(parse(json));
-    }
-
     public static Map<String, String> toMap(JsonElement element) {
         Map<String, String> map = new HashMap<>();
         JsonObject object = safeObject(element);
-        for (Map.Entry<String, JsonElement> entry : object.entrySet()) map.put(entry.getKey(), safeString(object, entry.getKey()));
+        for (String key : object.keySet()) map.put(key, safeString(object, key));
         return map;
+    }
+
+    public static ArrayMap<String, String> toArrayMap(JsonElement element) {
+        ArrayMap<String, String> map = new ArrayMap<>();
+        JsonObject object = safeObject(element);
+        for (String key : object.keySet()) map.put(key, safeString(object, key));
+        return map;
+    }
+
+    public static JsonObject toObject(Map<String, String> map) {
+        JsonObject object = new JsonObject();
+        for (String key : map.keySet()) object.addProperty(key, map.get(key));
+        return object;
     }
 }

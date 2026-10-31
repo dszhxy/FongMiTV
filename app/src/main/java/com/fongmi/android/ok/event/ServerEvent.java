@@ -2,7 +2,10 @@ package com.fongmi.android.ok.event;
 
 import org.greenrobot.eventbus.EventBus;
 
-public record ServerEvent(Type type, String text, String name) {
+public class ServerEvent {
+
+    private final Type type;
+    private final String text;
 
     public static void search(String text) {
         EventBus.getDefault().post(new ServerEvent(Type.SEARCH, text));
@@ -16,12 +19,17 @@ public record ServerEvent(Type type, String text, String name) {
         EventBus.getDefault().post(new ServerEvent(Type.SETTING, text));
     }
 
-    public static void setting(String text, String name) {
-        EventBus.getDefault().post(new ServerEvent(Type.SETTING, text, name));
+    private ServerEvent(Type type, String text) {
+        this.type = type;
+        this.text = text;
     }
 
-    private ServerEvent(Type type, String text) {
-        this(type, text, "");
+    public Type getType() {
+        return type;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public enum Type {

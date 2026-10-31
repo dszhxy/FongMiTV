@@ -11,13 +11,13 @@ import com.fongmi.android.ok.databinding.AdapterQualityBinding;
 
 public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHolder> {
 
-    private final OnClickListener listener;
-    private Result result;
+    private final OnClickListener mListener;
+    private Result mResult;
     private int position;
 
     public QualityAdapter(OnClickListener listener) {
-        this.listener = listener;
-        this.result = Result.empty();
+        this.mListener = listener;
+        this.mResult = Result.empty();
     }
 
     public interface OnClickListener {
@@ -26,7 +26,7 @@ public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHold
     }
 
     public void addAll(Result result) {
-        this.result = result;
+        mResult = result;
         notifyDataSetChanged();
     }
 
@@ -36,7 +36,7 @@ public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return result.getUrl().getValues().size();
+        return mResult.getUrl().getValues().size();
     }
 
     @NonNull
@@ -47,19 +47,19 @@ public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.binding.text.setText(result.getUrl().n(position));
+        holder.binding.text.setText(mResult.getUrl().n(position));
         holder.binding.text.setOnClickListener(v -> onItemClick(position));
-        holder.binding.text.setSelected(result.getUrl().getPosition() == position);
+        holder.binding.text.setActivated(mResult.getUrl().getPosition() == position);
     }
 
     private void onItemClick(int position) {
         this.position = position;
-        result.getUrl().set(position);
-        listener.onItemClick(result);
+        mResult.getUrl().set(position);
+        mListener.onItemClick(mResult);
         notifyItemRangeChanged(0, getItemCount());
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterQualityBinding binding;
 

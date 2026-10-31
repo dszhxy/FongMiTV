@@ -41,14 +41,9 @@ public class XLTaskHelper {
     }
 
     private synchronized GetTaskId startTask(GetTaskId taskId, int index) {
-        getManager().setTaskGsState(taskId.getTaskId(), index, 2);
         getManager().startTask(taskId.getTaskId());
+        getManager().setTaskGsState(taskId.getTaskId(), index, 2);
         return taskId;
-    }
-
-    private void deleteFile(File file) {
-        if (file.isDirectory()) for (File f : Path.list(file)) deleteFile(f);
-        if (file.isFile() && !file.getAbsolutePath().endsWith(".torrent")) Path.clear(file);
     }
 
     public synchronized GetTaskId parse(String url, File savePath) {
@@ -82,6 +77,8 @@ public class XLTaskHelper {
             param.setPass("");
             int code = getManager().createP2spTask(param, taskId);
             if (code != XLConstant.XLErrorCode.NO_ERROR) return taskId;
+            getManager().setDownloadTaskOrigin(taskId.getTaskId(), "out_app/out_app_paste");
+            getManager().setOriginUserAgent(taskId.getTaskId(), "AndroidDownloadManager/5.41.2.4980 (Linux; U; Android 4.4.4; Build/KTU84Q)");
         } else if (url.startsWith("ed2k://")) {
             EmuleTaskParam param = new EmuleTaskParam();
             param.setFilePath(savePath.getAbsolutePath());
@@ -92,8 +89,6 @@ public class XLTaskHelper {
             int code = getManager().createEmuleTask(param, taskId);
             if (code != XLConstant.XLErrorCode.NO_ERROR) return taskId;
         }
-        getManager().setDownloadTaskOrigin(taskId.getTaskId(), "out_app/out_app_paste");
-        getManager().setOriginUserAgent(taskId.getTaskId(), "AndroidDownloadManager/4.4.4 (Linux; U; Android 4.4.4; Build/KTU84Q)");
         return startTask(taskId, 0);
     }
 
@@ -136,8 +131,13 @@ public class XLTaskHelper {
     }
 
     public synchronized void deleteTask(GetTaskId taskId) {
+        new Thread(() -> deleteFile(taskId.getSavePath())).start();
         stopTask(taskId);
-        deleteFile(taskId.getSavePath());
+    }
+
+    private synchronized void deleteFile(File dir) {
+        if (dir.isDirectory()) for (File file : Path.list(dir)) deleteFile(file);
+        if (!dir.getAbsolutePath().endsWith(".torrent")) dir.delete();
     }
 
     public synchronized void stopTask(GetTaskId taskId) {
@@ -160,8 +160,6 @@ public class XLTaskHelper {
 
     public synchronized void release() {
         if (manager != null) manager.release();
-        Path.clear(Path.files("setting.cfg"));
-        Path.clear(Path.files("seq_id"));
         manager = null;
         seq = null;
     }

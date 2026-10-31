@@ -12,30 +12,30 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.fongmi.android.ok.bean.Episode;
 import com.fongmi.android.ok.databinding.DialogEpisodeGridBinding;
-import com.fongmi.android.ok.ui.adapter.EpisodeAdapter;
 import com.fongmi.android.ok.ui.fragment.EpisodeFragment;
 import com.fongmi.android.ok.utils.ResUtil;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EpisodeGridDialog extends BaseBottomSheetDialog {
+public class EpisodeGridDialog extends BaseDialog {
 
-    private final List<String> titles;
     private DialogEpisodeGridBinding binding;
     private List<Episode> episodes;
+    private final List<String> titles;
     private boolean reverse;
     private int spanCount;
     private int itemCount;
 
+    public static EpisodeGridDialog create() {
+        return new EpisodeGridDialog();
+    }
+
     public EpisodeGridDialog() {
         this.titles = new ArrayList<>();
         this.spanCount = 5;
-    }
-
-    public static EpisodeGridDialog create() {
-        return new EpisodeGridDialog();
     }
 
     public EpisodeGridDialog reverse(boolean reverse) {
@@ -49,7 +49,7 @@ public class EpisodeGridDialog extends BaseBottomSheetDialog {
     }
 
     public void show(FragmentActivity activity) {
-        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof EpisodeGridDialog) return;
+        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return;
         show(activity.getSupportFragmentManager(), null);
     }
 
@@ -65,21 +65,16 @@ public class EpisodeGridDialog extends BaseBottomSheetDialog {
         setPager();
     }
 
-    @Override
-    protected void initEvent() {
-        getChildFragmentManager().setFragmentResultListener("result", this, (requestKey, bundle) -> {
-            ((EpisodeAdapter.OnClickListener) requireActivity()).onItemClick(bundle.getParcelable("episode"));
-            dismiss();
-        });
-    }
-
     private void setSpanCount() {
-        int avg = (int) Math.ceil(episodes.stream().mapToInt(e -> e.getName().length()).average().orElse(0));
-        if (avg >= 12) spanCount = 1;
-        else if (avg >= 8) spanCount = 2;
-        else if (avg >= 4) spanCount = 3;
-        else if (avg >= 2) spanCount = 4;
-        itemCount = spanCount * (ResUtil.isLand(requireActivity()) ? 5 : 10);
+        int total = 0;
+        int row = ResUtil.isLand(getActivity()) ? 5 : 10;
+        for (Episode item : episodes) total += item.getName().length();
+        int offset = (int) Math.ceil((double) total / episodes.size());
+        if (offset >= 12) spanCount = 1;
+        else if (offset >= 8) spanCount = 2;
+        else if (offset >= 4) spanCount = 3;
+        else if (offset >= 2) spanCount = 4;
+        itemCount = spanCount * row;
     }
 
     private void setTitles() {
@@ -88,14 +83,14 @@ public class EpisodeGridDialog extends BaseBottomSheetDialog {
     }
 
     private void setPager() {
-        binding.pager.setAdapter(new PageAdapter(this));
+        binding.pager.setAdapter(new PageAdapter(getActivity()));
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(titles.get(position))).attach();
         setCurrentPage();
     }
 
     private void setCurrentPage() {
         for (int i = 0; i < episodes.size(); i++) {
-            if (episodes.get(i).isSelected()) {
+            if (episodes.get(i).isActivated()) {
                 binding.pager.setCurrentItem(i / itemCount);
                 break;
             }
@@ -104,8 +99,8 @@ public class EpisodeGridDialog extends BaseBottomSheetDialog {
 
     class PageAdapter extends FragmentStateAdapter {
 
-        public PageAdapter(@NonNull Fragment fragment) {
-            super(fragment);
+        public PageAdapter(@NonNull FragmentActivity activity) {
+            super(activity);
         }
 
         @NonNull

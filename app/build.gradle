@@ -1,5 +1,5 @@
 plugins {
-    alias libs.plugins.android.application
+    id 'com.android.application'
 }
 
 def localProps = new Properties()
@@ -13,24 +13,21 @@ def hasReleaseSigning = localProps['storeFile'] && localProps['keyAlias'] && loc
 def releaseKeyPassword = localProps['keyPassword'] ?: localProps['storePassword']
 
 android {
-    namespace = 'com.fongmi.android.ok'
-
-    compileSdk libs.versions.compileSdk.get().toInteger()
+    compileSdk 34
+    flavorDimensions = ["mode", "api", "abi"]
 
     defaultConfig {
         applicationId "com.fongmi.android.ok"
-        minSdk libs.versions.minSdk.get().toInteger()
-        targetSdk libs.versions.targetSdk.get().toInteger()
-        versionCode 563
-        versionName "5.6.3"
+        minSdk 21
+        targetSdk 28
+        versionCode 222
+        versionName "0118"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.fongmi.android.ok.event.EventIndex"]
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
     }
-
-    flavorDimensions = ["mode", "abi"]
 
     productFlavors {
         leanback {
@@ -38,6 +35,16 @@ android {
         }
         mobile {
             dimension "mode"
+        }
+        java {
+            dimension "api"
+        }
+        python {
+            dimension "api"
+        }
+        x86 {
+            dimension "abi"
+            ndk { abiFilters "x86" }
         }
         arm64_v8a {
             dimension "abi"
@@ -50,8 +57,7 @@ android {
     }
 
     buildFeatures {
-        buildConfig = true
-        viewBinding = true
+        viewBinding true
     }
 
     signingConfigs {
@@ -67,100 +73,99 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled = true
-            shrinkResources = true
+            minifyEnabled true
+            shrinkResources true
             signingConfig = hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-media.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/beans.xml'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            outputFileName = "${variant.productFlavors[0].name}-${variant.productFlavors[1].name}-${variant.productFlavors[2].name}.apk"
         }
     }
 
     configurations.configureEach {
-        exclude group: 'stax', module: 'stax-api'
-        exclude group: 'xpp3', module: 'xpp3'
-        exclude group: 'com.android.support'
         resolutionStrategy {
-            force libs.okhttp
-            eachDependency { details ->
-                if (details.requested.group == 'androidx.media3') {
-                    details.useVersion(libs.versions.media3.get())
-                    details.because('Use the WebHTV-pinned FongMi Media3 fork')
-                }
-            }
-        }
-    }
-
-    sourceSets {
-        main {
-            java {
-                // Real bundled MPV is enabled. The three legacy effect wrappers below
-                // target the older private MPV API and stay excluded.
-                exclude 'com/fongmi/android/ok/player/mpv/MpvPlayerEffect.java'
-                exclude 'com/fongmi/android/ok/player/effect/audio/MpvAudioEffectFilter.java'
-                exclude 'com/fongmi/android/ok/player/effect/video/MpvVideoEffectController.java'
-            }
+            force 'com.squareup.okhttp3:okhttp:' + okhttpVersion
         }
     }
 
     lint {
         disable 'UnsafeOptInUsageError'
-        disable 'ExpiredTargetSdkVersion'
-    }
-
-    compileOptions {
-        coreLibraryDesugaringEnabled = true
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
-    }
-}
-
-androidComponents {
-    onVariants(selector().withBuildType('release')) { variant ->
-        def flavors = variant.productFlavors.collectEntries { [(it.first): it.second] }
-        def mode = flavors['mode'] ?: 'mode'
-        def abi = flavors['abi'] ?: 'abi'
-        variant.outputs.each { output ->
-            output.outputFileName.set("OK影视-${mode}-${abi}.apk")
-        }
     }
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.aar"])
+    implementation project(':hook')
+    implementation project(':tvbus')
     implementation project(':catvod')
-    implementation project(':chaquo')
     implementation project(':quickjs')
-    implementation libs.appcompat
-    implementation libs.lifecycle.service
-    implementation libs.media
-    implementation libs.bundles.media3
-    implementation libs.exoplayer.hdr.utils
-    implementation libs.nextlib.media3ext
-    implementation libs.palette
-    implementation libs.recyclerview
-    implementation libs.room.runtime
-    implementation libs.splashscreen
-    implementation libs.swiperefreshlayout
-    implementation libs.viewpager2
-    implementation libs.android.gif.drawable
-    implementation libs.bundles.glide
-    implementation libs.bundles.jupnp
-    implementation libs.customactivityoncrash
-    implementation libs.eventbus
-    implementation libs.flexbox
-    implementation libs.lottie
-    implementation libs.material
-    implementation libs.materialdesigncolors
-    implementation libs.nanohttpd
-    implementation libs.newpipeextractor
-    implementation libs.permissionx
-    implementation libs.simple.xml
-    implementation libs.textdrawable
-    leanbackImplementation libs.leanback
-    leanbackImplementation libs.androidautosize
-    mobileImplementation libs.biometric
-    mobileImplementation libs.zxing.android.embedded
-    annotationProcessor libs.room.compiler
-    annotationProcessor libs.eventbus.annotation.processor
-    annotationProcessor libs.glide.compiler
-    coreLibraryDesugaring libs.desugar
+    implementation project(':thunder')
+    implementation project(':jianpian')
+    implementation project(':forcetech')
+    implementation project(':ijkplayer')
+    pythonImplementation project(':pyramid')
+    implementation project(':media-lib-database')
+    implementation project(':media-lib-datasource')
+    implementation project(':media-lib-datasource-okhttp')
+    implementation project(':media-lib-datasource-rtmp')
+    implementation project(':media-lib-decoder-av1')
+    implementation project(':media-lib-decoder-ffmpeg')
+    implementation project(':media-lib-exoplayer')
+    implementation project(':media-lib-exoplayer-dash')
+    implementation project(':media-lib-exoplayer-hls')
+    implementation project(':media-lib-exoplayer-rtsp')
+    implementation project(':media-lib-exoplayer-smoothstreaming')
+    implementation project(':media-lib-extractor')
+    implementation project(':media-lib-session')
+    implementation project(':media-lib-ui')
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.20')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.biometric:biometric:1.1.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.media:media:1.7.0'
+    implementation 'cat.ereza:customactivityoncrash:2.4.0'
+    implementation 'com.github.bassaer:materialdesigncolors:1.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.github.bumptech.glide:annotations:4.16.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    implementation 'com.github.jahirfiquitiva:TextDrawable:1.0.3'
+    implementation('com.github.TeamNewPipe:NewPipeExtractor:v0.23.1') { exclude group: 'org.jsoup', module: 'jsoup' }
+    implementation 'com.github.thegrizzlylabs:sardine-android:0.8'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.net.cronet:cronet-okhttp:0.1.0'
+    implementation 'com.google.zxing:core:3.3.0'
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+    implementation 'com.hierynomus:smbj:0.11.5'
+    implementation 'org.chromium.net:cronet-embedded:76.3809.111'
+    implementation 'org.eclipse.jetty:jetty-client:8.1.21.v20160908'
+    implementation 'org.eclipse.jetty:jetty-server:8.1.21.v20160908'
+    implementation 'org.eclipse.jetty:jetty-servlet:8.1.21.v20160908'
+    implementation 'org.fourthline.cling:cling-core:2.1.1'
+    implementation 'org.fourthline.cling:cling-support:2.1.1'
+    implementation 'org.greenrobot:eventbus:3.3.1'
+    implementation('org.simpleframework:simple-xml:2.7.1') { exclude group: 'stax', module: 'stax-api' exclude group: 'xpp3', module: 'xpp3' }
+    implementation(ext: 'aar', name: 'dlna-core', group: 'fongmi', version: 'release')
+    leanbackImplementation(ext: 'aar', name: 'dlna-dmr', group: 'fongmi', version: 'release')
+    leanbackImplementation 'androidx.leanback:leanback:1.2.0-alpha04'
+    leanbackImplementation 'me.jessyan:autosize:1.2.1'
+    mobileImplementation(ext: 'aar', name: 'dlna-dmc', group: 'fongmi', version: 'release')
+    mobileImplementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    mobileImplementation 'com.google.android.flexbox:flexbox:3.0.0'
+    mobileImplementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false }
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 }

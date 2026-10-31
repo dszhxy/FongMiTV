@@ -1,7 +1,5 @@
 package com.fongmi.android.ok.ui.custom;
 
-import static androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN;
-
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
@@ -10,29 +8,28 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.fongmi.android.ok.ui.base.BaseFragment;
 
-import java.util.function.IntFunction;
+public abstract class FragmentStateManager {
 
-public class FragmentStateManager {
-
-    private final ViewGroup container;
     private final FragmentManager fm;
-    private final IntFunction<Fragment> factory;
+    private final ViewGroup container;
 
-    public FragmentStateManager(ViewGroup container, FragmentManager fm, IntFunction<Fragment> factory) {
+    public FragmentStateManager(ViewGroup container, FragmentManager fm) {
         this.container = container;
-        this.factory = factory;
         this.fm = fm;
     }
 
+    public abstract Fragment getItem(int position);
+
     public boolean change(int position) {
-        String tag = getTag(position);
-        Fragment fragment = fm.findFragmentByTag(tag);
-        fragment = (fragment == null) ? factory.apply(position) : fragment;
-        FragmentTransaction ft = fm.beginTransaction().setTransition(TRANSIT_FRAGMENT_OPEN);
-        if (fm.findFragmentByTag(tag) == null) ft.add(container.getId(), fragment, tag);
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment fragment = fm.findFragmentByTag(getTag(position));
+        if (fragment == null) ft.add(container.getId(), fragment = getItem(position), getTag(position));
+        else ft.show(fragment);
         Fragment current = fm.getPrimaryNavigationFragment();
-        if (current != null && current != fragment) ft.hide(current);
-        ft.show(fragment).setPrimaryNavigationFragment(fragment).setReorderingAllowed(true).commitNowAllowingStateLoss();
+        if (current != null) ft.hide(current);
+        ft.setPrimaryNavigationFragment(fragment);
+        ft.setReorderingAllowed(true);
+        ft.commitNowAllowingStateLoss();
         return true;
     }
 
@@ -51,6 +48,6 @@ public class FragmentStateManager {
 
     public boolean canBack(int position) {
         BaseFragment fragment = getFragment(position);
-        return fragment != null && fragment.canBack();
+        return fragment != null && (fragment.canBack() || fragment.isHidden());
     }
 }

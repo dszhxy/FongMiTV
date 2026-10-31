@@ -1,18 +1,15 @@
 package com.fongmi.android.ok.ui.dialog;
 
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.text.InputFilter;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.R;
 import com.fongmi.android.ok.databinding.DialogLinkBinding;
 import com.fongmi.android.ok.ui.activity.VideoActivity;
@@ -21,55 +18,58 @@ import com.fongmi.android.ok.utils.Sniffer;
 import com.fongmi.android.ok.utils.Util;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class LinkDialog extends BaseAlertDialog {
+public class LinkDialog {
 
-    private DialogLinkBinding binding;
+    private final DialogLinkBinding binding;
+    private final Fragment fragment;
+    private AlertDialog dialog;
 
-    public static void show(Fragment fragment) {
-        new LinkDialog().show(fragment.getChildFragmentManager(), null);
+    public static LinkDialog create(Fragment fragment) {
+        return new LinkDialog(fragment);
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogLinkBinding.inflate(getLayoutInflater());
+    public LinkDialog(Fragment fragment) {
+        this.fragment = fragment;
+        this.binding = DialogLinkBinding.inflate(LayoutInflater.from(fragment.getContext()));
     }
 
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setTitle(R.string.play).setView(getBinding().getRoot()).setPositiveButton(R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, null);
+    public void show() {
+        initDialog();
+        initView();
+        initEvent();
     }
 
-    @Override
-    protected void initView() {
+    private void initDialog() {
+        dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext()).setTitle(R.string.play).setView(binding.getRoot()).setPositiveButton(R.string.dialog_positive, this::onPositive).setNegativeButton(R.string.dialog_negative, this::onNegative).create();
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
+    }
+
+    private void initView() {
         CharSequence text = Util.getClipText();
-        binding.text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(Integer.MAX_VALUE)});
         if (!TextUtils.isEmpty(text)) binding.text.setText(Sniffer.getUrl(text.toString()));
     }
 
-    @Override
-    protected void initEvent() {
+    private void initEvent() {
         binding.input.setEndIconOnClickListener(this::onChoose);
         binding.text.setOnEditorActionListener((textView, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) onPositive(null, 0);
+            if (actionId == EditorInfo.IME_ACTION_DONE) dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
             return true;
         });
     }
 
     private void onChoose(View view) {
-        FileChooser.from(launcher).show();
+        FileChooser.from(fragment).show();
+        dialog.dismiss();
     }
 
     private void onPositive(DialogInterface dialog, int which) {
         String text = binding.text.getText().toString().trim();
-        if (!text.isEmpty()) VideoActivity.start(requireActivity(), text);
-        dismiss();
+        if (!text.isEmpty()) VideoActivity.start(App.activity(), text);
+        dialog.dismiss();
     }
 
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> FileChooser.getUri(result, this::openFile));
-
-    private void openFile(Uri uri) {
-        if (!isAdded()) return;
-        VideoActivity.file(requireActivity(), uri);
-        dismiss();
+    private void onNegative(DialogInterface dialog, int which) {
+        dialog.dismiss();
     }
 }

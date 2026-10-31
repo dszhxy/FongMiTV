@@ -1,8 +1,9 @@
 package com.fongmi.android.ok.ui.holder;
 
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 
-import com.bumptech.glide.Glide;
 import com.fongmi.android.ok.bean.Vod;
 import com.fongmi.android.ok.databinding.AdapterVodListBinding;
 import com.fongmi.android.ok.ui.adapter.VodAdapter;
@@ -22,17 +23,12 @@ public class VodListHolder extends BaseVodHolder {
 
     @Override
     public void initView(Vod item) {
-        binding.name.setText(item.getName());
-        binding.remark.setText(item.getRemarks());
+        binding.name.setText(item.getVodName());
+        binding.remark.setText(item.getVodRemarks());
         binding.name.setVisibility(item.getNameVisible());
         binding.remark.setVisibility(item.getRemarkVisible());
         binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
         binding.getRoot().setOnLongClickListener(v -> listener.onLongClick(item));
-        ImgUtil.load(item.getName(), item.getPic(), binding.image);
-    }
-
-    @Override
-    public void unbind() {
-        Glide.with(binding.image).clear(binding.image);
+        ImgUtil.load(item.getVodName(), item.getVodPic(), binding.image, ImageView.ScaleType.FIT_CENTER, false);
     }
 }

@@ -11,7 +11,7 @@ import com.fongmi.android.ok.databinding.AdapterFilterBinding;
 
 public class FilterPresenter extends Presenter {
 
-    private OnClickListener listener;
+    private OnClickListener mListener;
     private final String mKey;
 
     public FilterPresenter(String key) {
@@ -23,26 +23,25 @@ public class FilterPresenter extends Presenter {
     }
 
     public void setOnClickListener(OnClickListener listener) {
-        this.listener = listener;
+        this.mListener = listener;
     }
 
-    @NonNull
     @Override
-    public Presenter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
+    public Presenter.ViewHolder onCreateViewHolder(ViewGroup parent) {
         return new ViewHolder(AdapterFilterBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object object) {
+    public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object object) {
         Value item = (Value) object;
         ViewHolder holder = (ViewHolder) viewHolder;
         holder.binding.text.setText(item.getN());
-        holder.binding.text.setSelected(item.isSelected());
-        setOnClickListener(holder, view -> listener.onItemClick(mKey, item));
+        holder.binding.text.setActivated(item.isActivated());
+        setOnClickListener(holder, view -> mListener.onItemClick(mKey, item));
     }
 
     @Override
-    public void onUnbindViewHolder(@NonNull Presenter.ViewHolder viewHolder) {
+    public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {
     }
 
     public static class ViewHolder extends Presenter.ViewHolder {

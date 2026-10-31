@@ -16,20 +16,6 @@ public class Style implements Parcelable {
     @SerializedName("ratio")
     private float ratio;
 
-    public Style(String type) {
-        this.type = type;
-    }
-
-    public Style(String type, float ratio) {
-        this.type = type;
-        this.ratio = ratio;
-    }
-
-    protected Style(Parcel in) {
-        this.type = in.readString();
-        this.ratio = in.readFloat();
-    }
-
     public static Style rect() {
         return new Style("rect", 0.75f);
     }
@@ -44,6 +30,18 @@ public class Style implements Parcelable {
         return null;
     }
 
+    public Style() {
+    }
+
+    public Style(String type) {
+        this.type = type;
+    }
+
+    public Style(String type, float ratio) {
+        this.type = type;
+        this.ratio = ratio;
+    }
+
     public String getType() {
         return TextUtils.isEmpty(type) ? "rect" : type;
     }
@@ -53,15 +51,15 @@ public class Style implements Parcelable {
     }
 
     public boolean isRect() {
-        return "rect".equals(getType());
+        return getType().equals("rect");
     }
 
     public boolean isOval() {
-        return "oval".equals(getType());
+        return getType().equals("oval");
     }
 
     public boolean isList() {
-        return "list".equals(getType());
+        return getType().equals("list");
     }
 
     public boolean isLand() {
@@ -69,17 +67,21 @@ public class Style implements Parcelable {
     }
 
     public int getViewType() {
-        return switch (getType()) {
-            case "oval" -> ViewType.OVAL;
-            case "list" -> ViewType.LIST;
-            default -> ViewType.RECT;
-        };
+        switch (getType()) {
+            case "oval":
+                return ViewType.OVAL;
+            case "list":
+                return ViewType.LIST;
+            default:
+                return ViewType.RECT;
+        }
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Style it)) return false;
+        if (!(obj instanceof Style)) return false;
+        Style it = (Style) obj;
         return getType().equals(it.getType()) && getRatio() == it.getRatio();
     }
 
@@ -92,6 +94,11 @@ public class Style implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.type);
         dest.writeFloat(this.ratio);
+    }
+
+    protected Style(Parcel in) {
+        this.type = in.readString();
+        this.ratio = in.readFloat();
     }
 
     public static final Creator<Style> CREATOR = new Creator<>() {

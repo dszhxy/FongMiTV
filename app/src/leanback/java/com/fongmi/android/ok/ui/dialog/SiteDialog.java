@@ -1,34 +1,44 @@
 package com.fongmi.android.ok.ui.dialog;
 
+import android.app.Activity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.CompoundButton;
 
-import androidx.fragment.app.FragmentActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.Site;
 import com.fongmi.android.ok.databinding.DialogSiteBinding;
-import com.fongmi.android.ok.impl.SiteListener;
-import com.fongmi.android.ok.setting.Setting;
+import com.fongmi.android.ok.impl.SiteCallback;
 import com.fongmi.android.ok.ui.adapter.SiteAdapter;
 import com.fongmi.android.ok.ui.custom.SpaceItemDecoration;
+import com.fongmi.android.ok.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickListener {
-
-    private static final int GRID_COUNT = 10;
+public class SiteDialog implements SiteAdapter.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private RecyclerView.ItemDecoration decoration;
-    private DialogSiteBinding binding;
-    private SiteListener listener;
-    private SiteAdapter adapter;
-    private boolean action;
+    private final DialogSiteBinding binding;
+    private final SiteCallback callback;
+    private final SiteAdapter adapter;
+    private final AlertDialog dialog;
     private int type;
 
-    public static SiteDialog create() {
-        return new SiteDialog();
+    public static SiteDialog create(Activity activity) {
+        return new SiteDialog(activity);
+    }
+
+    public SiteDialog(Activity activity) {
+        this.adapter = new SiteAdapter(this);
+        this.callback = (SiteCallback) activity;
+        this.binding = DialogSiteBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
     }
 
     public SiteDialog search() {
@@ -37,57 +47,44 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     }
 
     public SiteDialog action() {
-        action = true;
+        binding.action.setVisibility(View.VISIBLE);
         return this;
     }
 
-    public void show(FragmentActivity activity) {
-        show(activity.getSupportFragmentManager(), null);
-        if (activity instanceof SiteListener) listener = (SiteListener) activity;
+    public void show() {
+        setType(type);
+        initView();
+        initEvent();
     }
 
     private boolean list() {
-        return Setting.getSiteMode() == 0 || adapter.getItemCount() < GRID_COUNT;
+        return Setting.getSiteMode() == 0 || adapter.getItemCount() < 20;
     }
 
     private int getCount() {
-        return list() ? 1 : Math.clamp((int) Math.ceil((double) adapter.getItemCount() / GRID_COUNT), 2, 3);
+        return list() ? 1 : Math.max(1, Math.min((int) (Math.ceil(adapter.getItemCount() / 20.0f)), 3));
     }
 
     private int getIcon() {
-        return list() ? com.fongmi.android.ok.R.drawable.ic_site_grid : com.fongmi.android.ok.R.drawable.ic_site_list;
+        return list() ? R.drawable.ic_site_grid : R.drawable.ic_site_list;
     }
 
     private float getWidth() {
         return 0.4f + (getCount() - 1) * 0.2f;
     }
 
-    @Override
-    protected ViewBinding getBinding() {
-        return binding = DialogSiteBinding.inflate(getLayoutInflater());
-    }
-
-    @Override
-    protected MaterialAlertDialogBuilder getBuilder() {
-        return builder().setView(getBinding().getRoot());
-    }
-
-    @Override
-    protected void initView() {
-        adapter = new SiteAdapter(this);
-        if (action) binding.action.setVisibility(View.VISIBLE);
-        setType(type);
+    private void initView() {
         setRecyclerView();
+        setDialog();
         setMode();
     }
 
-    @Override
-    protected void initEvent() {
-        binding.mode.setOnClickListener(this::onMode);
-        binding.select.setOnClickListener(v -> adapter.selectAll());
-        binding.cancel.setOnClickListener(v -> adapter.cancelAll());
-        binding.search.setOnClickListener(v -> setType(v.isSelected() ? 0 : 1));
-        binding.change.setOnClickListener(v -> setType(v.isSelected() ? 0 : 2));
+    private void initEvent() {
+        binding.check.setOnCheckedChangeListener(this);
+        binding.mode.setOnClickListener(this::setMode);
+        binding.search.setOnClickListener(v -> setType(v.isActivated() ? 0 : 1));
+        binding.change.setOnClickListener(v -> setType(v.isActivated() ? 0 : 2));
+        binding.record.setOnClickListener(v -> setType(v.isActivated() ? 0 : 3));
     }
 
     private void setRecyclerView() {
@@ -96,45 +93,47 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
         binding.recycler.setItemAnimator(null);
         if (decoration != null) binding.recycler.removeItemDecoration(decoration);
         binding.recycler.addItemDecoration(decoration = new SpaceItemDecoration(getCount(), 16));
-        binding.recycler.setLayoutManager(new GridLayoutManager(requireContext(), getCount()));
+        binding.recycler.setLayoutManager(new GridLayoutManager(dialog.getContext(), getCount()));
         if (!binding.mode.hasFocus()) binding.recycler.post(() -> binding.recycler.scrollToPosition(VodConfig.getHomeIndex()));
     }
 
-    private void setType(int type) {
-        binding.search.setSelected(type == 1);
-        binding.change.setSelected(type == 2);
-        binding.select.setClickable(type > 0);
-        binding.cancel.setClickable(type > 0);
-        adapter.setType(this.type = type);
+    private void setDialog() {
+        if (adapter.getItemCount() == 0) return;
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = (int) (ResUtil.getScreenWidth() * getWidth());
+        dialog.getWindow().setAttributes(params);
+        dialog.getWindow().setDimAmount(0);
+        dialog.show();
     }
 
     private void setMode() {
-        if (adapter.getItemCount() < GRID_COUNT) Setting.putSiteMode(0);
-        binding.mode.setEnabled(adapter.getItemCount() >= GRID_COUNT);
+        if (adapter.getItemCount() < 20) Setting.putSiteMode(0);
+        binding.mode.setEnabled(adapter.getItemCount() >= 20);
         binding.mode.setImageResource(getIcon());
     }
 
-    private void setWidth() {
-        setWidth(getWidth());
+    private void setType(int type) {
+        binding.search.setActivated(type == 1);
+        binding.change.setActivated(type == 2);
+        binding.record.setActivated(type == 3);
+        adapter.setType(this.type = type);
     }
 
-    private void onMode(View view) {
+    private void setMode(View view) {
         Setting.putSiteMode(Math.abs(Setting.getSiteMode() - 1));
-        setRecyclerView();
-        setMode();
-        setWidth();
+        initView();
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (type == 0) buttonView.setChecked(!isChecked);
+        else if (isChecked) adapter.selectAll();
+        else adapter.cancelAll();
     }
 
     @Override
     public void onItemClick(Site item) {
-        if (listener != null) listener.setSite(item);
-        dismiss();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (adapter.getItemCount() == 0) dismiss();
-        else setWidth();
+        callback.setSite(item);
+        dialog.dismiss();
     }
 }

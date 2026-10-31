@@ -1,22 +1,21 @@
 package com.fongmi.android.ok.player.extractor;
 
-import android.net.Uri;
 import android.os.SystemClock;
 
 import com.fongmi.android.ok.App;
+import com.fongmi.android.ok.player.Source;
 import com.fongmi.android.ok.ui.activity.VideoActivity;
-import com.fongmi.android.ok.utils.UrlUtil;
 
 public class Push implements Source.Extractor {
 
     @Override
-    public boolean match(Uri uri) {
-        return "push".equals(UrlUtil.scheme(uri));
+    public boolean match(String scheme, String host) {
+        return scheme.equals("push");
     }
 
     @Override
     public String fetch(String url) throws Exception {
-        if (App.activity() != null) VideoActivity.start(App.activity(), url.substring(7));
+        VideoActivity.start(App.activity(), url.substring(7));
         SystemClock.sleep(500);
         return "";
     }

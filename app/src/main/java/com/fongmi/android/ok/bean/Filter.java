@@ -28,25 +28,17 @@ public class Filter implements Parcelable {
     @SerializedName("value")
     private List<Value> value;
 
-    public Filter() {
-    }
-
-    protected Filter(Parcel in) {
-        this.key = in.readString();
-        this.name = in.readString();
-        this.init = in.readString();
-        this.value = new ArrayList<>();
-        in.readList(this.value, Value.class.getClassLoader());
-    }
-
     public static Filter objectFrom(JsonElement element) {
         return App.gson().fromJson(element, Filter.class);
     }
 
     public static List<Filter> arrayFrom(String result) {
-        Type listType = TypeToken.getParameterized(List.class, Filter.class).getType();
+        Type listType = new TypeToken<List<Filter>>() {}.getType();
         List<Filter> items = App.gson().fromJson(result, listType);
         return items == null ? Collections.emptyList() : items;
+    }
+
+    public Filter() {
     }
 
     public String getKey() {
@@ -65,8 +57,9 @@ public class Filter implements Parcelable {
         return value == null ? Collections.emptyList() : value;
     }
 
-    public String setSelected(String v) {
-        getValue().stream().filter(item -> item.equals(Value.create(v))).findFirst().ifPresent(item -> item.setSelected(true));
+    public String setActivated(String v) {
+        int index = getValue().indexOf(new Value(v));
+        if (index != -1) getValue().get(index).setActivated(true);
         return v;
     }
 
@@ -75,19 +68,9 @@ public class Filter implements Parcelable {
         return this;
     }
 
-    public Filter copy() {
-        Filter copy = new Filter();
-        copy.key = this.key;
-        copy.name = this.name;
-        copy.init = this.init;
-        copy.value = new ArrayList<>();
-        getValue().forEach(item -> copy.value.add(item.copy()));
-        return copy;
-    }
-
     public Filter trans() {
         if (Trans.pass()) return this;
-        getValue().forEach(Value::trans);
+        for (Value value : getValue()) value.trans();
         return this;
     }
 
@@ -102,6 +85,14 @@ public class Filter implements Parcelable {
         dest.writeString(this.name);
         dest.writeString(this.init);
         dest.writeList(this.value);
+    }
+
+    protected Filter(Parcel in) {
+        this.key = in.readString();
+        this.name = in.readString();
+        this.init = in.readString();
+        this.value = new ArrayList<>();
+        in.readList(this.value, Value.class.getClassLoader());
     }
 
     public static final Creator<Filter> CREATOR = new Creator<>() {

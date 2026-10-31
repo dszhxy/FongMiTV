@@ -1,13 +1,11 @@
 package com.fongmi.android.ok.utils;
 
-import static android.widget.ImageView.ScaleType.CENTER_CROP;
-import static android.widget.ImageView.ScaleType.FIT_CENTER;
-
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -15,80 +13,65 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.ObjectKey;
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.R;
-import com.fongmi.android.ok.api.config.VodConfig;
-import com.fongmi.android.ok.impl.CustomTarget;
-import com.fongmi.android.ok.server.Server;
-import com.github.catvod.utils.Crypto;
+import com.fongmi.android.ok.Setting;
 import com.github.catvod.utils.Json;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.net.HttpHeaders;
+import com.google.gson.JsonParser;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import jahirfiquitiva.libs.textdrawable.TextDrawable;
 
 public class ImgUtil {
 
-    private static final int MAX_CACHE_SIZE = 16 * 1024 * 1024;
-    private static final int MAX_DATA_URI_LENGTH = 8 * 1024 * 1024;
-    private static final Pattern IMAGE_MIME = Pattern.compile("image/[a-z0-9.+-]+");
-    private static final Set<String> failed = Collections.synchronizedSet(new HashSet<>());
-    private static final Cache<String, Image> CACHE = CacheBuilder.newBuilder().maximumWeight(MAX_CACHE_SIZE).weigher((String key, Image value) -> value.data().length).build();
-
-    public static void logo(ImageView view) {
-        try {
-            Glide.with(view).load(UrlUtil.convert(VodConfig.get().getConfig().getLogo())).circleCrop().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).error(R.drawable.ic_logo).into(view);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+    public static void load(String url, int error, CustomTarget<Drawable> target) {
+        if (TextUtils.isEmpty(url)) target.onLoadFailed(ResUtil.getDrawable(error));
+        else Glide.with(App.get()).load(getUrl(url)).error(error).skipMemoryCache(true).dontAnimate().signature(new ObjectKey(url + "_" + Setting.getQuality())).into(target);
     }
 
-    public static void load(String url, CustomTarget<Bitmap> target) {
-        try {
-            Glide.with(App.get()).asBitmap().load(getUrl(url)).override(ResUtil.dp2px(96), ResUtil.dp2px(96)).error(R.drawable.artwork).into(target);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+    public static void rect(String text, String url, ImageView view) {
+        load(text, url, view, ImageView.ScaleType.CENTER, true);
     }
 
-    public static void load(Context context, String url, CustomTarget<Drawable> target) {
-        try {
-            Glide.with(context).load(getUrl(url)).override(ResUtil.getScreenWidth(), ResUtil.getScreenHeight()).error(R.drawable.artwork).into(target);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+    public static void oval(String text, String url, ImageView view) {
+        load(text, url, view, ImageView.ScaleType.CENTER, false);
     }
 
-    public static void load(String text, String url, ImageView view) {
-        load(text, url, view, true);
+    public static void load(String text, String url, ImageView view, ImageView.ScaleType scaleType, boolean rect) {
+        view.setScaleType(scaleType);
+        if (!TextUtils.isEmpty(url)) Glide.with(App.get()).asBitmap().load(getUrl(url)).placeholder(R.drawable.ic_img_loading).skipMemoryCache(true).dontAnimate().sizeMultiplier(Setting.getThumbnail()).signature(new ObjectKey(url + "_" + Setting.getQuality())).listener(getListener(view, scaleType)).into(view);
+        else if (text.length() > 0) view.setImageDrawable(getTextDrawable(text.substring(0, 1), rect));
+        else view.setImageResource(R.drawable.ic_img_error);
     }
 
-    public static void load(String text, String url, ImageView view, boolean vod) {
-        view.setScaleType(vod ? CENTER_CROP : FIT_CENTER);
-        if (!vod) view.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
-        if (TextUtils.isEmpty(url) || failed.contains(url)) view.setImageDrawable(getTextDrawable(text, vod));
-        else try {
-            RequestBuilder<Drawable> builder = Glide.with(view).load(getUrl(url)).listener(getListener(text, url, view, vod));
-            if (vod) builder.centerCrop().into(view);
-            else builder.fitCenter().into(view);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+    public static void loadVod(String text, String url, ImageView view) {
+        view.setScaleType(ImageView.ScaleType.CENTER);
+        if (!TextUtils.isEmpty(url)) Glide.with(App.get()).asBitmap().load(getUrl(url)).placeholder(R.drawable.ic_img_loading).listener(getListener(view)).into(view);
+        else if (text.length() > 0) view.setImageDrawable(getTextDrawable(text.substring(0, 1), true));
+        else view.setImageResource(R.drawable.ic_img_error);
+    }
+
+    public static void loadLive(String url, ImageView view) {
+        view.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
+        if (TextUtils.isEmpty(url)) view.setImageResource(R.drawable.ic_img_empty);
+        else Glide.with(App.get()).asBitmap().load(url).error(R.drawable.ic_img_empty).skipMemoryCache(true).dontAnimate().signature(new ObjectKey(url)).into(view);
+    }
+
+    private static Drawable getTextDrawable(String text, boolean rect) {
+        TextDrawable.Builder builder = new TextDrawable.Builder().withBorder(ResUtil.dp2px(2), ColorGenerator.get700(text));
+        if (rect) return builder.buildRoundRect(text, ColorGenerator.get500(text), ResUtil.dp2px(8));
+        return builder.buildRound(text, ColorGenerator.get500(text));
     }
 
     public static Object getUrl(String url) {
@@ -104,65 +87,53 @@ public class ImgUtil {
         return TextUtils.isEmpty(url) ? null : new GlideUrl(url, builder.build());
     }
 
-    public static String cache(String url) {
-        if (!isData(url)) return url;
-        if (url.length() > MAX_DATA_URI_LENGTH) return "";
-        String key = Crypto.md5(url);
-        if (TextUtils.isEmpty(key)) return "";
-        if (CACHE.asMap().computeIfAbsent(key, ignored -> decode(url)) == null) return "";
-        String address = Server.get().getAddress("/image/" + key);
-        failed.remove(address);
-        return address;
-    }
-
-    private static boolean isData(String url) {
-        return !TextUtils.isEmpty(url) && url.regionMatches(true, 0, "data:", 0, 5);
-    }
-
-    private static Image decode(String url) {
-        try {
-            int comma = url.indexOf(',');
-            if (comma == -1) return null;
-            String metadata = url.substring(5, comma).toLowerCase(Locale.ROOT);
-            String mime = metadata.split(";", 2)[0];
-            if (!IMAGE_MIME.matcher(mime).matches() || !metadata.endsWith(";base64")) return null;
-            byte[] data = Base64.decode(url.substring(comma + 1), Base64.DEFAULT);
-            return data.length == 0 ? null : new Image(mime, data);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
-    public static Image getImage(String key) {
-        return CACHE.getIfPresent(key);
-    }
-
-    public record Image(String mime, byte[] data) {
-    }
-
     private static void addHeader(LazyHeaders.Builder builder, String header) {
-        Map<String, String> map = Json.toMap(Json.parse(header));
+        Map<String, String> map = Json.toMap(JsonParser.parseString(header));
         for (Map.Entry<String, String> entry : map.entrySet()) builder.addHeader(UrlUtil.fixHeader(entry.getKey()), entry.getValue());
     }
 
-    private static Drawable getTextDrawable(String text, boolean vod) {
-        TextDrawable.Builder builder = new TextDrawable.Builder();
-        text = TextUtils.isEmpty(text) ? "！" : text.substring(0, 1);
-        if (vod) builder.buildRect(text, ColorGenerator.get400(text));
-        return builder.buildRoundRect(text, ColorGenerator.get400(text), ResUtil.dp2px(4));
+    public static byte[] resize(byte[] bytes) {
+        Bitmap bitmap = crop(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        return baos.toByteArray();
     }
 
-    private static RequestListener<Drawable> getListener(String text, String url, ImageView view, boolean vod) {
+    private static Bitmap crop(Bitmap source) {
+        int newWidth = ResUtil.getScreenWidth();
+        int newHeight = ResUtil.getScreenHeight();
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+        float xScale = (float) newWidth / sourceWidth;
+        float yScale = (float) newHeight / sourceHeight;
+        float scale = Math.max(xScale, yScale);
+        float scaledWidth = scale * sourceWidth;
+        float scaledHeight = scale * sourceHeight;
+        float left = (newWidth - scaledWidth) / 2;
+        float top = (newHeight - scaledHeight) / 2;
+        RectF rectF = new RectF(left, top, left + scaledWidth, top + scaledHeight);
+        Bitmap dest = Bitmap.createBitmap(newWidth, newHeight, source.getConfig());
+        Canvas canvas = new Canvas(dest);
+        canvas.drawBitmap(source, null, rectF, null);
+        return dest;
+    }
+
+    private static RequestListener<Bitmap> getListener(ImageView view) {
+        return getListener(view, ImageView.ScaleType.CENTER);
+    }
+
+    private static RequestListener<Bitmap> getListener(ImageView view, ImageView.ScaleType scaleType) {
         return new RequestListener<>() {
             @Override
-            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
-                view.setImageDrawable(getTextDrawable(text, vod));
-                failed.add(url);
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
+                view.setScaleType(scaleType);
+                view.setImageResource(R.drawable.ic_img_error);
                 return true;
             }
 
             @Override
-            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+            public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
+                view.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 return false;
             }
         };

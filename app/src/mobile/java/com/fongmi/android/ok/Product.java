@@ -1,11 +1,8 @@
 package com.fongmi.android.ok;
 
 import android.content.Context;
-import android.os.Build;
-import android.view.DisplayCutout;
 
 import com.fongmi.android.ok.bean.Style;
-import com.fongmi.android.ok.setting.PlayerSetting;
 import com.fongmi.android.ok.utils.ResUtil;
 
 public class Product {
@@ -17,7 +14,7 @@ public class Product {
     public static int getColumn(Context context) {
         int count = ResUtil.isLand(context) ? 7 : 5;
         count = count + (ResUtil.isPad() ? 1 : 0);
-        return Math.abs(PlayerSetting.getSize() - count);
+        return Math.abs(Setting.getSize() - count);
     }
 
     public static int getColumn(Context context, Style style) {
@@ -30,9 +27,13 @@ public class Product {
 
     public static int[] getSpec(Context context, Style style) {
         int column = getColumn(context, style);
-        int space = ResUtil.dp2px(32) + ResUtil.dp2px(16 * (column - 1)) + getCutout(context);
+        int space = ResUtil.dp2px(32) + ResUtil.dp2px(16 * (column - 1));
         if (style.isOval()) space += ResUtil.dp2px(column * 16);
         return getSpec(context, space, column, style);
+    }
+
+    public static int[] getSpec(Context context, int space, int column) {
+        return getSpec(context, space, column, Style.rect());
     }
 
     private static int[] getSpec(Context context, int space, int column, Style style) {
@@ -42,12 +43,7 @@ public class Product {
         return new int[]{width, height};
     }
 
-    private static int getCutout(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return 0;
-        DisplayCutout cutout = ResUtil.getDisplay(context).getCutout();
-        if (cutout == null) return 0;
-        int left = cutout.getSafeInsetLeft();
-        int right = cutout.getSafeInsetRight();
-        return left | right;
+    public static int getEms() {
+        return Math.min(ResUtil.getScreenWidth() / ResUtil.sp2px(20), 25);
     }
 }

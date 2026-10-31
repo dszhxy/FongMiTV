@@ -3,34 +3,38 @@ package com.fongmi.android.ok.bean;
 import android.text.TextUtils;
 
 import com.fongmi.android.ok.App;
-import com.fongmi.android.ok.api.parser.EpgParser;
-import com.fongmi.android.ok.utils.Formatters;
-import com.github.catvod.utils.Json;
+import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.utils.ResUtil;
+import com.fongmi.android.ok.utils.Util;
+import com.github.catvod.utils.Trans;
 import com.google.gson.annotations.SerializedName;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 public class Epg {
 
-    @SerializedName("key")
-    private String key;
     @SerializedName("date")
     private String date;
     @SerializedName("epg_data")
-    private List<EpgData> list;
+    private List<Epg> list;
+    @SerializedName("title")
+    private String title;
+    @SerializedName("start")
+    private String start;
+    @SerializedName("end")
+    private String end;
+    @SerializedName("key")
+    private String key;
 
-    private int width;
+    private long startTime;
+    private long endTime;
 
-    public static Epg objectFrom(String str, String key, ZoneId zoneId) {
-        if (!Json.isObj(str)) return EpgParser.getEpg(str, key, zoneId);
+    public static Epg objectFrom(String str, String key, SimpleDateFormat format) {
         try {
             Epg item = App.gson().fromJson(str, Epg.class);
-            item.setTime(zoneId);
+            item.setTime(format);
             item.setKey(key);
             return item;
         } catch (Exception e) {
@@ -38,16 +42,8 @@ public class Epg {
         }
     }
 
-    public static Epg create(String key, String date) {
-        Epg item = new Epg();
-        item.setKey(key);
-        item.setDate(date);
-        item.setList(new ArrayList<>());
-        return item;
-    }
-
     public String getKey() {
-        return TextUtils.isEmpty(key) ? "" : key;
+        return key;
     }
 
     public void setKey(String key) {
@@ -58,66 +54,66 @@ public class Epg {
         return TextUtils.isEmpty(date) ? "" : date;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public List<EpgData> getList() {
+    public List<Epg> getList() {
         return list == null ? Collections.emptyList() : list;
     }
 
-    public void setList(List<EpgData> list) {
-        this.list = list;
+    public String getTitle() {
+        return TextUtils.isEmpty(title) ? "" : title;
     }
 
-    public int getWidth() {
-        return width;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
+    public String getStart() {
+        return TextUtils.isEmpty(start) ? "" : start;
+    }
+
+    public String getEnd() {
+        return TextUtils.isEmpty(end) ? "" : end;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public boolean equal(String date) {
         return getDate().equals(date);
     }
 
-    private void setTime(ZoneId zoneId) {
-        setList(new ArrayList<>(new LinkedHashSet<>(getList())));
-        for (EpgData item : getList()) {
-            item.setStartTime(parseEpgTime(getDate().concat(item.getStart()), zoneId));
-            item.setEndTime(parseEpgTime(getDate().concat(item.getEnd()), zoneId));
-            if (item.getEndTime() < item.getStartTime()) item.checkDay(zoneId);
-            item.trans();
+    private void setTime(SimpleDateFormat format) {
+        for (Epg item : getList()) {
+            item.setStartTime(Util.format(format, getDate().concat(item.getStart())));
+            item.setEndTime(Util.format(format, getDate().concat(item.getEnd())));
+            item.setTitle(Trans.s2t(item.getTitle()));
         }
     }
 
-    public EpgData getEpgData() {
-        for (EpgData item : getList()) if (item.isSelected()) return item;
-        return new EpgData();
+    private boolean isInRange() {
+        return getStartTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= getEndTime();
     }
 
-    public Epg selected() {
-        for (EpgData item : getList()) item.setSelected(item.isInRange());
-        return this;
+    private String format() {
+        if (getTitle().isEmpty()) return "";
+        if (getStart().isEmpty() || getEnd().isEmpty()) return ResUtil.getString(R.string.play_now, getTitle());
+        return getStart() + " ~ " + getEnd() + "  " + getTitle();
     }
 
-    public int getSelected() {
-        for (int i = 0; i < getList().size(); i++) if (getList().get(i).isSelected()) return i;
-        return -1;
-    }
-
-    public int getInRange() {
-        for (int i = 0; i < getList().size(); i++) if (getList().get(i).isInRange()) return i;
-        return -1;
-    }
-
-    private long parseEpgTime(String source, ZoneId zoneId) {
-        try {
-            var fmt = source.length() > 16 ? Formatters.EPG_DT_LONG : Formatters.EPG_DT_SHORT;
-            return LocalDateTime.parse(source, fmt).atZone(zoneId).toInstant().toEpochMilli();
-        } catch (Exception ignored) {
-            return 0L;
-        }
+    public String getEpg() {
+        for (Epg item : getList()) if (item.isInRange()) return item.format();
+        return "";
     }
 }

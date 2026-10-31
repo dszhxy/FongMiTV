@@ -5,16 +5,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    android:clickable="true"
-    android:focusable="true"
     android:keepScreenOn="true">
 
     <androidx.media3.ui.PlayerView
-        android:id="@+id/player"
+        android:id="@+id/surface"
         style="@style/Player.Vod"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:surface_type="none" />
+        android:visibility="gone"
+        app:surface_type="surface_view" />
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/texture"
+        style="@style/Player.Vod"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:surface_type="texture_view" />
+
+    <tv.danmaku.ijk.media.player.ui.IjkVideoView
+        android:id="@+id/ijk"
+        style="@style/Player.Vod"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <include
         android:id="@+id/widget"
@@ -29,11 +43,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:visibility="gone" />
-
-    <include
-        android:id="@+id/progress"
-        layout="@layout/view_progress"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </FrameLayout>

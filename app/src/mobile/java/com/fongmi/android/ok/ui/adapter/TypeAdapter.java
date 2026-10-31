@@ -17,11 +17,11 @@ import java.util.List;
 
 public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
 
-    private final OnClickListener listener;
+    private final OnClickListener mListener;
     private final List<Class> mItems;
 
     public TypeAdapter(OnClickListener listener) {
-        this.listener = listener;
+        this.mListener = listener;
         this.mItems = new ArrayList<>();
     }
 
@@ -44,14 +44,14 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
 
     public void addAll(Result result) {
         mItems.addAll(result.getTypes());
-        if (!result.getList().isEmpty()) mItems.add(0, home());
-        if (!mItems.isEmpty()) mItems.get(0).setSelected(true);
+        if (result.getList().size() > 0) mItems.add(0, home());
+        if (mItems.size() > 0) mItems.get(0).setActivated(true);
         notifyDataSetChanged();
     }
 
-    public void setSelected(int position) {
-        for (Class item : mItems) item.setSelected(false);
-        mItems.get(position).setSelected(true);
+    public void setActivated(int position) {
+        for (Class item : mItems) item.setActivated(false);
+        mItems.get(position).setActivated(true);
         notifyItemRangeChanged(0, mItems.size());
     }
 
@@ -74,11 +74,11 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Class item = mItems.get(position);
         holder.binding.text.setText(item.getTypeName());
-        holder.binding.text.setSelected(item.isSelected());
-        holder.binding.text.setOnClickListener(v -> listener.onItemClick(position, item));
+        holder.binding.text.setActivated(item.isActivated());
+        holder.binding.text.setOnClickListener(v -> mListener.onItemClick(position, item));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterTypeBinding binding;
 

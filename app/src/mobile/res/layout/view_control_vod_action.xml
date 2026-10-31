@@ -6,114 +6,89 @@
     android:fillViewport="true"
     android:paddingStart="8dp"
     android:paddingEnd="8dp"
-    android:scrollbars="none">
+    android:scrollbars="none"
+    android:visibility="visible">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/episodes"
-            style="@style/Control"
-            android:text="@string/detail_episode" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/parse"
-            style="@style/Control"
-            android:text="@string/parse"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/player"
-            style="@style/Control"
-            android:text="@string/play_exo" />
+            style="@style/Control.Action"
+            tools:text="EXO" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/decode"
-            style="@style/Control"
-            android:text="@string/play_decode" />
+            style="@style/Control.Action"
+            tools:text="硬解" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/reset"
-            style="@style/Control"
-            android:text="@string/play_reset" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/replay"
-            style="@style/Control"
-            android:text="@string/play_replay" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/repeat"
-            style="@style/Control"
-            android:text="@string/play_repeat" />
-
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/speed"
-            style="@style/Control"
-            android:fontFeatureSettings="tnum"
-            android:text="@string/play_speed" />
+            style="@style/Control.Action"
+            tools:text="速度" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/scale"
-            style="@style/Control"
-            android:text="@string/play_scale" />
+            style="@style/Control.Action"
+            tools:text="縮放" />
+
+        <TextView
+            android:id="@+id/reset"
+            style="@style/Control.Action"
+            android:textColor="@color/text"
+            tools:text="刷新" />
+
+        <TextView
+            android:id="@+id/loop"
+            style="@style/Control.Action"
+            android:text="@string/play_loop"
+            android:textColor="@color/text" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/text"
-            style="@style/Control"
+            style="@style/Control.Action"
             android:tag="3"
-            android:text="@string/play_track_text" />
+            android:text="@string/play_track_text"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/audio"
-            style="@style/Control"
+            style="@style/Control.Action"
             android:tag="1"
-            android:text="@string/play_track_audio" />
+            android:text="@string/play_track_audio"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/video"
-            style="@style/Control"
+            style="@style/Control.Action"
             android:tag="2"
-            android:text="@string/play_track_video" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/danmaku"
-            style="@style/Control"
-            android:text="@string/danmaku"
+            android:text="@string/play_track_video"
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/edition"
-            style="@style/Control"
-            android:text="@string/play_edition"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/chapter"
-            style="@style/Control"
-            android:text="@string/play_chapter"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/opening"
-            style="@style/Control"
-            android:text="@string/play_op" />
+            style="@style/Control.Action"
+            tools:text="片頭" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/ending"
-            style="@style/Control"
-            android:text="@string/play_ed" />
+            style="@style/Control.Action"
+            tools:text="片尾" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        <TextView
+            android:id="@+id/episodes"
+            style="@style/Control.Action"
+            android:text="@string/detail_episode" />
+
+    </LinearLayout>
 </HorizontalScrollView>

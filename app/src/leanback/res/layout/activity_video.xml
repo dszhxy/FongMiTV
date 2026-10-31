@@ -4,29 +4,52 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/progressLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
 
     <FrameLayout
         android:id="@+id/video"
         android:layout_width="400dp"
         android:layout_height="225dp"
-        android:layout_margin="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:background="@color/black"
-        android:defaultFocusHighlightEnabled="false"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:foreground="@drawable/selector_video"
         android:nextFocusLeft="@id/video"
-        android:nextFocusRight="@id/content"
+        android:nextFocusRight="@id/desc"
         android:nextFocusUp="@id/video"
         android:nextFocusDown="@id/flag">
 
         <androidx.media3.ui.PlayerView
-            android:id="@+id/player"
+            android:id="@+id/surface"
             style="@style/Player.Vod"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:surface_type="none" />
+            android:visibility="gone"
+            app:surface_type="surface_view" />
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/texture"
+            style="@style/Player.Vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:surface_type="texture_view" />
+
+        <tv.danmaku.ijk.media.player.ui.IjkVideoView
+            android:id="@+id/ijk"
+            style="@style/Player.Vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <master.flame.danmaku.ui.widget.DanmakuView
+            android:id="@+id/danmaku"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
         <include
             android:id="@+id/widget"
@@ -42,27 +65,23 @@
             android:layout_gravity="bottom"
             android:visibility="gone" />
 
-        <include
-            android:id="@+id/progress"
-            layout="@layout/view_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
     </FrameLayout>
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
         android:layout_toEndOf="@+id/video"
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="24sp"
+        android:textStyle="bold"
         tools:text="慶餘年第二季" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/remark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -75,7 +94,7 @@
         android:textSize="16sp"
         tools:text="更新到第二季" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:id="@+id/row1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -85,7 +104,7 @@
         android:layout_marginEnd="24dp"
         android:orientation="horizontal">
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/site"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +114,7 @@
             android:textSize="16sp"
             tools:text="站源：泥巴" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/year"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -105,7 +124,7 @@
             android:textSize="16sp"
             tools:text="年份：2022" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/area"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -115,7 +134,7 @@
             android:textSize="16sp"
             tools:text="地區：台灣" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -124,9 +143,9 @@
             android:textSize="16sp"
             tools:text="類型：科幻" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/director"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -140,7 +159,7 @@
         android:textSize="16sp"
         tools:text="導演：FongMi" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/actor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -148,14 +167,29 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="24dp"
-        android:ellipsize="end"
-        android:maxLines="2"
         android:nextFocusDown="@id/content"
+        android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="16sp"
         tools:text="演員：FongMi" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/actor"
+        android:layout_alignStart="@+id/name"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="24dp"
+        android:ellipsize="end"
+        android:lineSpacingExtra="4dp"
+        android:maxLines="1"
+        android:nextFocusDown="@id/desc"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        tools:text="簡介：" />
+
+    <LinearLayout
         android:id="@+id/row2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -163,8 +197,8 @@
         android:layout_alignBottom="@+id/video"
         android:orientation="horizontal">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/content"
+        <TextView
+            android:id="@+id/desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
@@ -173,7 +207,6 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/detail_desc"
@@ -181,7 +214,7 @@
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_desc" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/keep"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -191,7 +224,6 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/keep"
@@ -199,8 +231,8 @@
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_keep_off" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/change"
+        <TextView
+            android:id="@+id/change1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/selector_item"
@@ -208,8 +240,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusRight="@id/change"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusRight="@id/change1"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/play_change"
@@ -217,89 +248,108 @@
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_change" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/video"
+        android:layout_marginTop="16dp"
         android:overScrollMode="never">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingBottom="8dp">
+            android:orientation="vertical">
 
-            <androidx.leanback.widget.HorizontalGridView
+            <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
                 android:id="@+id/flag"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingStart="24dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="24dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:paddingBottom="8dp"
+                android:visibility="gone" />
 
-            <androidx.leanback.widget.HorizontalGridView
+            <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
                 android:id="@+id/quality"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingStart="24dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="24dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-            <androidx.leanback.widget.HorizontalGridView
-                android:id="@+id/episode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
                 android:visibility="gone" />
 
-            <androidx.leanback.widget.HorizontalGridView
+            <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
+                android:id="@+id/episodeHori"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingStart="24dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone" />
+
+            <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
                 android:id="@+id/array"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingStart="24dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
                 android:visibility="gone" />
 
-            <androidx.leanback.widget.HorizontalGridView
+            <androidx.leanback.widget.VerticalGridView
+                android:id="@+id/episodeVert"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingStart="24dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone"
+                app:focusOutEnd="true"
+                app:focusOutFront="true" />
+
+            <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
                 android:id="@+id/part"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingStart="24dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
                 android:visibility="gone" />
 
             <androidx.leanback.widget.HorizontalGridView
                 android:id="@+id/quick"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="8dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingStart="24dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
                 android:visibility="gone" />
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </com.fongmi.android.ok.ui.custom.ProgressLayout>

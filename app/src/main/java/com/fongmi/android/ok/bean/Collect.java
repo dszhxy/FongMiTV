@@ -3,43 +3,35 @@ package com.fongmi.android.ok.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.Nullable;
-
 import com.fongmi.android.ok.R;
-import com.fongmi.android.ok.impl.Diffable;
 import com.fongmi.android.ok.utils.ResUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class Collect implements Parcelable, Diffable<Collect> {
+public class Collect implements Parcelable {
 
-    private boolean selected;
+    private boolean activated;
     private List<Vod> list;
     private Site site;
     private int page;
 
-    public Collect(Site site, List<Vod> list) {
-        this.site = site;
-        this.list = list;
-    }
-
-    protected Collect(Parcel in) {
-        this.selected = in.readByte() != 0;
-        this.list = in.createTypedArrayList(Vod.CREATOR);
-        this.site = in.readParcelable(Site.class.getClassLoader());
-        this.page = in.readInt();
-    }
-
     public static Collect all() {
         Collect item = new Collect(Site.get("all", ResUtil.getString(R.string.all)), new ArrayList<>());
-        item.setSelected(true);
+        item.setActivated(true);
         return item;
     }
 
     public static Collect create(List<Vod> list) {
         return new Collect(list.get(0).getSite(), list);
+    }
+
+    public Collect() {
+    }
+
+    public Collect(Site site, List<Vod> list) {
+        this.site = site;
+        this.list = list;
     }
 
     public Site getSite() {
@@ -50,12 +42,12 @@ public class Collect implements Parcelable, Diffable<Collect> {
         return list == null ? new ArrayList<>() : list;
     }
 
-    public boolean isSelected() {
-        return selected;
+    public boolean isActivated() {
+        return activated;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
 
     public int getPage() {
@@ -67,38 +59,23 @@ public class Collect implements Parcelable, Diffable<Collect> {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Collect it)) return false;
-        return Objects.equals(getSite(), it.getSite());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getSite());
-    }
-
-    @Override
     public int describeContents() {
         return 0;
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeByte(this.selected ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.activated ? (byte) 1 : (byte) 0);
         dest.writeTypedList(this.list);
         dest.writeParcelable(this.site, flags);
         dest.writeInt(this.page);
     }
 
-    @Override
-    public boolean isSameItem(Collect other) {
-        return equals(other);
-    }
-
-    @Override
-    public boolean isSameContent(Collect other) {
-        return equals(other);
+    protected Collect(Parcel in) {
+        this.activated = in.readByte() != 0;
+        this.list = in.createTypedArrayList(Vod.CREATOR);
+        this.site = in.readParcelable(Site.class.getClassLoader());
+        this.page = in.readInt();
     }
 
     public static final Creator<Collect> CREATOR = new Creator<>() {

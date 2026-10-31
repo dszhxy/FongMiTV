@@ -51,7 +51,7 @@ public class MainActivity extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
         if (forceTV != null) forceTV.stop();
-        return false;
+        return super.onUnbind(intent);
     }
 
     private native void loadLibrary(int type);

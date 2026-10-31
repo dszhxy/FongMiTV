@@ -1,5 +1,8 @@
 package com.fongmi.android.ok.ui.fragment;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +13,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.BuildConfig;
 import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.Updater;
 import com.fongmi.android.ok.api.config.LiveConfig;
 import com.fongmi.android.ok.api.config.VodConfig;
@@ -18,51 +22,43 @@ import com.fongmi.android.ok.bean.Config;
 import com.fongmi.android.ok.bean.Live;
 import com.fongmi.android.ok.bean.Site;
 import com.fongmi.android.ok.databinding.FragmentSettingBinding;
-import com.fongmi.android.ok.db.BackupManager;
-import com.fongmi.android.ok.event.ConfigEvent;
+import com.fongmi.android.ok.db.AppDatabase;
 import com.fongmi.android.ok.event.RefreshEvent;
 import com.fongmi.android.ok.impl.Callback;
-import com.fongmi.android.ok.impl.ConfigListener;
-import com.fongmi.android.ok.impl.LiveListener;
-import com.fongmi.android.ok.impl.SiteListener;
-import com.fongmi.android.ok.setting.PlayerSetting;
-import com.fongmi.android.ok.setting.Setting;
-import com.fongmi.android.ok.ui.activity.HomeActivity;
+import com.fongmi.android.ok.impl.ConfigCallback;
+import com.fongmi.android.ok.impl.LiveCallback;
+import com.fongmi.android.ok.impl.ProxyCallback;
+import com.fongmi.android.ok.impl.SiteCallback;
+import com.fongmi.android.ok.player.ExoUtil;
+import com.fongmi.android.ok.ui.activity.MainActivity;
 import com.fongmi.android.ok.ui.base.BaseFragment;
 import com.fongmi.android.ok.ui.dialog.ConfigDialog;
 import com.fongmi.android.ok.ui.dialog.HistoryDialog;
 import com.fongmi.android.ok.ui.dialog.LiveDialog;
-import com.fongmi.android.ok.ui.dialog.RestoreDialog;
+import com.fongmi.android.ok.ui.dialog.ProxyDialog;
 import com.fongmi.android.ok.ui.dialog.SiteDialog;
-import com.fongmi.android.ok.ui.dialog.ThemeDialog;
+import com.fongmi.android.ok.utils.FileChooser;
 import com.fongmi.android.ok.utils.FileUtil;
 import com.fongmi.android.ok.utils.Notify;
-import com.fongmi.android.ok.utils.PermissionUtil;
 import com.fongmi.android.ok.utils.ResUtil;
+import com.fongmi.android.ok.utils.UrlUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.permissionx.guolindev.PermissionX;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SettingFragment extends BaseFragment implements ConfigListener, SiteListener, LiveListener, ThemeDialog.Listener {
+public class SettingFragment extends BaseFragment implements ConfigCallback, SiteCallback, LiveCallback, ProxyCallback {
 
     private FragmentSettingBinding mBinding;
     private String[] size;
+    private int type;
 
     public static SettingFragment newInstance() {
         return new SettingFragment();
-    }
-
-    private String getThemeText() {
-        int color = Setting.getThemeColor();
-        if (color == -1) return getString(R.string.setting_off);
-        return getString(color == 0 ? R.string.setting_auto : R.string.setting_custom);
     }
 
     private int getDohIndex() {
@@ -75,8 +71,8 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         return list.toArray(new String[0]);
     }
 
-    private HomeActivity getRoot() {
-        return (HomeActivity) requireActivity();
+    private MainActivity getRoot() {
+        return (MainActivity) getActivity();
     }
 
     @Override
@@ -86,20 +82,15 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     @Override
     protected void initView() {
-        EventBus.getDefault().register(this);
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
         mBinding.wallUrl.setText(WallConfig.getDesc());
-        mBinding.versionText.setText(BuildConfig.VERSION_NAME);
-        setOtherText();
-        setCacheText();
-    }
-
-    private void setOtherText() {
-        mBinding.themeColorText.setText(getThemeText());
+        mBinding.backupText.setText(AppDatabase.getDate());
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
-        mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
-        mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
+        mBinding.versionText.setText(BuildConfig.VERSION_NAME);
+        mBinding.proxyText.setText(UrlUtil.scheme(Setting.getProxy()));
+        mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[Setting.getSize()]);
+        setCacheText();
     }
 
     private void setCacheText() {
@@ -114,34 +105,32 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     @Override
     protected void initEvent() {
         mBinding.vod.setOnClickListener(this::onVod);
-        mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.wall.setOnClickListener(this::onWall);
-        mBinding.size.setOnClickListener(this::setSize);
+        mBinding.proxy.setOnClickListener(this::onProxy);
         mBinding.cache.setOnClickListener(this::onCache);
         mBinding.backup.setOnClickListener(this::onBackup);
         mBinding.player.setOnClickListener(this::onPlayer);
-        mBinding.danmaku.setOnClickListener(this::onDanmaku);
-        mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
         mBinding.vodHome.setOnClickListener(this::onVodHome);
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
         mBinding.liveHome.setOnClickListener(this::onLiveHome);
         mBinding.wall.setOnLongClickListener(this::onWallEdit);
-        mBinding.incognito.setOnClickListener(this::setIncognito);
+        mBinding.backup.setOnLongClickListener(this::onBackupAuto);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
-        mBinding.themeColor.setOnClickListener(this::onThemeColor);
+        mBinding.version.setOnLongClickListener(this::onVersionDev);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
         mBinding.wallDefault.setOnClickListener(this::setWallDefault);
         mBinding.wallRefresh.setOnClickListener(this::setWallRefresh);
-        mBinding.wallRefresh.setOnLongClickListener(this::onWallHistory);
+        mBinding.size.setOnClickListener(this::setSize);
+        mBinding.doh.setOnClickListener(this::setDoh);
     }
 
     @Override
     public void setConfig(Config config) {
-        if (config.getUrl().startsWith("file")) {
-            PermissionUtil.requestFile(this, allGranted -> load(config));
+        if (config.getUrl().startsWith("file") && !PermissionX.isGranted(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            PermissionX.init(this).permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE).request((allGranted, grantedList, deniedList) -> load(config));
         } else {
             load(config);
         }
@@ -150,14 +139,19 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private void load(Config config) {
         switch (config.getType()) {
             case 0:
+                Notify.progress(getActivity());
                 VodConfig.load(config, getCallback());
+                mBinding.vodUrl.setText(config.getDesc());
                 break;
             case 1:
+                Notify.progress(getActivity());
                 LiveConfig.load(config, getCallback());
+                mBinding.liveUrl.setText(config.getDesc());
                 break;
             case 2:
-                Setting.putWall(0);
+                Notify.progress(getActivity());
                 WallConfig.load(config, getCallback());
+                mBinding.wallUrl.setText(config.getDesc());
                 break;
         }
     }
@@ -165,27 +159,51 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private Callback getCallback() {
         return new Callback() {
             @Override
-            public void start() {
-                Notify.progress(requireActivity());
-            }
-
-            @Override
             public void success() {
-                Notify.dismiss();
-                setCacheText();
+                setConfig();
             }
 
             @Override
             public void error(String msg) {
-                Notify.dismiss();
                 Notify.show(msg);
+                setConfig();
             }
         };
+    }
+
+    private void setConfig() {
+        switch (type) {
+            case 0:
+                setCacheText();
+                Notify.dismiss();
+                RefreshEvent.video();
+                RefreshEvent.config();
+                mBinding.vodUrl.setText(VodConfig.getDesc());
+                mBinding.liveUrl.setText(LiveConfig.getDesc());
+                mBinding.wallUrl.setText(WallConfig.getDesc());
+                break;
+            case 1:
+                setCacheText();
+                Notify.dismiss();
+                RefreshEvent.config();
+                mBinding.liveUrl.setText(LiveConfig.getDesc());
+                break;
+            case 2:
+                setCacheText();
+                Notify.dismiss();
+                mBinding.wallUrl.setText(WallConfig.getDesc());
+                break;
+        }
     }
 
     @Override
     public void setSite(Site item) {
         VodConfig.get().setHome(item);
+        RefreshEvent.video();
+    }
+
+    @Override
+    public void onChanged() {
     }
 
     @Override
@@ -193,112 +211,113 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         LiveConfig.get().setHome(item);
     }
 
-    @Override
-    public void setTheme(int color) {
-        Setting.putThemeColor(color);
-        RefreshEvent.theme();
-    }
-
     private void onVod(View view) {
-        ConfigDialog.create().vod().show(this);
+        ConfigDialog.create(this).type(type = 0).show();
     }
 
     private void onLive(View view) {
-        ConfigDialog.create().live().show(this);
+        ConfigDialog.create(this).type(type = 1).show();
     }
 
     private void onWall(View view) {
-        ConfigDialog.create().wall().show(this);
+        ConfigDialog.create(this).type(type = 2).show();
     }
 
     private boolean onVodEdit(View view) {
-        ConfigDialog.create().vod().edit().show(this);
+        ConfigDialog.create(this).type(type = 0).edit().show();
         return true;
     }
 
     private boolean onLiveEdit(View view) {
-        ConfigDialog.create().live().edit().show(this);
+        ConfigDialog.create(this).type(type = 1).edit().show();
         return true;
     }
 
     private boolean onWallEdit(View view) {
-        ConfigDialog.create().wall().edit().show(this);
+        ConfigDialog.create(this).type(type = 2).edit().show();
         return true;
     }
 
     private void onVodHome(View view) {
-        SiteDialog.create().search().change().show(this);
+        SiteDialog.create(this).all().show();
     }
 
     private void onLiveHome(View view) {
-        LiveDialog.show(this);
+        LiveDialog.create(this).action().show();
     }
 
     private void onVodHistory(View view) {
-        HistoryDialog.create().vod().show(this);
+        HistoryDialog.create(this).type(type = 0).show();
     }
 
     private void onLiveHistory(View view) {
-        HistoryDialog.create().live().show(this);
+        HistoryDialog.create(this).type(type = 1).show();
     }
 
     private void onPlayer(View view) {
         getRoot().change(2);
     }
 
-    private void onDanmaku(View view) {
-        getRoot().change(3);
-    }
-
-    private void onThemeColor(View view) {
-        ThemeDialog.show(this);
-    }
-
     private void onVersion(View view) {
-        Updater.create().force().start(requireActivity());
+        Updater.get().force().release().start();
     }
 
-    private void setWallDefault(View view) {
-        Setting.putWall(Setting.getWall() == 4 ? 1 : Setting.getWall() + 1);
-        Setting.putWallType(0);
-        ConfigEvent.wall();
-    }
-
-    private void setWallRefresh(View view) {
-        Setting.putWall(0);
-        WallConfig.get().load(getCallback());
-    }
-
-    private boolean onWallHistory(View view) {
-        HistoryDialog.create().wall().show(this);
+    private boolean onVersionDev(View view) {
+        Updater.get().force().dev().start();
         return true;
     }
 
-    private void setIncognito(View view) {
-        Setting.putIncognito(!Setting.isIncognito());
-        mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
+    private void setWallDefault(View view) {
+        WallConfig.refresh(Setting.getWall() == 4 ? 1 : Setting.getWall() + 1);
+    }
+
+    private void setWallRefresh(View view) {
+        Notify.progress(getActivity());
+        WallConfig.get().load(new Callback() {
+            @Override
+            public void success() {
+                Notify.dismiss();
+                setCacheText();
+            }
+        });
     }
 
     private void setSize(View view) {
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.setting_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(size, PlayerSetting.getSize(), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(getActivity()).setTitle(R.string.setting_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(size, Setting.getSize(), (dialog, which) -> {
             mBinding.sizeText.setText(size[which]);
-            PlayerSetting.putSize(which);
+            Setting.putSize(which);
             RefreshEvent.size();
             dialog.dismiss();
         }).show();
     }
 
     private void setDoh(View view) {
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.setting_doh).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(getDohList(), getDohIndex(), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(getActivity()).setTitle(R.string.setting_doh).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(getDohList(), getDohIndex(), (dialog, which) -> {
             setDoh(VodConfig.get().getDoh().get(which));
             dialog.dismiss();
         }).show();
     }
 
     private void setDoh(Doh doh) {
-        OkHttp.dns().setDoh(doh);
+        OkHttp.get().setDoh(doh);
+        Notify.progress(getActivity());
         Setting.putDoh(doh.toString());
         mBinding.dohText.setText(doh.getName());
+        VodConfig.load(Config.vod(), getCallback());
+    }
+
+    private void onProxy(View view) {
+        ProxyDialog.create(this).show();
+    }
+
+    @Override
+    public void setProxy(String proxy) {
+        ExoUtil.reset();
+        Setting.putProxy(proxy);
+        OkHttp.get().setProxy(proxy);
+        Notify.progress(getActivity());
+        VodConfig.load(Config.vod(), getCallback());
+        mBinding.proxyText.setText(UrlUtil.scheme(proxy));
     }
 
     private void onCache(View view) {
@@ -311,58 +330,34 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     }
 
     private void onBackup(View view) {
-        PermissionUtil.requestFile(this, allGranted -> BackupManager.backup(new Callback() {
+        PermissionX.init(this).permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE).request((allGranted, grantedList, deniedList) -> AppDatabase.backup(new Callback() {
             @Override
             public void success() {
-                Notify.show(R.string.backup_success);
-            }
-
-            @Override
-            public void error() {
-                Notify.show(R.string.backup_fail);
+                mBinding.backupText.setText(AppDatabase.getDate());
             }
         }));
     }
 
-    private void onRestore(View view) {
-        PermissionUtil.requestFile(this, allGranted -> RestoreDialog.create().show(requireActivity(), new Callback() {
-            @Override
-            public void success() {
-                Notify.show(R.string.restore_success);
-                setOtherText();
-                initConfig();
-            }
-
-            @Override
-            public void error() {
-                Notify.show(R.string.restore_fail);
-            }
-        }));
-    }
-
-    private void initConfig() {
-        VodConfig.get().init().load(getCallback());
-        LiveConfig.get().init().load();
-        WallConfig.get().init().load();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onConfigEvent(ConfigEvent event) {
-        if (event.type() != ConfigEvent.Type.COMMON) return;
-        mBinding.vodUrl.setText(VodConfig.getDesc());
-        mBinding.liveUrl.setText(LiveConfig.getDesc());
-        mBinding.wallUrl.setText(WallConfig.getDesc());
+    private boolean onBackupAuto(View view) {
+        Setting.putBackupAuto(!Setting.isBackupAuto());
+        mBinding.backupText.setText(AppDatabase.getDate());
+        return true;
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         if (hidden) return;
+        mBinding.vodUrl.setText(VodConfig.getDesc());
+        mBinding.liveUrl.setText(LiveConfig.getDesc());
+        mBinding.wallUrl.setText(WallConfig.getDesc());
+        mBinding.dohText.setText(getDohList()[getDohIndex()]);
         setCacheText();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        EventBus.getDefault().unregister(this);
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
+        setConfig(Config.find("file:/" + FileChooser.getPathFromUri(getContext(), data.getData()).replace(Path.rootPath(), ""), type));
     }
 }

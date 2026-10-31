@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="24dp">
+    android:padding="16dp">
 
     <FrameLayout
         android:id="@+id/frame"
@@ -17,7 +17,9 @@
             android:layout_width="90dp"
             android:layout_height="120dp"
             android:background="@color/black_10"
-            app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+            android:scaleType="center"
+            app:shapeAppearanceOverlay="@style/Vod.Grid"
+            tools:src="@drawable/ic_img_loading" />
 
         <include
             android:id="@+id/progress"
@@ -31,7 +33,7 @@
             android:layout_gravity="center"
             android:background="@drawable/shape_control">
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/exo_icon_play" />
@@ -39,7 +41,7 @@
         </FrameLayout>
     </FrameLayout>
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -47,11 +49,11 @@
         android:layout_toEndOf="@+id/frame"
         android:ellipsize="end"
         android:maxLines="3"
-        android:textColor="?attr/colorOnSurface"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="16sp"
         tools:text="狂飆" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/from"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -59,7 +61,7 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="2dp"
         android:singleLine="true"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp"
         tools:text="Xiaomi 13" />
 

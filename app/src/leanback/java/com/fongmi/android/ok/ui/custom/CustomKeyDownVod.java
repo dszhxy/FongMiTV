@@ -1,35 +1,54 @@
 package com.fongmi.android.ok.ui.custom;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioManager;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.Constant;
 import com.fongmi.android.ok.utils.KeyUtil;
+import com.fongmi.android.ok.utils.ResUtil;
+import com.fongmi.android.ok.utils.Util;
 
 public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener {
 
     private final GestureDetector detector;
+    private final AudioManager manager;
     private final Listener listener;
+    private final Activity activity;
+    private final View videoView;
+    private boolean changeBright;
+    private boolean changeVolume;
     private boolean changeSpeed;
+    private boolean touch;
     private boolean full;
-    private long holdTime;
+    private float bright;
+    private float volume;
+    private int holdTime;
 
-    public static CustomKeyDownVod create(Activity activity) {
-        return new CustomKeyDownVod(activity);
+    public static CustomKeyDownVod create(Activity activity, View videoView) {
+        return new CustomKeyDownVod(activity, videoView);
     }
 
-    private CustomKeyDownVod(Activity activity) {
+    private CustomKeyDownVod(Activity activity, View videoView) {
+        this.manager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
         this.detector = new GestureDetector(activity, this);
         this.listener = (Listener) activity;
+        this.videoView = videoView;
+        this.activity = activity;
     }
 
     public boolean onTouchEvent(MotionEvent e) {
         if (!full) return false;
+        if (changeBright && e.getAction() == MotionEvent.ACTION_UP) listener.onBrightEnd();
+        if (changeVolume && e.getAction() == MotionEvent.ACTION_UP) listener.onVolumeEnd();
         return detector.onTouchEvent(e);
     }
 
@@ -47,24 +66,45 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener {
     }
 
     private void check(KeyEvent event) {
-        if (KeyUtil.isActionDown(event) && KeyUtil.isLeftKey(event)) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN && KeyUtil.isLeftKey(event)) {
             listener.onSeeking(subTime());
-        } else if (KeyUtil.isActionDown(event) && KeyUtil.isRightKey(event)) {
+        } else if (event.getAction() == KeyEvent.ACTION_DOWN && KeyUtil.isRightKey(event)) {
             listener.onSeeking(addTime());
-        } else if (KeyUtil.isActionUp(event) && (KeyUtil.isLeftKey(event) || KeyUtil.isRightKey(event))) {
-            App.post(() -> listener.onSeekEnd(holdTime), 250);
-        } else if (KeyUtil.isActionUp(event) && KeyUtil.isUpKey(event)) {
+        } else if (event.getAction() == KeyEvent.ACTION_UP && (KeyUtil.isLeftKey(event) || KeyUtil.isRightKey(event))) {
+            App.post(() -> listener.onSeekTo(holdTime), 250);
+        } else if (event.getAction() == KeyEvent.ACTION_UP && KeyUtil.isUpKey(event)) {
             if (changeSpeed) listener.onSpeedEnd();
             else listener.onKeyUp();
             changeSpeed = false;
-        } else if (KeyUtil.isActionUp(event) && KeyUtil.isDownKey(event)) {
+        } else if (event.getAction() == KeyEvent.ACTION_UP && KeyUtil.isDownKey(event)) {
             listener.onKeyDown();
-        } else if (KeyUtil.isActionUp(event) && KeyUtil.isEnterKey(event)) {
+        } else if (event.getAction() == KeyEvent.ACTION_UP && KeyUtil.isEnterKey(event)) {
             listener.onKeyCenter();
         } else if (event.isLongPress() && KeyUtil.isUpKey(event)) {
             listener.onSpeedUp();
             changeSpeed = true;
         }
+    }
+
+    @Override
+    public boolean onDown(@NonNull MotionEvent e) {
+        if (!full) return false;
+        volume = manager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        bright = Util.getBrightness(activity);
+        changeBright = false;
+        changeVolume = false;
+        touch = true;
+        return true;
+    }
+
+    @Override
+    public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+        if (!full) return false;
+        float deltaY = e1.getY() - e2.getY();
+        if (touch) checkFunc(distanceX, distanceY, e2);
+        if (changeBright) setBright(deltaY);
+        if (changeVolume) setVolume(deltaY);
+        return true;
     }
 
     @Override
@@ -79,23 +119,65 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener {
         return true;
     }
 
-    private long addTime() {
+    private int addTime() {
         return holdTime = holdTime + Constant.INTERVAL_SEEK;
     }
 
-    private long subTime() {
+    private int subTime() {
         return holdTime = holdTime - Constant.INTERVAL_SEEK;
     }
 
-    public void reset() {
+    public void resetTime() {
         holdTime = 0;
+    }
+
+    private void checkFunc(float distanceX, float distanceY, MotionEvent e2) {
+        if (Math.abs(distanceX) < Math.abs(distanceY)) checkSide(e2);
+        touch = false;
+    }
+
+    private void checkSide(MotionEvent e2) {
+        int half = ResUtil.getScreenWidthNav() / 2;
+        if (e2.getX() > half) changeVolume = true;
+        else changeBright = true;
+    }
+
+    private void setBright(float deltaY) {
+        int height = videoView.getMeasuredHeight();
+        if (bright == -1.0f) bright = 0.5f;
+        float brightness = deltaY * 2 / height + bright;
+        if (brightness < 0) brightness = 0f;
+        if (brightness > 1.0f) brightness = 1.0f;
+        WindowManager.LayoutParams attributes = activity.getWindow().getAttributes();
+        attributes.screenBrightness = brightness;
+        activity.getWindow().setAttributes(attributes);
+        listener.onBright((int) (brightness * 100));
+    }
+
+    private void setVolume(float deltaY) {
+        int height = videoView.getMeasuredHeight();
+        int maxVolume = manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        float deltaV = deltaY * 2 / height * maxVolume;
+        float index = volume + deltaV;
+        if (index > maxVolume) index = maxVolume;
+        if (index < 0) index = 0;
+        manager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) index, 0);
+        listener.onVolume((int) (index / maxVolume * 100));
     }
 
     public interface Listener {
 
-        void onSeeking(long time);
+        void onBright(int progress);
 
-        void onSeekEnd(long time);
+        void onBrightEnd();
+
+        void onVolume(int progress);
+
+        void onVolumeEnd();
+
+        void onSeeking(int time);
+
+        void onSeekTo(int time);
 
         void onSpeedUp();
 

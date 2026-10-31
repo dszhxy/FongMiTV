@@ -13,40 +13,54 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.App;
 import com.fongmi.android.ok.R;
+import com.fongmi.android.ok.bean.History;
 import com.fongmi.android.ok.bean.Parse;
 import com.fongmi.android.ok.databinding.ActivityVideoBinding;
 import com.fongmi.android.ok.databinding.DialogControlBinding;
-import com.fongmi.android.ok.player.PlayerManager;
-import com.fongmi.android.ok.setting.SpeedSetting;
+import com.fongmi.android.ok.player.Players;
+import com.fongmi.android.ok.player.Timer;
 import com.fongmi.android.ok.ui.adapter.ParseAdapter;
+import com.fongmi.android.ok.ui.base.ViewType;
 import com.fongmi.android.ok.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.ok.utils.ResUtil;
-import com.fongmi.android.ok.utils.SliderUtil;
-import com.fongmi.android.ok.utils.Timer;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.slider.Slider;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter.OnClickListener {
+public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickListener {
 
-    private final String[] scale;
     private DialogControlBinding binding;
     private ActivityVideoBinding parent;
+    private FragmentActivity activity;
     private List<TextView> scales;
-    private PlayerManager player;
+    private final String[] scale;
+    private Listener listener;
+    private History history;
+    private Players player;
     private boolean parse;
-
-    public ControlDialog() {
-        this.scale = ResUtil.getStringArray(R.array.select_scale);
-    }
 
     public static ControlDialog create() {
         return new ControlDialog();
     }
 
+    public ControlDialog() {
+        this.scale = ResUtil.getStringArray(R.array.select_scale);
+    }
+
     public ControlDialog parent(ActivityVideoBinding parent) {
         this.parent = parent;
+        return this;
+    }
+
+    public ControlDialog history(History history) {
+        this.history = history;
+        return this;
+    }
+
+    public ControlDialog player(Players player) {
+        this.player = player;
         return this;
     }
 
@@ -55,14 +69,11 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         return this;
     }
 
-    public ControlDialog player(PlayerManager player) {
-        this.player = player;
-        return this;
-    }
-
     public ControlDialog show(FragmentActivity activity) {
-        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof ControlDialog) return this;
+        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return this;
         show(activity.getSupportFragmentManager(), null);
+        this.listener = (Listener) activity;
+        this.activity = activity;
         return this;
     }
 
@@ -75,16 +86,17 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
 
     @Override
     protected void initView() {
+        if (player == null) dismiss();
+        if (player == null) return;
+        binding.speed.setValue(Math.max(player.getSpeed(), 0.5f));
+        binding.player.setText(parent.control.action.player.getText());
         binding.decode.setText(parent.control.action.decode.getText());
         binding.ending.setText(parent.control.action.ending.getText());
         binding.opening.setText(parent.control.action.opening.getText());
-        binding.repeat.setSelected(parent.control.action.repeat.isSelected());
-        binding.timer.setSelected(Timer.get().isRunning());
-        SpeedSetting.setup(binding.speed);
-        setMediaOptionVisible();
+        binding.loop.setActivated(parent.control.action.loop.isActivated());
+        binding.timer.setActivated(Timer.get().isRunning());
         setTrackVisible();
         setScaleText();
-        setPlayer();
         setParse();
     }
 
@@ -96,11 +108,8 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         binding.text.setOnClickListener(v -> dismiss(parent.control.action.text));
         binding.audio.setOnClickListener(v -> dismiss(parent.control.action.audio));
         binding.video.setOnClickListener(v -> dismiss(parent.control.action.video));
-        binding.player.setOnClickListener(v -> dismiss(parent.control.action.player));
-        binding.danmaku.setOnClickListener(v -> dismiss(parent.control.action.danmaku));
-        binding.edition.setOnClickListener(v -> dismiss(parent.control.action.edition));
-        binding.chapter.setOnClickListener(v -> dismiss(parent.control.action.chapter));
-        binding.repeat.setOnClickListener(v -> active(binding.repeat, parent.control.action.repeat));
+        binding.loop.setOnClickListener(v -> active(binding.loop, parent.control.action.loop));
+        binding.player.setOnClickListener(v -> click(binding.player, parent.control.action.player));
         binding.decode.setOnClickListener(v -> click(binding.decode, parent.control.action.decode));
         binding.ending.setOnClickListener(v -> click(binding.ending, parent.control.action.ending));
         binding.opening.setOnClickListener(v -> click(binding.opening, parent.control.action.opening));
@@ -110,18 +119,19 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
     }
 
     private void onTimer(View view) {
-        TimerDialog.create().show(getActivity());
+        App.post(() -> TimerDialog.create().show(activity), 200);
         dismiss();
     }
 
     private void setSpeed(@NonNull Slider slider, float value, boolean fromUser) {
-        if (fromUser) SpeedSetting.putPlayback(player.setSpeed(value));
+        parent.control.action.speed.setText(player.setSpeed(value));
+        if (history != null) history.setSpeed(player.getSpeed());
     }
 
     private void setScaleText() {
         for (int i = 0; i < scales.size(); i++) {
             scales.get(i).setText(scale[i]);
-            scales.get(i).setSelected(scales.get(i).getText().equals(parent.control.action.scale.getText()));
+            scales.get(i).setActivated(scales.get(i).getText().equals(parent.control.action.scale.getText()));
         }
     }
 
@@ -130,18 +140,18 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         binding.parse.setHasFixedSize(true);
         binding.parse.setItemAnimator(null);
         binding.parse.addItemDecoration(new SpaceItemDecoration(8));
-        binding.parse.setAdapter(new ParseAdapter(this));
+        binding.parse.setAdapter(new ParseAdapter(this, ViewType.LIGHT));
     }
 
     private void setScale(View view) {
-        for (TextView textView : scales) textView.setSelected(false);
-        ((Listener) requireActivity()).onScale(Integer.parseInt(view.getTag().toString()));
-        view.setSelected(true);
+        for (TextView textView : scales) textView.setActivated(false);
+        listener.onScale(Integer.parseInt(view.getTag().toString()));
+        view.setActivated(true);
     }
 
     private void active(View view, TextView target) {
         target.performClick();
-        view.setSelected(target.isSelected());
+        view.setActivated(target.isActivated());
     }
 
     private void click(TextView view, TextView target) {
@@ -160,11 +170,12 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         dismiss();
     }
 
-    public void setPlayer() {
-        SliderUtil.setValue(binding.speed, player.getSpeed());
+    public void updateParse() {
+        binding.parse.getAdapter().notifyItemRangeChanged(0, binding.parse.getAdapter().getItemCount());
+    }
+
+    public void updatePlayer() {
         binding.player.setText(parent.control.action.player.getText());
-        binding.decode.setVisibility(parent.control.action.decode.getVisibility());
-        binding.danmaku.setVisibility(parent.control.action.danmaku.getVisibility());
     }
 
     public void setParseVisible(boolean visible) {
@@ -179,14 +190,9 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         binding.track.setVisibility(binding.text.getVisibility() == View.GONE && binding.audio.getVisibility() == View.GONE && binding.video.getVisibility() == View.GONE ? View.GONE : View.VISIBLE);
     }
 
-    public void setMediaOptionVisible() {
-        binding.edition.setVisibility(parent.control.action.edition.getVisibility());
-        binding.chapter.setVisibility(parent.control.action.chapter.getVisibility());
-    }
-
     @Override
     public void onItemClick(Parse item) {
-        ((Listener) requireActivity()).onParse(item);
+        listener.onParse(item);
         binding.parse.getAdapter().notifyItemRangeChanged(0, binding.parse.getAdapter().getItemCount());
     }
 

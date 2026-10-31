@@ -8,24 +8,22 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fongmi.android.ok.Setting;
 import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.Site;
 import com.fongmi.android.ok.databinding.AdapterSiteBinding;
-import com.fongmi.android.ok.setting.Setting;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
 
-    private final OnClickListener listener;
+    private final OnClickListener mListener;
     private final List<Site> mItems;
     private int type;
 
     public SiteAdapter(OnClickListener listener) {
-        this.listener = listener;
-        this.mItems = new ArrayList<>();
-        this.addAll();
+        this.mListener = listener;
+        this.mItems = VodConfig.get().getSites();
     }
 
     public interface OnClickListener {
@@ -46,14 +44,6 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
         setEnable(type == 3);
     }
 
-    private void addAll() {
-        for (Site site : VodConfig.get().getSites()) if (!site.isHide()) mItems.add(site);
-    }
-
-    public List<Site> getItems() {
-        return mItems;
-    }
-
     @Override
     public int getItemCount() {
         return mItems.size();
@@ -70,7 +60,8 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
         Site item = mItems.get(position);
         holder.binding.text.setText(item.getName());
         holder.binding.check.setChecked(getChecked(item));
-        holder.binding.text.setSelected(item.isSelected());
+        holder.binding.text.setSelected(item.isActivated());
+        holder.binding.text.setActivated(item.isActivated());
         holder.binding.check.setVisibility(type == 0 ? View.GONE : View.VISIBLE);
         holder.binding.getRoot().setOnLongClickListener(v -> setLongListener(item));
         holder.binding.getRoot().setOnClickListener(v -> setListener(item, position));
@@ -80,29 +71,33 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
     private boolean getChecked(Site item) {
         if (type == 1) return item.isSearchable();
         if (type == 2) return item.isChangeable();
+        if (type == 3) return !item.isRecordable();
         return false;
     }
 
     private void setListener(Site item, int position) {
-        if (type == 0) listener.onItemClick(item);
+        if (type == 0) mListener.onItemClick(item);
         if (type == 1) item.setSearchable(!item.isSearchable()).save();
         if (type == 2) item.setChangeable(!item.isChangeable()).save();
+        if (type == 3) item.setRecordable(!item.isRecordable()).save();
         if (type != 0) notifyItemChanged(position);
     }
 
     private boolean setLongListener(Site item) {
         if (type == 1) setEnable(!item.isSearchable());
         if (type == 2) setEnable(!item.isChangeable());
+        if (type == 3) setEnable(!item.isRecordable());
         return true;
     }
 
     private void setEnable(boolean enable) {
-        if (type == 1) for (Site site : mItems) site.setSearchable(enable).save();
-        if (type == 2) for (Site site : mItems) site.setChangeable(enable).save();
+        if (type == 1) for (Site site : VodConfig.get().getSites()) site.setSearchable(enable).save();
+        if (type == 2) for (Site site : VodConfig.get().getSites()) site.setChangeable(enable).save();
+        if (type == 3) for (Site site : VodConfig.get().getSites()) site.setRecordable(enable).save();
         notifyItemRangeChanged(0, getItemCount());
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterSiteBinding binding;
 

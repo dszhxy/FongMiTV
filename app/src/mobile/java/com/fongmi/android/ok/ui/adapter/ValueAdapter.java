@@ -9,18 +9,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fongmi.android.ok.bean.Filter;
 import com.fongmi.android.ok.bean.Value;
 import com.fongmi.android.ok.databinding.AdapterValueBinding;
-import com.fongmi.android.ok.impl.FilterListener;
+import com.fongmi.android.ok.impl.FilterCallback;
 
 import java.util.List;
 
 public class ValueAdapter extends RecyclerView.Adapter<ValueAdapter.ViewHolder> {
 
-    private final FilterListener listener;
+    private final FilterCallback mListener;
     private final List<Value> mItems;
     private final String mKey;
 
-    public ValueAdapter(FilterListener listener, Filter filter) {
-        this.listener = listener;
+    public ValueAdapter(FilterCallback listener, Filter filter) {
+        this.mListener = listener;
         this.mItems = filter.getValue();
         this.mKey = filter.getKey();
     }
@@ -40,17 +40,17 @@ public class ValueAdapter extends RecyclerView.Adapter<ValueAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Value item = mItems.get(position);
         holder.binding.text.setText(item.getN());
-        holder.binding.text.setSelected(item.isSelected());
+        holder.binding.text.setActivated(item.isActivated());
         holder.binding.text.setOnClickListener(v -> onItemClick(item));
     }
 
     private void onItemClick(Value value) {
-        for (Value item : mItems) item.setSelected(value);
+        for (Value item : mItems) item.setActivated(value);
         notifyItemRangeChanged(0, getItemCount());
-        listener.setFilter(mKey, value);
+        mListener.setFilter(mKey, value);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterValueBinding binding;
 

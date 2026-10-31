@@ -7,19 +7,20 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.api.config.VodConfig;
 import com.fongmi.android.ok.bean.History;
 import com.fongmi.android.ok.databinding.DialogReceiveBinding;
 import com.fongmi.android.ok.event.CastEvent;
+import com.fongmi.android.ok.event.RefreshEvent;
 import com.fongmi.android.ok.impl.Callback;
 import com.fongmi.android.ok.ui.activity.VideoActivity;
 import com.fongmi.android.ok.utils.ImgUtil;
 import com.fongmi.android.ok.utils.Notify;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-public class ReceiveDialog extends BaseBottomSheetDialog {
+public class ReceiveDialog extends BaseDialog {
 
     private DialogReceiveBinding binding;
     private CastEvent event;
@@ -33,13 +34,8 @@ public class ReceiveDialog extends BaseBottomSheetDialog {
         return this;
     }
 
-    public void show(FragmentActivity activity) {
-        for (Fragment f : activity.getSupportFragmentManager().getFragments()) if (f instanceof ReceiveDialog) return;
-        show(activity.getSupportFragmentManager(), null);
-    }
-
     public void show(Fragment fragment) {
-        for (Fragment f : fragment.getChildFragmentManager().getFragments()) if (f instanceof ReceiveDialog) return;
+        for (Fragment f : fragment.getChildFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return;
         show(fragment.getChildFragmentManager(), null);
     }
 
@@ -50,10 +46,10 @@ public class ReceiveDialog extends BaseBottomSheetDialog {
 
     @Override
     protected void initView() {
-        History item = event.history();
+        History item = event.getHistory();
         binding.name.setText(item.getVodName());
-        binding.from.setText(event.device().getName());
-        ImgUtil.load(item.getVodName(), item.getVodPic(), binding.image);
+        binding.from.setText(event.getDevice().getName());
+        ImgUtil.loadVod(item.getVodName(), item.getVodPic(), binding.image);
     }
 
     @Override
@@ -74,12 +70,12 @@ public class ReceiveDialog extends BaseBottomSheetDialog {
     }
 
     private void onReceiveCast() {
-        if (VodConfig.get().getConfig().equals(event.config())) {
-            VideoActivity.cast(requireActivity(), event.history());
+        if (VodConfig.get().getConfig().equals(event.getConfig())) {
+            VideoActivity.cast(getActivity(), event.getHistory().update(VodConfig.getCid()));
             dismiss();
         } else {
             showProgress();
-            VodConfig.load(event.config(), getCallback());
+            VodConfig.load(event.getConfig(), getCallback());
         }
     }
 
@@ -87,6 +83,8 @@ public class ReceiveDialog extends BaseBottomSheetDialog {
         return new Callback() {
             @Override
             public void success() {
+                RefreshEvent.config();
+                RefreshEvent.video();
                 onReceiveCast();
                 hideProgress();
             }

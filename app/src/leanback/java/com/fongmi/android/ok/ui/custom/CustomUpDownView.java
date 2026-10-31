@@ -6,14 +6,14 @@ import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import com.fongmi.android.ok.utils.KeyUtil;
-import com.google.android.material.textview.MaterialTextView;
 
-public class CustomUpDownView extends MaterialTextView {
+public class CustomUpDownView extends AppCompatTextView {
 
-    private UpListener upListener;
-    private DownListener downListener;
+    private AddListener addListener;
+    private SubListener subListener;
 
     public CustomUpDownView(@NonNull Context context) {
         super(context);
@@ -23,16 +23,16 @@ public class CustomUpDownView extends MaterialTextView {
         super(context, attrs);
     }
 
-    public void setUpListener(UpListener upListener) {
-        this.upListener = upListener;
+    public void setAddListener(AddListener addListener) {
+        this.addListener = addListener;
     }
 
-    public void setDownListener(DownListener downListener) {
-        this.downListener = downListener;
+    public void setSubListener(SubListener subListener) {
+        this.subListener = subListener;
     }
 
     private boolean hasEvent(KeyEvent event) {
-        return KeyUtil.isActionDown(event) && ((upListener != null && KeyUtil.isUpKey(event)) || (downListener != null && KeyUtil.isDownKey(event)));
+        return event.getAction() == KeyEvent.ACTION_DOWN && (KeyUtil.isUpKey(event) || KeyUtil.isDownKey(event));
     }
 
     @Override
@@ -42,18 +42,18 @@ public class CustomUpDownView extends MaterialTextView {
     }
 
     private boolean onKeyDown(KeyEvent event) {
-        if (upListener != null && KeyUtil.isUpKey(event)) upListener.onUp();
-        if (downListener != null && KeyUtil.isDownKey(event)) downListener.onDown();
+        if (KeyUtil.isUpKey(event)) addListener.onAdd();
+        if (KeyUtil.isDownKey(event)) subListener.onSud();
         return true;
     }
 
-    public interface UpListener {
+    public interface AddListener {
 
-        void onUp();
+        void onAdd();
     }
 
-    public interface DownListener {
+    public interface SubListener {
 
-        void onDown();
+        void onSud();
     }
 }

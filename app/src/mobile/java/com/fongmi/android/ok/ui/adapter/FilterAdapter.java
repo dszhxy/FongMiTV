@@ -8,17 +8,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.ok.bean.Filter;
 import com.fongmi.android.ok.databinding.AdapterFilterBinding;
-import com.fongmi.android.ok.impl.FilterListener;
+import com.fongmi.android.ok.impl.FilterCallback;
 
 import java.util.List;
 
 public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder> {
 
-    private final FilterListener listener;
+    private final FilterCallback mListener;
     private final List<Filter> mItems;
 
-    public FilterAdapter(FilterListener listener, List<Filter> items) {
-        this.listener = listener;
+    public FilterAdapter(FilterCallback listener, List<Filter> items) {
+        this.mListener = listener;
         this.mItems = items;
     }
 
@@ -38,10 +38,10 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
         Filter item = mItems.get(position);
         holder.binding.recycler.setHasFixedSize(true);
         holder.binding.recycler.setItemAnimator(null);
-        holder.binding.recycler.setAdapter(new ValueAdapter(listener, item));
+        holder.binding.recycler.setAdapter(new ValueAdapter(mListener, item));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterFilterBinding binding;
 

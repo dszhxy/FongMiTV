@@ -1,21 +1,20 @@
 package com.tvbus.engine;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import com.github.catvod.Init;
+import com.github.catvod.utils.Github;
 
-import java.util.List;
+public class TVCore {
 
-public class TVCore implements Runnable {
+    private long handle;
 
-    private final Thread thread;
-    private final long handle;
-
-    public TVCore(String path) {
-        System.load(path);
-        handle = initialise();
-        thread = new Thread(this);
+    public TVCore(String so) {
+        try {
+            System.load(Github.getSo(so));
+            handle = initialise();
+        } catch (Throwable ignored) {
+        }
     }
 
     public TVCore listener(Listener listener) {
@@ -56,16 +55,7 @@ public class TVCore implements Runnable {
 
     public TVCore auth(String str) {
         try {
-            if (!str.isEmpty()) setAuthUrl(handle, str);
-            return this;
-        } catch (Throwable ignored) {
-            return this;
-        }
-    }
-
-    public TVCore domain(String str) {
-        try {
-            if (!str.isEmpty()) setDomainSuffix(handle, str);
+            if (str.length() > 0) setAuthUrl(handle, str);
             return this;
         } catch (Throwable ignored) {
             return this;
@@ -74,7 +64,7 @@ public class TVCore implements Runnable {
 
     public TVCore broker(String str) {
         try {
-            if (!str.isEmpty()) setMKBroker(handle, str);
+            if (str.length() > 0) setMKBroker(handle, str);
             return this;
         } catch (Throwable ignored) {
             return this;
@@ -83,7 +73,7 @@ public class TVCore implements Runnable {
 
     public TVCore name(String str) {
         try {
-            if (!str.isEmpty()) setUsername(handle, str);
+            if (str.length() > 0) setUsername(handle, str);
             return this;
         } catch (Throwable ignored) {
             return this;
@@ -92,24 +82,23 @@ public class TVCore implements Runnable {
 
     public TVCore pass(String str) {
         try {
-            if (!str.isEmpty()) setPassword(handle, str);
+            if (str.length() > 0) setPassword(handle, str);
             return this;
         } catch (Throwable ignored) {
             return this;
-        }
-    }
-
-    public void option(String key, List<String> values) {
-        try {
-            if (values.isEmpty()) return;
-            values.removeIf(TextUtils::isEmpty);
-            for (String value : values) setOption(handle, key, value);
-        } catch (Throwable ignored) {
         }
     }
 
     public void init() {
-        thread.start();
+        new Thread(this::start).start();
+    }
+
+    private void start() {
+        try {
+            init(handle, Init.context());
+            run(handle);
+        } catch (Throwable ignored) {
+        }
     }
 
     public void start(String url) {
@@ -129,16 +118,6 @@ public class TVCore implements Runnable {
     public void quit() {
         try {
             quit(handle);
-            thread.interrupt();
-        } catch (Throwable ignored) {
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            init(handle, Init.context());
-            run(handle);
         } catch (Throwable ignored) {
         }
     }
@@ -163,8 +142,6 @@ public class TVCore implements Runnable {
 
     private native void setAuthUrl(long handle, String str);
 
-    private native void setDomainSuffix(long handle, String str);
-
     private native void setMKBroker(long handle, String str);
 
     private native void setPassword(long handle, String str);
@@ -172,6 +149,4 @@ public class TVCore implements Runnable {
     private native void setUsername(long handle, String str);
 
     private native void setListener(long handle, Listener listener);
-
-    private native void setOption(long handle, String kev, String value);
 }

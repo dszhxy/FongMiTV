@@ -3,12 +3,8 @@ package com.fongmi.android.ok.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
@@ -44,38 +40,41 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     @Override
-    public void setSupportActionBar(@Nullable Toolbar toolbar) {
-        super.setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
     protected void initView(Bundle savedInstanceState) {
-        setSupportActionBar(mBinding.toolbar);
         setRecyclerView();
         getKeep();
     }
 
+    @Override
+    protected void initEvent() {
+        mBinding.sync.setOnClickListener(this::onSync);
+        mBinding.delete.setOnClickListener(this::onDelete);
+    }
+
     private void setRecyclerView() {
         mBinding.recycler.setHasFixedSize(true);
+        mBinding.recycler.getItemAnimator().setChangeDuration(0);
         mBinding.recycler.setLayoutManager(new GridLayoutManager(this, Product.getColumn(this)));
         mBinding.recycler.setAdapter(mAdapter = new KeepAdapter(this));
-        mAdapter.setSize(Product.getSpec(this));
+        mAdapter.setSize(Product.getSpec(getActivity()));
     }
 
     private void getKeep() {
-        mAdapter.setItems(Keep.getVod(), () -> mBinding.progressLayout.showContent(true, mAdapter.getItemCount()));
+        mAdapter.addAll(Keep.getVod());
+        mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
     }
 
-    private void onSync() {
+    private void onSync(View view) {
         SyncDialog.create().keep().show(this);
     }
 
-    private void onDelete() {
+    private void onDelete(View view) {
         if (mAdapter.isDelete()) {
             new MaterialAlertDialogBuilder(this).setTitle(R.string.dialog_delete_record).setMessage(R.string.dialog_delete_keep).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> mAdapter.clear()).show();
         } else if (mAdapter.getItemCount() > 0) {
             mAdapter.setDelete(true);
+        } else {
+            mBinding.delete.setVisibility(View.GONE);
         }
     }
 
@@ -84,6 +83,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
             @Override
             public void success() {
                 VideoActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+                RefreshEvent.config();
+                RefreshEvent.video();
             }
 
             @Override
@@ -101,16 +102,17 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     @Override
     public void onItemClick(Keep item) {
         Config config = Config.find(item.getCid());
-        if (config == null) SearchActivity.start(this, item.getVodName());
+        if (config == null) CollectActivity.start(this, item.getVodName());
         else if (item.getCid() != VodConfig.getCid()) loadConfig(config, item);
         else VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
     }
 
     @Override
     public void onItemDelete(Keep item) {
-        mAdapter.remove(item.delete(), () -> {
-            if (mAdapter.getItemCount() == 0) mAdapter.setDelete(false);
-        });
+        mAdapter.remove(item.delete());
+        if (mAdapter.getItemCount() > 0) return;
+        mBinding.delete.setVisibility(View.GONE);
+        mAdapter.setDelete(false);
     }
 
     @Override
@@ -120,22 +122,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_keep, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) onBackInvoked();
-        else if (item.getItemId() == R.id.delete) onDelete();
-        else if (item.getItemId() == R.id.sync) onSync();
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onBackInvoked() {
+    public void onBackPressed() {
         if (mAdapter.isDelete()) mAdapter.setDelete(false);
-        else super.onBackInvoked();
+        else super.onBackPressed();
     }
 }

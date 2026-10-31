@@ -1,14 +1,12 @@
 package com.fongmi.android.ok.server;
 
-import com.fongmi.android.ok.service.PlaybackService;
-import com.fongmi.android.ok.utils.Task;
 import com.github.catvod.Proxy;
 import com.github.catvod.utils.Util;
 
 public class Server {
 
-    private volatile PlaybackService service;
-    private volatile Nano nano;
+    private Nano nano;
+    private int port;
 
     private static class Loader {
         static volatile Server INSTANCE = new Server();
@@ -18,49 +16,49 @@ public class Server {
         return Loader.INSTANCE;
     }
 
-    public PlaybackService getService() {
-        return service;
+    public Server() {
+        this.port = 9978;
     }
 
-    public void setService(PlaybackService service) {
-        this.service = service;
+    public int getPort() {
+        return port;
     }
 
     public String getAddress() {
         return getAddress(false);
     }
 
-    public String getAddress(int tab) {
-        return getAddress(false) + "?tab=" + tab;
-    }
-
     public String getAddress(String path) {
-        return getAddress(true) + path;
+        return getAddress(true) + "/" + path;
     }
 
     public String getAddress(boolean local) {
-        return "http://" + (local ? "127.0.0.1" : Util.getIp()) + ":" + Proxy.getPort();
+        return "http://" + (local ? "127.0.0.1" : Util.getIp()) + ":" + getPort();
     }
 
-    public synchronized void start() {
+    public void go() {
+        Go.start();
+    }
+
+    public void start() {
         if (nano != null) return;
-        for (int i = 9978; i < 9999; i++) {
+        do {
             try {
-                nano = new Nano(i);
-                nano.start(500);
-                Proxy.set(i);
+                nano = new Nano(port);
+                Proxy.set(port);
+                nano.start();
                 break;
-            } catch (Throwable e) {
+            } catch (Exception e) {
+                ++port;
+                nano.stop();
                 nano = null;
             }
-        }
+        } while (port < 9999);
     }
 
     public void stop() {
-        Task.execute(() -> {
-            if (nano != null) nano.stop();
-            service = null;
-            nano = null;
-        });
+        if (nano != null) nano.stop();
+        nano = null;
+        Go.stop();
     }
 }

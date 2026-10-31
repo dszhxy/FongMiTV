@@ -2,7 +2,6 @@ package com.fongmi.android.ok.ui.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
@@ -37,7 +36,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     @Override
-    protected void initView(Bundle savedInstanceState) {
+    protected void initView() {
         setRecyclerView();
         getKeep();
     }
@@ -51,7 +50,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     private void getKeep() {
-        mAdapter.setItems(Keep.getVod(), () -> mBinding.progressLayout.showContent(true, mAdapter.getItemCount()));
+        mAdapter.addAll(Keep.getVod());
     }
 
     private void loadConfig(Config config, Keep item) {
@@ -59,6 +58,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
             @Override
             public void success() {
                 VideoActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+                RefreshEvent.history();
+                RefreshEvent.video();
             }
 
             @Override
@@ -83,9 +84,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
 
     @Override
     public void onItemDelete(Keep item) {
-        mAdapter.remove(item.delete(), () -> {
-            if (mAdapter.getItemCount() == 0) mAdapter.setDelete(false);
-        });
+        mAdapter.delete(item.delete());
+        if (mAdapter.getItemCount() == 0) mAdapter.setDelete(false);
     }
 
     @Override
@@ -95,8 +95,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     @Override
-    protected void onBackInvoked() {
+    public void onBackPressed() {
         if (mAdapter.isDelete()) mAdapter.setDelete(false);
-        else super.onBackInvoked();
+        else super.onBackPressed();
     }
 }

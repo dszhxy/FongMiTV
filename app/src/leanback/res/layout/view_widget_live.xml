@@ -8,48 +8,66 @@
         android:id="@+id/top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/title"
-            style="@style/Shadow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_toStartOf="@+id/clock"
-            android:ellipsize="marquee"
+            android:letterSpacing="0.02"
+            android:shadowColor="@color/grey_900"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="1"
             android:singleLine="true"
             android:textColor="@color/white"
             android:textSize="20sp"
-            tools:text="民視" />
+            tools:text="CCTV-1" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/size"
-            style="@style/Shadow"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/title"
             android:layout_alignStart="@+id/title"
+            android:layout_marginBottom="16dp"
+            android:shadowColor="@color/grey_900"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="1"
             android:textColor="@color/white"
             android:textSize="16sp"
             tools:text="1920 x 1080" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/clock"
-            style="@style/Shadow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:fontFeatureSettings="tnum"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            tools:text="09:20:00" />
-
     </RelativeLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <include layout="@layout/view_progress" />
+
+        <TextView
+            android:id="@+id/traffic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:visibility="gone"
+            tools:text="120KB/s" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -57,55 +75,47 @@
         android:background="@drawable/shape_widget"
         android:gravity="center"
         android:orientation="vertical"
+        android:padding="16dp"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_widget_error" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
+            android:layout_marginTop="16dp"
             android:textColor="@color/white"
             android:textSize="16sp"
-            tools:text="@string/error_play_url" />
+            tools:text="@string/error_play_format" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/shape_widget"
-        android:fontFeatureSettings="tnum"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        android:visibility="gone"
-        tools:text="Speed 3.0x"
-        tools:visibility="visible" />
-
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/digital"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/shape_widget"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
         android:includeFontPadding="false"
         android:letterSpacing="0.05"
+        android:shadowColor="@color/grey_900"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="1"
         android:textColor="@color/white"
-        android:textSize="64sp"
+        android:textSize="30sp"
+        android:textStyle="bold"
         android:visibility="gone"
         tools:text="05"
         tools:visibility="visible" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:id="@+id/center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -113,30 +123,31 @@
         android:background="@drawable/shape_widget"
         android:gravity="center"
         android:orientation="vertical"
+        android:padding="16dp"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:id="@+id/action"
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_widget_play" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/position"
+            <TextView
+                android:id="@+id/exo_position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFeatureSettings="tnum"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 tools:text="00:00:00" />
 
-            <com.google.android.material.textview.MaterialTextView
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
@@ -145,19 +156,18 @@
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/duration"
+            <TextView
+                android:id="@+id/exo_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFeatureSettings="tnum"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 tools:text="00:00:00" />
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
+    </LinearLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:id="@+id/bottom"
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -170,34 +180,36 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:textColor="@color/white"
             android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="005" />
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <ImageView
             android:id="@+id/logo"
             android:layout_width="48dp"
             android:layout_height="36dp"
             android:layout_marginEnd="12dp"
+            android:scaleType="fitCenter"
             android:visibility="gone" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
-            android:maxEms="48"
             android:singleLine="true"
             android:textColor="@color/white"
             android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="民視" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/play"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -206,15 +218,27 @@
             android:singleLine="true"
             android:textColor="@color/white"
             android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="正在播放：食神" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <TextView
             android:id="@+id/line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="來源 1" />
+
+        <TextView
+            android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textSize="18sp"
-            tools:text="來源 1" />
+            android:textStyle="bold"
+            tools:text="16:50" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 </FrameLayout>

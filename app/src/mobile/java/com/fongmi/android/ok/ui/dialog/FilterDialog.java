@@ -10,15 +10,16 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.ok.bean.Filter;
 import com.fongmi.android.ok.databinding.DialogFilterBinding;
-import com.fongmi.android.ok.impl.FilterListener;
+import com.fongmi.android.ok.impl.FilterCallback;
 import com.fongmi.android.ok.ui.adapter.FilterAdapter;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.List;
 
-public class FilterDialog extends BaseBottomSheetDialog {
+public class FilterDialog extends BaseDialog {
 
     private DialogFilterBinding binding;
-    private FilterListener listener;
+    private FilterCallback callback;
     private List<Filter> filter;
 
     public static FilterDialog create() {
@@ -31,9 +32,9 @@ public class FilterDialog extends BaseBottomSheetDialog {
     }
 
     public void show(Fragment fragment) {
-        for (Fragment f : fragment.getChildFragmentManager().getFragments()) if (f instanceof FilterDialog) return;
+        for (Fragment f : fragment.getChildFragmentManager().getFragments()) if (f instanceof BottomSheetDialogFragment) return;
         show(fragment.getChildFragmentManager(), null);
-        this.listener = (FilterListener) fragment;
+        this.callback = (FilterCallback) fragment;
     }
 
     @Override
@@ -43,7 +44,7 @@ public class FilterDialog extends BaseBottomSheetDialog {
 
     @Override
     protected void initView() {
+        binding.recycler.setAdapter(new FilterAdapter(callback, filter));
         binding.recycler.setHasFixedSize(true);
-        binding.recycler.setAdapter(new FilterAdapter(listener, filter));
     }
 }

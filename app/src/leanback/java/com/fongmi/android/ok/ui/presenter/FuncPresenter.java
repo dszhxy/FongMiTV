@@ -11,33 +11,32 @@ import com.fongmi.android.ok.databinding.AdapterFuncBinding;
 
 public class FuncPresenter extends Presenter {
 
-    private final OnClickListener listener;
+    private final OnClickListener mListener;
 
     public FuncPresenter(OnClickListener listener) {
-        this.listener = listener;
+        this.mListener = listener;
     }
 
     public interface OnClickListener {
         void onItemClick(Func item);
     }
 
-    @NonNull
     @Override
-    public Presenter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
+    public Presenter.ViewHolder onCreateViewHolder(ViewGroup parent) {
         return new ViewHolder(AdapterFuncBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object object) {
+    public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object object) {
         Func item = (Func) object;
         ViewHolder holder = (ViewHolder) viewHolder;
         holder.binding.text.setText(item.getText());
         holder.binding.icon.setImageResource(item.getDrawable());
-        setOnClickListener(holder, view -> listener.onItemClick(item));
+        setOnClickListener(holder, view -> mListener.onItemClick(item));
     }
 
     @Override
-    public void onUnbindViewHolder(@NonNull Presenter.ViewHolder viewHolder) {
+    public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {
     }
 
     public static class ViewHolder extends Presenter.ViewHolder {

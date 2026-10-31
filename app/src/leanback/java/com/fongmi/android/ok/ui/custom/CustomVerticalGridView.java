@@ -7,17 +7,14 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.leanback.widget.VerticalGridView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.ok.R;
-import com.fongmi.android.ok.utils.KeyUtil;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class CustomVerticalGridView extends VerticalGridView {
 
@@ -51,8 +48,8 @@ public class CustomVerticalGridView extends VerticalGridView {
         });
     }
 
-    public void setHeader(FragmentActivity activity, int... layoutIds) {
-        if (activity != null) views = Arrays.stream(layoutIds).mapToObj(id -> (View) activity.findViewById(id)).filter(Objects::nonNull).toList();
+    public void setHeader(View... views) {
+        this.views = Arrays.asList(views);
     }
 
     public void setMoveTop(boolean moveTop) {
@@ -67,17 +64,12 @@ public class CustomVerticalGridView extends VerticalGridView {
         if (views != null) for (View view : views) view.setVisibility(View.VISIBLE);
     }
 
-    public boolean isHeaderVisible() {
-        if (views != null) for (View view : views) if (view.getId() == R.id.recycler && view.getVisibility() == View.VISIBLE) return true;
-        return false;
-    }
-
     @Override
-    public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
-        if (!KeyUtil.isActionDown(event)) return super.dispatchKeyEvent(event);
-        if (KeyUtil.isBackKey(event)) return moveTop && moveToTop();
-        pressUp = KeyUtil.isUpKey(event);
-        pressDown = KeyUtil.isDownKey(event);
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event);
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) return moveTop && moveToTop();
+        pressUp = event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP;
+        pressDown = event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN;
         return super.dispatchKeyEvent(event);
     }
 

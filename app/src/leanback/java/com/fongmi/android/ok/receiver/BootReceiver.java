@@ -3,44 +3,17 @@ package com.fongmi.android.ok.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Network;
 
-import androidx.annotation.NonNull;
-
+import com.android.cast.dlna.dmr.DLNARendererService;
 import com.fongmi.android.ok.App;
+import com.fongmi.android.ok.R;
 import com.fongmi.android.ok.api.config.LiveConfig;
 
 public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent == null || !isBootAction(intent.getAction())) return;
-        registerCallback();
-    }
-
-    private boolean isBootAction(String action) {
-        return Intent.ACTION_BOOT_COMPLETED.equals(action) || "android.intent.action.QUICKBOOT_POWERON".equals(action);
-    }
-
-    private void registerCallback() {
-        ((ConnectivityManager) App.get().getSystemService(Context.CONNECTIVITY_SERVICE)).registerDefaultNetworkCallback(new Callback());
-    }
-
-    static class Callback extends ConnectivityManager.NetworkCallback {
-
-        @Override
-        public void onAvailable(@NonNull Network network) {
-            doJob();
-        }
-
-        @Override
-        public void onLost(@NonNull Network network) {
-        }
-
-        private void doJob() {
-            LiveConfig.get().init().load();
-            ((ConnectivityManager) App.get().getSystemService(Context.CONNECTIVITY_SERVICE)).unregisterNetworkCallback(this);
-        }
+        DLNARendererService.Companion.start(App.get(), R.drawable.ic_logo);
+        LiveConfig.get().init().load();
     }
 }

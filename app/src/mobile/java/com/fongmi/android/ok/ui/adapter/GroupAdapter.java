@@ -14,17 +14,15 @@ import java.util.List;
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
-    private final OnClickListener listener;
+    private final OnClickListener mListener;
     private final List<Group> mItems;
 
     public GroupAdapter(OnClickListener listener) {
-        this.listener = listener;
+        this.mListener = listener;
         this.mItems = new ArrayList<>();
     }
 
     public interface OnClickListener {
-
-        void setWidth(Group item);
 
         void onItemClick(Group item);
     }
@@ -58,14 +56,14 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         return mItems.indexOf(group);
     }
 
-    public void setSelected(Group group) {
-        setSelected(indexOf(group));
-    }
-
     public void setSelected(int position) {
         for (int i = 0; i < mItems.size(); i++) mItems.get(i).setSelected(i == position);
         notifyItemRangeChanged(0, getItemCount());
-        listener.setWidth(mItems.get(position));
+    }
+
+    public void setSelected(Group group) {
+        int position = mItems.indexOf(group);
+        setSelected(position);
     }
 
     @Override
@@ -84,10 +82,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         Group item = mItems.get(position);
         holder.binding.name.setText(item.getName());
         holder.binding.getRoot().setSelected(item.isSelected());
-        holder.binding.getRoot().setOnClickListener(view -> listener.onItemClick(item));
+        holder.binding.getRoot().setOnClickListener(view -> mListener.onItemClick(item));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final AdapterGroupBinding binding;
 

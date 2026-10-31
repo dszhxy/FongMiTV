@@ -12,10 +12,9 @@ import androidx.viewbinding.ViewBinding;
 
 public abstract class BaseFragment extends Fragment {
 
-    private boolean isViewCreated;
-    private boolean isDataLoaded;
-
     protected abstract ViewBinding getBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
+
+    private boolean init;
 
     @Nullable
     @Override
@@ -25,26 +24,23 @@ public abstract class BaseFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        isViewCreated = true;
-        if (getUserVisibleHint()) {
-            lazyLoad();
-            isDataLoaded = true;
-        }
-    }
-
-    private void lazyLoad() {
-        initMenu();
         initView();
         initEvent();
-    }
-
-    protected void initMenu() {
     }
 
     protected void initView() {
     }
 
     protected void initEvent() {
+    }
+
+    protected void initData() {
+    }
+
+    private void onVisible() {
+        if (init) return;
+        initData();
+        init = true;
     }
 
     public boolean canBack() {
@@ -54,16 +50,12 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser && isViewCreated && !isDataLoaded) {
-            lazyLoad();
-            isDataLoaded = true;
-        }
+        if (isVisibleToUser) if (isResumed()) onVisible();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        isViewCreated = false;
-        isDataLoaded = false;
+    public void onResume() {
+        super.onResume();
+        if (getUserVisibleHint()) onVisible();
     }
 }
