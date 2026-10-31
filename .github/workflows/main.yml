@@ -37,6 +37,26 @@ jobs:
           SDKMANAGER=$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
           yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
 
+      - name: 配置 Release 签名
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "未配置签名 secrets，将回退到 debug 签名"
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/ok-release.jks"
+          touch local.properties
+          {
+            echo "storeFile=$RUNNER_TEMP/ok-release.jks"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyPassword=$KEY_PASSWORD"
+          } >> local.properties
+
       - name: 配置 Gradle 缓存
         uses: gradle/actions/setup-gradle@v4
 
