@@ -1,6 +1,7 @@
 package com.github.catvod.utils;
 
 import android.content.Context;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -31,8 +32,8 @@ public class Util {
         return Base64.encodeToString(bytes, Base64.DEFAULT | Base64.NO_WRAP);
     }
 
-    public static String basic(String userInfo) {
-        return "Basic " + base64(userInfo);
+    public static String basic(Uri uri) {
+        return "Basic " + base64(uri.getUserInfo());
     }
 
     public static byte[] hex2byte(String s) {

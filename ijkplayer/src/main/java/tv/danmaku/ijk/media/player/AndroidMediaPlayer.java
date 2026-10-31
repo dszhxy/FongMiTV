@@ -28,9 +28,6 @@ import android.os.Build;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.github.catvod.utils.Util;
-import com.google.common.net.HttpHeaders;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -71,14 +68,13 @@ public class AndroidMediaPlayer extends AbstractMediaPlayer implements MediaPlay
         if (ContentResolver.SCHEME_FILE.equals(scheme)) {
             setDataSource(uri.getPath());
         } else {
-            mMediaPlayer.setDataSource(context, uri, checkHeader(uri, headers));
+            mMediaPlayer.setDataSource(context, uri, checkRange(headers));
         }
     }
 
-    private Map<String, String> checkHeader(Uri uri, Map<String, String> headers) {
-        if (uri.getUserInfo() != null) headers.put(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
-        if (headers.containsKey(HttpHeaders.RANGE)) return headers;
-        headers.put(HttpHeaders.RANGE, "bytes=0-");
+    private Map<String, String> checkRange(Map<String, String> headers) {
+        if (headers.containsKey("Range")) return headers;
+        headers.put("Range", "bytes=0-");
         return headers;
     }
 
@@ -231,6 +227,7 @@ public class AndroidMediaPlayer extends AbstractMediaPlayer implements MediaPlay
 
     private int getTrack(int type) {
         try {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return 0;
             return mMediaPlayer.getSelectedTrack(type);
         } catch (Exception e) {
             return -1;

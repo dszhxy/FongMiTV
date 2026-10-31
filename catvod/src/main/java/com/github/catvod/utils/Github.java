@@ -7,19 +7,19 @@ import com.github.catvod.net.OkHttp;
 import java.io.File;
 
 public class Github {
-
-    public static final String URL = "https://my.t4tv.hz.cz";
+    //修改更新apk
+    public static final String URL = "https://my.t4tv.hz.czs";
 
     private static String getUrl(String path, String name) {
         return URL + "/" + path + "/" + name;
     }
 
-    public static String getJson(boolean dev, String name) {
-        return getUrl("apk/" + (dev ? "dev" : "release"), name + ".json");
+    public static String getJson(String name) {
+        return getUrl("apk/kitkat", name + ".json");
     }
 
-    public static String getApk(boolean dev, String name) {
-        return getUrl("apk/" + (dev ? "dev" : "release"), name + ".apk");
+    public static String getApk(String name) {
+        return getUrl("apk/kitkat", name + ".apk");
     }
 
     public static String getSo(String url) {

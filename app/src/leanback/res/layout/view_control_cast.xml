@@ -7,8 +7,10 @@
     android:background="@drawable/shape_controller"
     android:orientation="vertical"
     android:paddingStart="16dp"
+    android:paddingLeft="16dp"
     android:paddingTop="18dp"
     android:paddingEnd="16dp"
+    android:paddingRight="16dp"
     android:paddingBottom="8dp">
 
     <HorizontalScrollView
@@ -29,6 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -43,6 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -56,6 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -64,11 +69,12 @@
                 android:textSize="14sp"
                 tools:text="硬解" />
 
-            <com.fongmi.android.ok.ui.custom.CustomUpDownView
+            <com.fongmi.android.tv.ui.custom.CustomUpDownView
                 android:id="@+id/speed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -82,6 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -90,11 +97,12 @@
                 android:textSize="14sp"
                 tools:text="預設" />
 
-            <com.fongmi.android.ok.ui.custom.CustomUpDownView
+            <com.fongmi.android.tv.ui.custom.CustomUpDownView
                 android:id="@+id/text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -111,6 +119,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -127,6 +136,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/selector_text"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -142,7 +152,7 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <com.fongmi.android.ok.ui.custom.CustomSeekView
+    <com.fongmi.android.tv.ui.custom.CustomSeekView
         android:id="@+id/seek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -1,7 +1,13 @@
 pluginManagement {
     repositories {
-        maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+        // 改为阿里云的镜像地址
+        //maven { setUrl(https://maven.aliyun.com/repository/central)}
+        //maven { setUrl(https://maven.aliyun.com/repository/jcenter)}
+        //maven { setUrl(https://maven.aliyun.com/repository/google)}
+        //maven { setUrl(https://maven.aliyun.com/repository/gradle-plugin)}
+        //maven { setUrl(https://maven.aliyun.com/repository/public)}
         gradlePluginPortal()
+        jcenter()
         mavenCentral()
         google()
     }
@@ -9,9 +15,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        maven { url "https://maven.aliyun.com/repository/jcenter" }
-        maven { url "https://maven.aliyun.com/repository/google" }
+        //maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        jcenter() 
         mavenCentral()
         google()
         flatDir {
@@ -30,6 +36,7 @@ include ':app'
 include ':hook'
 include ':tvbus'
 include ':catvod'
+include ':danmaku'
 include ':pyramid'
 include ':quickjs'
 include ':thunder'
@@ -38,4 +45,4 @@ include ':forcetech'
 include ':ijkplayer'
 rootProject.name = "TV"
 gradle.ext.androidxMediaModulePrefix = 'media-'
-apply from: file("$rootDir/media/core_settings.gradle")
+apply from: file("../media/core_settings.gradle")

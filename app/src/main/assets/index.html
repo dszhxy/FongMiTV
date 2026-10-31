@@ -2,7 +2,7 @@
 <html lang="zh-cmn-Hans">
 
 <head>
-    <title>影視</title>
+    <title>心悦影視</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
     <meta name="wechat-enable-text-zoom-em" content="true">
@@ -20,15 +20,15 @@
                 <div id="panel1" role="tabpanel" aria-labelledby="tab1" class="weui-tab__panel">
                     <div class="weui-form">
                         <div class="weui-form__text-area">
-                            <h2 class="weui-form__title">搜尋</h2>
+                            <h2 class="weui-form__title">搜索</h2>
                         </div>
                         <div class="weui-form__control-area">
                             <div class="weui-cells__group weui-cells__group_form">
                                 <div class="weui-cells">
                                     <div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
                                         <div class="weui-cell__bd weui-flex">
-                                            <input id="keyword" class="weui-input weui-cell__control weui-cell__control_flex" type="text" value="" placeholder="請輸入關鍵字..." />
-                                            <button onclick="search(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">確定</button>
+                                            <input id="keyword" class="weui-input weui-cell__control weui-cell__control_flex" type="text" value="" placeholder="亲输入关键字..." />
+                                            <button onclick="search(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
                                         </div>
                                     </div>
                                 </div>
@@ -47,7 +47,7 @@
                                     <div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
                                         <div class="weui-cell__bd weui-flex">
                                             <input id="push_url" class="weui-input weui-cell__control weui-cell__control_flex" type="text" value="" placeholder="請輸入播放網址..." />
-                                            <button onclick="push(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">確定</button>
+                                            <button onclick="push(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
                                         </div>
                                     </div>
                                 </div>
@@ -66,7 +66,7 @@
                                     <div class="weui-cell weui-cell_active weui-cell_vcode weui-cell_wrap">
                                         <div class="weui-cell__bd weui-flex">
                                             <input id="setting_text" class="weui-input weui-cell__control weui-cell__control_flex" type="text" value="" placeholder="請輸入..." />
-                                            <button onclick="setting(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">確定</button>
+                                            <button onclick="setting(); return false;" class="weui-cell__control weui-btn weui-btn_default weui-vcode-btn">确定</button>
                                         </div>
                                     </div>
                                 </div>
@@ -74,7 +74,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="panel4" role="tabpanel" aria-labelledby="tab4" class="weui-tab__panel" style="display: none;">
+               <!--  <div id="panel4" role="tabpanel" aria-labelledby="tab4" class="weui-tab__panel" style="display: none;">
                     <div class="weui-form" style="min-height: 0;">
                         <div class="weui-form__text-area">
                             <h2 class="weui-form__title">本地</h2>
@@ -90,24 +90,24 @@
                         <div class="weui-cells" id="file_list">
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div role="tablist" class="weui-tabbar">
                     <div id="tab1" role="tab" aria-labelledby="t1_title" aria-selected="true" aria-controls="panel1" class="weui-tabbar__item weui-bar__item_on">
                         <img style="width: 20px; height: 20px; margin: 5px 0 5px 0;" alt="" src="images/ic_search.svg" class="weui-tabbar__icon">
-                        <p id="t1_title" aria-hidden="true" class="weui-tabbar__label">搜尋</p>
+                        <p id="t1_title" aria-hidden="true" class="weui-tabbar__label">搜索</p>
                     </div>
-                    <div id="tab2" role="tab" aria-labelledby="t2_title" aria-selected="false" aria-controls="panel2" class="weui-tabbar__item">
+                    <!-- <div id="tab2" role="tab" aria-labelledby="t2_title" aria-selected="false" aria-controls="panel2" class="weui-tabbar__item">
                         <img style="width: 20px; height: 20px; margin: 5px 0 5px 0;" alt="" src="images/ic_push.svg" class="weui-tabbar__icon">
                         <p aria-hidden="true" id="t2_title" class="weui-tabbar__label">推送</p>
                     </div>
                     <div id="tab3" role="tab" aria-labelledby="t3_title" aria-selected="false" aria-controls="panel3" class="weui-tabbar__item">
                         <img style="width: 20px; height: 20px; margin: 5px 0 5px 0;" alt="" src="images/ic_setting.svg" class="weui-tabbar__icon">
                         <p id="t3_title" aria-hidden="true" class="weui-tabbar__label">設定</p>
-                    </div>
-                    <div id="tab4" role="tab" aria-labelledby="t4_title" aria-selected="false" aria-controls="panel4" class="weui-tabbar__item">
+                    </div> -->
+                   <!--  <div id="tab4" role="tab" aria-labelledby="t4_title" aria-selected="false" aria-controls="panel4" class="weui-tabbar__item">
                         <img style="width: 20px; height: 20px; margin: 5px 0 5px 0;" alt="" src="images/ic_local.svg" class="weui-tabbar__icon">
                         <p id="t4_title" aria-hidden="true" class="weui-tabbar__label">本地</p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

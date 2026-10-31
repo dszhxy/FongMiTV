@@ -62,7 +62,7 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <com.fongmi.android.ok.ui.custom.CustomLiveListView
+        <com.fongmi.android.tv.ui.custom.CustomLiveListView
             android:id="@+id/group"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -76,7 +76,7 @@
             android:background="@color/grey_700"
             android:visibility="gone" />
 
-        <com.fongmi.android.ok.ui.custom.CustomLiveListView
+        <com.fongmi.android.tv.ui.custom.CustomLiveListView
             android:id="@+id/channel"
             android:layout_width="280dp"
             android:layout_height="match_parent"

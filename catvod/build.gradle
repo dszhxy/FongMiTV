@@ -6,7 +6,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdk 21
+        minSdk 16
         targetSdk 28
     }
 }
@@ -18,6 +18,6 @@ dependencies {
     api 'com.google.code.gson:gson:' + gsonVersion
     api 'com.orhanobut:logger:2.2.0'
     api 'com.squareup.okhttp3:okhttp:' + okhttpVersion
-    api 'com.squareup.okhttp3:okhttp-dnsoverhttps:' + okhttpVersion
+    api 'org.jsoup:jsoup:' + jsoupVersion
     api 'org.nanohttpd:nanohttpd:2.3.1'
 }

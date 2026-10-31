@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
@@ -20,18 +21,20 @@
         android:textSize="24sp"
         tools:text="@string/collect_result" />
 
-    <com.fongmi.android.ok.ui.custom.CustomHorizontalGridView
+    <com.fongmi.android.tv.ui.custom.CustomHorizontalGridView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:paddingStart="24dp"
+        android:paddingLeft="24dp"
         android:paddingEnd="24dp"
+        android:paddingRight="24dp"
         app:focusOutEnd="true"
         app:focusOutFront="true" />
 
-    <com.fongmi.android.ok.ui.custom.CustomViewPager
+    <com.fongmi.android.tv.ui.custom.CustomViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

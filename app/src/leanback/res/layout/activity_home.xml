@@ -12,11 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="24dp"
+        android:paddingLeft="24dp"
         android:paddingTop="24dp"
         android:paddingEnd="24dp"
+        android:paddingRight="24dp"
         android:paddingBottom="8dp">
 
-        <com.fongmi.android.ok.ui.custom.CustomTitleView
+        <com.fongmi.android.tv.ui.custom.CustomTitleView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,7 +39,7 @@
 
     </FrameLayout>
 
-    <com.fongmi.android.ok.ui.custom.ProgressLayout
+    <com.fongmi.android.tv.ui.custom.ProgressLayout
         android:id="@+id/progressLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -49,11 +51,13 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingStart="24dp"
+            android:paddingLeft="24dp"
             android:paddingTop="8dp"
             android:paddingEnd="24dp"
+            android:paddingRight="24dp"
             android:paddingBottom="24dp"
             app:focusOutEnd="true"
             app:focusOutFront="true" />
 
-    </com.fongmi.android.ok.ui.custom.ProgressLayout>
+    </com.fongmi.android.tv.ui.custom.ProgressLayout>
 </LinearLayout>
