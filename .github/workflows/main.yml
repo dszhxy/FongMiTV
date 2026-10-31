@@ -32,8 +32,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 配置 Android SDK
-        uses: android-actions/setup-android@v3
+      - name: 接受 Android SDK 许可证
+        run: |
+          SDKMANAGER=$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
 
       - name: 配置 Gradle 缓存
         uses: gradle/actions/setup-gradle@v4
