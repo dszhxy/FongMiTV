@@ -271,6 +271,9 @@
     <string name="setting_language">语言</string>
     <string name="setting_default">默认</string>
     <string name="setting_incognito">无痕模式</string>
+    <string name="setting_aggregated_search">聚合搜索</string>
+    <string name="setting_reset">重置App</string>
+    <string name="setting_about">关于</string>
     <string name="setting_theme_color">主题色彩</string>
     <string name="setting_auto">自动</string>
     <string name="setting_custom">自定义</string>
@@ -306,6 +309,7 @@
     <string name="player_dolby_vision_output">杜比视界</string>
     <string name="player_aac_track">AAC优先</string>
     <string name="player_adblock">智能去广</string>
+    <string name="player_flag">线路播放</string>
     <string name="player_tunnel">隧道模式</string>
     <string name="player_buffer">缓冲时间</string>
     <string name="player_decode_setting">解码设置</string>
@@ -344,6 +348,8 @@
     <string name="dialog_import">导入</string>
     <string name="dialog_positive">确定</string>
     <string name="dialog_negative">取消</string>
+    <string name="dialog_reset_app">重置App?</string>
+    <string name="dialog_reset_app_data">所有数据将会被重置，App即将被关闭.</string>
     <string name="dialog_select_edition">选择标题</string>
     <string name="dialog_select_chapter">选择章节</string>
     <string name="dialog_config_hint">请输入配置…</string>
@@ -426,6 +432,11 @@
         <item>4:3</item>
         <item>填充</item>
         <item>裁剪</item>
+    </string-array>
+
+    <string-array name="select_flag">
+        <item>自动</item>
+        <item>手动</item>
     </string-array>
 
     <string-array name="audio_effect_stability_levels">

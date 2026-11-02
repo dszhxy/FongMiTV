@@ -14,6 +14,7 @@ import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.github.catvod.utils.Shell;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SettingPersonalActivity extends BaseActivity {
@@ -34,18 +35,38 @@ public class SettingPersonalActivity extends BaseActivity {
     protected void initView(Bundle savedInstanceState) {
         mBinding.incognito.requestFocus();
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
+        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+        mBinding.aggregatedSearchText.setText(Setting.getSwitch(Setting.isAggregatedSearch()));
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
     }
 
     @Override
     protected void initEvent() {
         mBinding.incognito.setOnClickListener(this::setIncognito);
+        mBinding.adblock.setOnClickListener(this::setAdblock);
+        mBinding.aggregatedSearch.setOnClickListener(this::setAggregatedSearch);
+        mBinding.reset.setOnClickListener(this::onReset);
         mBinding.size.setOnClickListener(this::setSize);
     }
 
     private void setIncognito(View view) {
         Setting.putIncognito(!Setting.isIncognito());
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
+    }
+
+    private void setAdblock(View view) {
+        Setting.putAdblock(!Setting.isAdblock());
+        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+    }
+
+    private void setAggregatedSearch(View view) {
+        Setting.putAggregatedSearch(!Setting.isAggregatedSearch());
+        mBinding.aggregatedSearchText.setText(Setting.getSwitch(Setting.isAggregatedSearch()));
+        RefreshEvent.home();
+    }
+
+    private void onReset(View view) {
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.dialog_reset_app).setMessage(R.string.dialog_reset_app_data).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> new Thread(() -> Shell.exec("pm clear " + getPackageName())).start()).show();
     }
 
     private void setSize(View view) {

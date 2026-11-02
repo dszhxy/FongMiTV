@@ -272,6 +272,9 @@
     <string name="setting_language">Language</string>
     <string name="setting_default">Default</string>
     <string name="setting_incognito">Incognito mode</string>
+    <string name="setting_aggregated_search">Aggregated search</string>
+    <string name="setting_reset">Reset app</string>
+    <string name="setting_about">About</string>
     <string name="setting_theme_color">Theme color</string>
     <string name="setting_auto">Auto</string>
     <string name="setting_custom">Custom</string>
@@ -307,6 +310,7 @@
     <string name="player_dolby_vision_output">Dolby Vision</string>
     <string name="player_aac_track">Prefer aac track</string>
     <string name="player_adblock">Remove ads</string>
+    <string name="player_flag">Line playback</string>
     <string name="player_tunnel">Tunnel mode</string>
     <string name="player_buffer">Buffer time</string>
     <string name="player_decode_setting">Decode setting</string>
@@ -345,6 +349,8 @@
     <string name="dialog_import">Import</string>
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
+    <string name="dialog_reset_app">Reset app?</string>
+    <string name="dialog_reset_app_data">All app data will be reset, and app will be shutdown.</string>
     <string name="dialog_select_edition">Select title</string>
     <string name="dialog_select_chapter">Select chapter</string>
     <string name="dialog_config_hint">Please enter the config…</string>
@@ -431,6 +437,11 @@
         <item>4:3</item>
         <item>Fill</item>
         <item>Zoom</item>
+    </string-array>
+
+    <string-array name="select_flag">
+        <item>Auto</item>
+        <item>Manual</item>
     </string-array>
 
     <string-array name="audio_effect_stability_levels">

@@ -12,6 +12,7 @@ import com.fongmi.android.tv.bean.Parse;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.playback.PlaybackResult;
+import com.fongmi.android.tv.setting.Setting;
 
 import java.util.Collections;
 import java.util.List;
@@ -548,6 +549,7 @@ public class VodPlaybackController {
         Episode episode = history == null ? null : flag.find(history.getVodRemarks(), host.getVodMark().isEmpty());
         host.renderQualityVisible(episode != null && episode.isSelected() && state.getQuality().getUrl().isMulti());
         if (episode == null || episode.isSelected()) return;
+        if (Setting.getFlag() == 1) return;
         history.setVodRemarks(episode.getName());
         selectEpisode(episode);
     }

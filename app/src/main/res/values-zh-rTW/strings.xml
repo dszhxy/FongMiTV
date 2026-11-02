@@ -271,6 +271,9 @@
     <string name="setting_language">語言</string>
     <string name="setting_default">預設</string>
     <string name="setting_incognito">無痕模式</string>
+    <string name="setting_aggregated_search">聚合搜尋</string>
+    <string name="setting_reset">重置App</string>
+    <string name="setting_about">關於</string>
     <string name="setting_theme_color">主題色彩</string>
     <string name="setting_auto">自動</string>
     <string name="setting_custom">自訂</string>
@@ -306,6 +309,7 @@
     <string name="player_dolby_vision_output">杜比視界</string>
     <string name="player_aac_track">AAC優先</string>
     <string name="player_adblock">智慧去廣</string>
+    <string name="player_flag">線路播放</string>
     <string name="player_tunnel">隧道模式</string>
     <string name="player_buffer">緩衝時間</string>
     <string name="player_decode_setting">解碼設定</string>
@@ -344,6 +348,8 @@
     <string name="dialog_import">匯入</string>
     <string name="dialog_positive">確定</string>
     <string name="dialog_negative">取消</string>
+    <string name="dialog_reset_app">重置App?</string>
+    <string name="dialog_reset_app_data">所有資料將會被重置，App即將被關閉.</string>
     <string name="dialog_select_edition">選擇標題</string>
     <string name="dialog_select_chapter">選擇章節</string>
     <string name="dialog_config_hint">請輸入配置…</string>
@@ -426,6 +432,11 @@
         <item>4:3</item>
         <item>填充</item>
         <item>裁剪</item>
+    </string-array>
+
+    <string-array name="select_flag">
+        <item>自動</item>
+        <item>手動</item>
     </string-array>
 
     <string-array name="audio_effect_stability_levels">

@@ -79,6 +79,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
+        mBinding.aboutText.setText(BuildConfig.FLAVOR_mode);
     }
 
     private void setCacheText() {
@@ -105,6 +106,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.appearance.setOnClickListener(this::onAppearance);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
+        mBinding.about.setOnClickListener(this::onAbout);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
         mBinding.vodHome.setOnClickListener(this::onVodHome);
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
@@ -237,6 +239,10 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void onVersion(View view) {
         Updater.create().force().start(this);
+    }
+
+    private void onAbout(View view) {
+        mBinding.aboutText.setText(BuildConfig.FLAVOR_mode);
     }
 
     private void setWallDefault(View view) {

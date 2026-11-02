@@ -26,6 +26,7 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
     private String[] render;
     private String[] scale;
     private String[] engine;
+    private String[] flag;
 
     public static void start(Activity activity) {
         activity.startActivity(new Intent(activity, SettingPlayerActivity.class));
@@ -41,7 +42,7 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
         setVisible();
         setPlaybackModeText();
         mBinding.engine.requestFocus();
-        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+        mBinding.flagText.setText((flag = ResUtil.getStringArray(R.array.select_flag))[Setting.getFlag()]);
         mBinding.bufferText.setText(String.valueOf(PlayerSetting.getBuffer()));
         mBinding.mpvVulkanText.setText(Setting.getSwitch(PlayerSetting.isMpvVulkan()));
         mBinding.mpvGpuNextText.setText(Setting.getSwitch(PlayerSetting.isMpvGpuNext()));
@@ -53,7 +54,7 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
     protected void initEvent() {
         mBinding.engine.setOnClickListener(this::setEngine);
         mBinding.decode.setOnClickListener(this::onDecodeSetting);
-        mBinding.adblock.setOnClickListener(this::setAdblock);
+        mBinding.flag.setOnClickListener(this::setFlag);
         mBinding.mpvConf.setOnClickListener(this::onMpvConf);
         mBinding.mpvGpuNext.setOnClickListener(this::setMpvGpuNext);
         mBinding.mpvVulkan.setOnClickListener(this::setMpvVulkan);
@@ -72,7 +73,6 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
         mBinding.mpvConf.setVisibility(mpv ? View.VISIBLE : View.GONE);
         mBinding.mpvVulkan.setVisibility(mpv ? View.VISIBLE : View.GONE);
         mBinding.mpvGpuNext.setVisibility(mpv ? View.VISIBLE : View.GONE);
-        mBinding.adblock.setVisibility(exo ? View.VISIBLE : View.GONE);
         mBinding.buffer.setVisibility(exo ? View.VISIBLE : View.GONE);
     }
 
@@ -135,9 +135,12 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
         mBinding.backgroundText.setText(Setting.getSwitch(PlayerSetting.isBackgroundOn()));
     }
 
-    private void setAdblock(View view) {
-        Setting.putAdblock(!Setting.isAdblock());
-        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+    private void setFlag(View view) {
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.player_flag).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(flag, Setting.getFlag(), (dialog, which) -> {
+            mBinding.flagText.setText(flag[which]);
+            Setting.putFlag(which);
+            dialog.dismiss();
+        }).show();
     }
 
     private void onPreloadSetting(View view) {

@@ -29,6 +29,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
     private String[] render;
     private String[] scale;
     private String[] engine;
+    private String[] flag;
 
     public static SettingPlayerFragment newInstance() {
         return new SettingPlayerFragment();
@@ -43,7 +44,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
     protected void initView() {
         setVisible();
         setPlaybackModeText();
-        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+        mBinding.flagText.setText((flag = ResUtil.getStringArray(R.array.select_flag))[Setting.getFlag()]);
         mBinding.bufferText.setText(String.valueOf(PlayerSetting.getBuffer()));
         mBinding.mpvVulkanText.setText(Setting.getSwitch(PlayerSetting.isMpvVulkan()));
         mBinding.mpvGpuNextText.setText(Setting.getSwitch(PlayerSetting.isMpvGpuNext()));
@@ -55,7 +56,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
     protected void initEvent() {
         mBinding.engine.setOnClickListener(this::setEngine);
         mBinding.decode.setOnClickListener(this::onDecode);
-        mBinding.adblock.setOnClickListener(this::setAdblock);
+        mBinding.flag.setOnClickListener(this::onFlag);
         mBinding.mpvConf.setOnClickListener(this::onMpvConf);
         mBinding.mpvGpuNext.setOnClickListener(this::setMpvGpuNext);
         mBinding.mpvVulkan.setOnClickListener(this::setMpvVulkan);
@@ -73,7 +74,6 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.mpvConf.setVisibility(mpv ? View.VISIBLE : View.GONE);
         mBinding.mpvVulkan.setVisibility(mpv ? View.VISIBLE : View.GONE);
         mBinding.mpvGpuNext.setVisibility(mpv ? View.VISIBLE : View.GONE);
-        mBinding.adblock.setVisibility(exo ? View.VISIBLE : View.GONE);
         mBinding.buffer.setVisibility(exo ? View.VISIBLE : View.GONE);
     }
 
@@ -139,9 +139,12 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         }).show();
     }
 
-    private void setAdblock(View view) {
-        Setting.putAdblock(!Setting.isAdblock());
-        mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
+    private void onFlag(View view) {
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.player_flag).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(flag, Setting.getFlag(), (dialog, which) -> {
+            mBinding.flagText.setText(flag[which]);
+            Setting.putFlag(which);
+            dialog.dismiss();
+        }).show();
     }
 
     private void onPreload(View view) {
