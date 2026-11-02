@@ -76,7 +76,7 @@ public class AndroidMediaPlayer extends AbstractMediaPlayer implements MediaPlay
     }
 
     private Map<String, String> checkHeader(Uri uri, Map<String, String> headers) {
-        if (uri.getUserInfo() != null) headers.put(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
+        if (uri.getUserInfo() != null) headers.put(HttpHeaders.AUTHORIZATION, "Basic " + Util.base64(uri.getUserInfo()));
         if (headers.containsKey(HttpHeaders.RANGE)) return headers;
         headers.put(HttpHeaders.RANGE, "bytes=0-");
         return headers;

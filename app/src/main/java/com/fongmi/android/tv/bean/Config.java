@@ -107,7 +107,7 @@ public class Config {
     private static Config fixUrl(@Nullable Config item, int type) {
         if (item == null) return create(type);
         String url = UrlUtil.toLocalUrl(item.getUrl());
-        if (!url.equals(item.getUrl())) item.save(item.url(url));
+        if (!url.equals(item.getUrl())) item.url(url).save();
         return item;
     }
 
