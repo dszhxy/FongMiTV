@@ -1,13 +1,19 @@
 package com.fongmi.android.tv.api;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.util.Base64;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.utils.UrlUtil;
 import com.github.catvod.net.OkHttp;
 import com.github.catvod.utils.Crypto;
 import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,11 +26,26 @@ public class Decoder {
     private static final Pattern JS_URI = Pattern.compile("\"(\\.|\\.\\.)/(.?|.+?)\\.js\\?(.?|.+?)\"");
 
     public static String getJson(String url, String tag) throws Exception {
+        if (ContentResolver.SCHEME_CONTENT.equals(UrlUtil.scheme(url))) {
+            try (InputStream is = App.get().getContentResolver().openInputStream(Uri.parse(url))) {
+                if (is == null) throw new Exception();
+                return verify(url, read(is));
+            }
+        }
         try (Response res = OkHttp.newCall(url, tag).execute()) {
             HttpUrl httpUrl = res.request().url();
             int size = HttpUrl.parse(url).querySize();
             if (httpUrl.querySize() == size) url = httpUrl.toString();
             return verify(url, res.body().string());
+        }
+    }
+
+    private static String read(InputStream is) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[16384];
+            int read;
+            while ((read = is.read(buffer)) != -1) bos.write(buffer, 0, read);
+            return new String(bos.toByteArray(), StandardCharsets.UTF_8);
         }
     }
 

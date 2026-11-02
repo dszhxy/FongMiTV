@@ -132,7 +132,7 @@ public class ConfigDialog extends BaseAlertDialog {
         dismiss();
     }
 
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> FileChooser.getUri(result, this::setConfig));
+    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> FileChooser.getSourceUri(result, this::setConfig));
 
     private void setConfig(Uri uri) {
         if (!isAdded()) return;

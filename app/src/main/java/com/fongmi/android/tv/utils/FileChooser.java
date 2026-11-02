@@ -101,6 +101,29 @@ public final class FileChooser {
         return isFileSource(uri);
     }
 
+    /**
+     * 不做缓存拷贝，直接返回可长期读取的原始地址：
+     * 能反查到真实文件路径时返回 file://，否则返回持久化的 content://。
+     */
+    public static void getSourceUri(ActivityResult result, Consumer<Uri> callback) {
+        if (result.getResultCode() != Activity.RESULT_OK) return;
+        Uri uri = result.getData() == null ? null : result.getData().getData();
+        if (!isFileSource(uri)) return;
+        App.post(() -> callback.accept(originalUri(uri)));
+    }
+
+    private static Uri originalUri(Uri uri) {
+        File file = getLocalFile(uri);
+        if (file != null) return Uri.fromFile(file);
+        if (ContentResolver.SCHEME_CONTENT.equalsIgnoreCase(uri.getScheme())) {
+            try {
+                App.get().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (SecurityException ignored) {
+            }
+        }
+        return uri;
+    }
+
     public static void getUri(ActivityResult result, Consumer<Uri> callback) {
         if (result.getResultCode() == Activity.RESULT_OK) getUri(result.getData(), callback);
     }
