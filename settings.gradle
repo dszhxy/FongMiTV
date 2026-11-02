@@ -19,10 +19,10 @@ dependencyResolutionManagement {
         maven { url = uri("$rootDir/third_party/maven") }
         maven { url = "https://maven.aliyun.com/repository/google" }
         maven { url = "https://maven.aliyun.com/repository/public" }
+        maven { url = "https://jitpack.io" }
         mavenCentral()
         google()
         flatDir { dirs "$rootDir/app/libs" }
-        maven { url = "https://jitpack.io" }
     }
 }
 
