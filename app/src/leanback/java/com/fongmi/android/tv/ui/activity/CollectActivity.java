@@ -21,7 +21,6 @@ import androidx.viewpager.widget.ViewPager;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
-import com.fongmi.android.tv.bean.BuiltinDepot;
 import com.fongmi.android.tv.bean.Collect;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Result;
@@ -135,7 +134,7 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
 
     private void loadLines() {
         mLines.clear();
-        mLines.addAll(BuiltinDepot.getConfigs());
+        mLines.addAll(Config.findUrls());
     }
 
     private List<Config> getSearchOrder() {
@@ -146,8 +145,6 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
         Config current = VodConfig.get().getConfig();
         if (current != null && !current.getUrl().isEmpty()) moveConfig(source, order, current.getUrl());
 
-        // OK影视的 yyy 聚合接口第二优先，但 UI 仍按“谁先返回谁先出现”。
-        moveConfig(source, order, BuiltinDepot.EXTRA_YL_URL);
         order.addAll(source);
         return order;
     }

@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.api.config.VodConfig;
-import com.fongmi.android.tv.bean.BuiltinDepot;
 import com.fongmi.android.tv.bean.Collect;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Result;
@@ -133,8 +132,7 @@ public class CollectFragment extends BaseFragment implements
 
     private void loadLines() {
         mLines.clear();
-        // 左侧显示顺序保持原样。
-        mLines.addAll(BuiltinDepot.getConfigs());
+        mLines.addAll(Config.findUrls());
     }
 
     private List<Config> getSearchOrder() {
