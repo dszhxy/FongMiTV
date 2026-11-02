@@ -35,42 +35,33 @@ public class SettingDanmakuActivity extends BaseActivity implements DanmakuListe
 
     @Override
     protected void initView(Bundle savedInstanceState) {
-        mBinding.danmakuLoad.requestFocus();
         mBinding.danmakuApiText.setText(getApiStatus());
         mBinding.danmakuAutoText.setText(Setting.getSwitch(DanmakuSetting.isAuto()));
-        mBinding.danmakuLoadText.setText(Setting.getSwitch(DanmakuSetting.isLoad()));
         mBinding.danmakuSpiderText.setText(Setting.getSwitch(DanmakuSetting.isSpiderFirst()));
         updateApiVisibility();
+        mBinding.danmakuApi.requestFocus();
     }
 
     @Override
     protected void initEvent() {
         mBinding.danmakuApi.setOnClickListener(this::onDanmakuApi);
         mBinding.danmakuAuto.setOnClickListener(this::setDanmakuAuto);
-        mBinding.danmakuLoad.setOnClickListener(this::setDanmakuLoad);
         mBinding.danmakuSpider.setOnClickListener(this::setDanmakuSpider);
     }
 
-    private void setDanmakuLoad(View view) {
-        DanmakuSetting.putLoad(!DanmakuSetting.isLoad());
-        mBinding.danmakuLoadText.setText(Setting.getSwitch(DanmakuSetting.isLoad()));
-        updateApiVisibility();
-    }
-
     private void updateApiVisibility() {
-        boolean load = DanmakuSetting.isLoad();
-        mBinding.danmakuApi.setVisibility(load ? View.VISIBLE : View.GONE);
+        mBinding.danmakuApi.setVisibility(View.VISIBLE);
         updateAutoVisibility();
     }
 
     private void updateAutoVisibility() {
-        boolean show = DanmakuSetting.isLoad() && !TextUtils.isEmpty(DanmakuSetting.getEffectiveApiUrl());
+        boolean show = !TextUtils.isEmpty(DanmakuSetting.getEffectiveApiUrl());
         mBinding.danmakuAuto.setVisibility(show ? View.VISIBLE : View.GONE);
         updateSpiderVisibility();
     }
 
     private void updateSpiderVisibility() {
-        boolean show = DanmakuSetting.isLoad() && !TextUtils.isEmpty(DanmakuSetting.getEffectiveApiUrl()) && DanmakuSetting.isAuto();
+        boolean show = !TextUtils.isEmpty(DanmakuSetting.getEffectiveApiUrl()) && DanmakuSetting.isAuto();
         mBinding.danmakuSpider.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 

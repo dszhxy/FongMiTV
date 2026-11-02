@@ -1,7 +1,8 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
     <!-- App -->
-    <string name="app_name">OK影视</string>
+    <string name="app_name">Ys影视</string>
+    <string name="setting_personal">個性設定</string>
 
     <!-- Live -->
     <string name="live_pass">密碼</string>

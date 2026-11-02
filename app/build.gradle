@@ -18,7 +18,7 @@ android {
     compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
-        applicationId "com.fongmi.android.tv"
+        applicationId "com.fongmi.android.ys"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode 563
@@ -119,7 +119,7 @@ androidComponents {
         def mode = flavors['mode'] ?: 'mode'
         def abi = flavors['abi'] ?: 'abi'
         variant.outputs.each { output ->
-            output.outputFileName.set("OK影视-${mode}-${abi}.apk")
+            output.outputFileName.set("Ys影视-${mode}-${abi}.apk")
         }
     }
 }

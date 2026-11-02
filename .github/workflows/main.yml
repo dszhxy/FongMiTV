@@ -1,4 +1,4 @@
-name: OK影视 5.6.3 全版本构建
+name: Ys影视 5.6.3 全版本构建
 
 permissions:
   contents: write
@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - dav
 
 concurrency:
   group: build-${{ github.ref }}
@@ -84,7 +85,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v5.6.3-build-${{ github.run_number }}
-          name: OK影视 5.6.3 自动构建版
+          name: Ys影视 5.6.3 自动构建版
           body: |
             自动编译发布
 

@@ -40,6 +40,7 @@ import com.fongmi.android.tv.ui.fragment.SettingDanmakuFragment;
 import com.fongmi.android.tv.ui.fragment.SettingDecodeFragment;
 import com.fongmi.android.tv.ui.fragment.SettingFragment;
 import com.fongmi.android.tv.ui.fragment.SettingPlayerFragment;
+import com.fongmi.android.tv.ui.fragment.SettingPersonalFragment;
 import com.fongmi.android.tv.ui.fragment.SettingPreloadFragment;
 import com.fongmi.android.tv.ui.fragment.VodFragment;
 import com.fongmi.android.tv.utils.FileChooser;
@@ -118,6 +119,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
             case 3 -> SettingDanmakuFragment.newInstance();
             case 4 -> SettingPreloadFragment.newInstance();
             case 5 -> SettingDecodeFragment.newInstance();
+            case 6 -> SettingPersonalFragment.newInstance();
             default -> null;
         });
         if (savedInstanceState == null) change(0);
@@ -230,7 +232,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
             setNavigation();
         } else if (mManager.isVisible(4) || mManager.isVisible(5)) {
             change(2);
-        } else if (mManager.isVisible(3) || mManager.isVisible(2)) {
+        } else if (mManager.isVisible(6) || mManager.isVisible(3) || mManager.isVisible(2)) {
             change(1);
         } else if (mManager.isVisible(1)) {
             change(0);
