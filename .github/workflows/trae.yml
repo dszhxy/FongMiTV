@@ -1,4 +1,4 @@
-name: trae 手机版打包
+name: trae 打包
 
 permissions:
   contents: write
@@ -24,6 +24,10 @@ jobs:
             task: assembleMobileArm64_v8aRelease
           - name: mobile-armeabi_v7a
             task: assembleMobileArmeabi_v7aRelease
+          - name: leanback-arm64_v8a
+            task: assembleLeanbackArm64_v8aRelease
+          - name: leanback-armeabi_v7a
+            task: assembleLeanbackArmeabi_v7aRelease
     steps:
       - name: 拉取源码
         uses: actions/checkout@v4
@@ -58,51 +62,38 @@ jobs:
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: trae-apk-${{ matrix.name }}
+          name: ${{ matrix.name }}
           path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 14
 
-  package:
+  release:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: 下载全部 APK
         uses: actions/download-artifact@v4
         with:
-          pattern: trae-apk-*
+          pattern: '*'
           merge-multiple: true
           path: apk
 
       - name: 查看 APK
         run: ls -lh apk
 
-      - name: 打包 ZIP
-        run: |
-          cd apk
-          find . -name "*.apk" -print | zip "../Ys影视-trae-${{ github.run_number }}.zip" -@
-
-      - name: 上传打包文件
-        uses: actions/upload-artifact@v4
-        with:
-          name: trae-package-${{ github.run_number }}
-          path: Ys影视-trae-*.zip
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: 发布 trae 预发布包
+      - name: 发布 trae 发布包
         uses: softprops/action-gh-release@v2
         with:
           tag_name: trae-build-${{ github.run_number }}
-          name: Ys影视 trae 手机版构建 ${{ github.run_number }}
+          name: Ys影视 trae 构建 ${{ github.run_number }}
           body: |
-            trae 手机版自动打包
+            trae 分支自动打包
 
             包含：
             - Mobile ARM64 / ARMv7
+            - Leanback ARM64 / ARMv7
           prerelease: true
           files: |
             apk/*.apk
-            Ys影视-trae-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
