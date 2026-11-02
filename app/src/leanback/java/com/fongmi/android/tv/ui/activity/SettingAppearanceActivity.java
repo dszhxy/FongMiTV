@@ -12,6 +12,7 @@ import com.fongmi.android.tv.databinding.ActivitySettingAppearanceBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;
 
@@ -46,17 +47,23 @@ public class SettingAppearanceActivity extends BaseActivity {
     }
 
     private void setLanguage(View view) {
-        int index = indexOf(LANGUAGES, Setting.getLanguage());
-        Setting.putLanguage(LANGUAGES[(index + 1) % LANGUAGES.length]);
-        recreate();
+        int checked = indexOf(LANGUAGES, Setting.getLanguage());
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_language).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(LANGUAGE_NAMES, checked, (dialog, which) -> {
+            Setting.putLanguage(LANGUAGES[which]);
+            dialog.dismiss();
+            recreate();
+        }).show();
     }
 
     private void setThemeColor(View view) {
-        int index = findIndex(THEME_COLORS, Setting.getThemeColor());
-        int next = THEME_COLORS[(index + 1) % THEME_COLORS.length];
-        Setting.putThemeColor(next);
-        mBinding.themeColorText.setText(getThemeColorName(next));
-        RefreshEvent.theme();
+        int checked = findIndex(THEME_COLORS, Setting.getThemeColor());
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_theme_color).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(getThemeColorNames(), checked, (dialog, which) -> {
+            Setting.putThemeColor(THEME_COLORS[which]);
+            mBinding.themeColorText.setText(getThemeColorName(THEME_COLORS[which]));
+            dialog.dismiss();
+            RefreshEvent.theme();
+            recreate();
+        }).show();
     }
 
     private String getLanguageName() {
@@ -64,9 +71,15 @@ public class SettingAppearanceActivity extends BaseActivity {
     }
 
     private String getThemeColorName(int color) {
-        if (color == -1) return getString(R.string.setting_auto);
-        if (color == 0) return getString(R.string.setting_default);
+        if (color == -1) return getString(R.string.setting_off);
+        if (color == 0) return getString(R.string.setting_auto);
         return String.format(Locale.US, "#%06X", 0xFFFFFF & color);
+    }
+
+    private String[] getThemeColorNames() {
+        String[] names = new String[THEME_COLORS.length];
+        for (int i = 0; i < THEME_COLORS.length; i++) names[i] = getThemeColorName(THEME_COLORS[i]);
+        return names;
     }
 
     private int indexOf(String[] array, String value) {

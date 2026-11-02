@@ -348,6 +348,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
                 getVideo();
                 getHistory(true);
                 break;
+            case THEME:
+                recreate();
+                break;
         }
     }
 

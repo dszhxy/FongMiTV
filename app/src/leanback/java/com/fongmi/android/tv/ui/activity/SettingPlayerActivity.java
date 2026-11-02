@@ -18,6 +18,7 @@ import com.fongmi.android.tv.ui.dialog.BufferDialog;
 import com.fongmi.android.tv.ui.dialog.MpvConfDialog;
 import com.fongmi.android.tv.ui.dialog.UaDialog;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SettingPlayerActivity extends BaseActivity implements UaListener, BufferListener {
 
@@ -76,10 +77,12 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
     }
 
     private void setEngine(View view) {
-        int index = (PlayerSetting.getEngine() + 1) % engine.length;
-        PlayerSetting.putEngine(index);
-        setPlaybackModeText();
-        setVisible();
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.player_engine).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(engine, PlayerSetting.getEngine(), (dialog, which) -> {
+            PlayerSetting.putEngine(which);
+            setPlaybackModeText();
+            setVisible();
+            dialog.dismiss();
+        }).show();
     }
 
     private void onMpvConf(View view) {
@@ -110,9 +113,11 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
     }
 
     private void setScale(View view) {
-        int index = (PlayerSetting.getScale() + 1) % scale.length;
-        mBinding.scaleText.setText(scale[index]);
-        PlayerSetting.putScale(index);
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.player_scale).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(scale, PlayerSetting.getScale(), (dialog, which) -> {
+            mBinding.scaleText.setText(scale[which]);
+            PlayerSetting.putScale(which);
+            dialog.dismiss();
+        }).show();
     }
 
     private void onBuffer(View view) {

@@ -235,7 +235,50 @@ public class PlayerManager implements ParseCallback {
     }
 
     public String getSizeText() {
-        return (getVideoWidth() == 0 && getVideoHeight() == 0) ? "" : getVideoWidth() + " x " + getVideoHeight();
+        String size = (getVideoWidth() == 0 && getVideoHeight() == 0) ? "" : getVideoWidth() + " x " + getVideoHeight();
+        String dolby = getDolbyVisionLabel();
+        if (size.isEmpty()) return dolby;
+        return dolby.isEmpty() ? size : size + " · " + dolby;
+    }
+
+    /**
+     * Returns a short Dolby Vision tag such as "DV05" when the current video
+     * track declares a DV profile (dvh1./dvhe. codec strings), empty otherwise.
+     */
+    private String getDolbyVisionLabel() {
+        try {
+            Tracks tracks = getCurrentTracks();
+            if (tracks == null) return "";
+            for (Tracks.Group group : tracks.getGroups()) {
+                if (group.getType() != C.TRACK_TYPE_VIDEO) continue;
+                for (int i = 0; i < group.length; i++) {
+                    if (!group.isTrackSelected(i)) continue;
+                    Format format = group.getTrackFormat(i);
+                    String codecs = format.codecs != null ? format.codecs.toLowerCase(java.util.Locale.US) : "";
+                    if (format.sampleMimeType != null && "video/dolby-vision".equals(format.sampleMimeType)) codecs = TextUtils.isEmpty(codecs) ? "dvh1.05" : codecs;
+                    if (codecs.startsWith("dvhe.") || codecs.startsWith("dvh1.")) {
+                        int profile = parseDolbyVisionProfile(codecs);
+                        return "DV" + String.format(java.util.Locale.US, "%02d", profile);
+                    }
+                    return "";
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return "";
+    }
+
+    private static int parseDolbyVisionProfile(String codecs) {
+        int from = codecs.indexOf('.') + 1;
+        if (from <= 0) return 0;
+        int to = codecs.indexOf('.', from);
+        String value = to < 0 ? codecs.substring(from) : codecs.substring(from, to);
+        try {
+            int profile = Integer.parseInt(value);
+            return profile > 0 ? profile : 0;
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     public String getDecodeText() {
@@ -271,6 +314,7 @@ public class PlayerManager implements ParseCallback {
         return switch (engine.getType()) {
             case MPV -> PlayerSetting.ENGINE_MPV;
             case IJK -> PlayerSetting.ENGINE_IJK;
+            case SYSTEM -> PlayerSetting.ENGINE_SYSTEM;
             default -> PlayerSetting.ENGINE_EXO;
         };
     }

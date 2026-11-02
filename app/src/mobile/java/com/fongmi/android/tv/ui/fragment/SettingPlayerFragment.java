@@ -78,10 +78,12 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
     }
 
     private void setEngine(View view) {
-        int index = (PlayerSetting.getEngine() + 1) % engine.length;
-        PlayerSetting.putEngine(index);
-        setPlaybackModeText();
-        setVisible();
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.player_engine).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(engine, PlayerSetting.getEngine(), (dialog, which) -> {
+            PlayerSetting.putEngine(which);
+            setPlaybackModeText();
+            setVisible();
+            dialog.dismiss();
+        }).show();
     }
 
     private void onMpvConf(View view) {

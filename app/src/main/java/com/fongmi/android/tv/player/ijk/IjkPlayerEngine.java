@@ -165,6 +165,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         private final Context context;
         private final Handler handler;
         private final Runnable positionRunnable = this::refreshPosition;
+        private final Runnable prepareTimeoutRunnable = this::prepareAfterSurfaceTimeout;
         private final IMediaPlayer.Listener listener = new IMediaPlayer.Listener() {
             @Override public void onPrepared(IMediaPlayer mp) { IjkPlayer.this.onPrepared(mp); }
             @Override public void onCompletion(IMediaPlayer mp) { IjkPlayer.this.onCompletion(mp); }
@@ -285,7 +286,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             // after prepare(), so wait a short time for it before opening the source.
             if (videoOutput == null && pendingPrepareFuture == null) {
                 pendingPrepareFuture = SettableFuture.create();
-                handler.postDelayed(this::prepareAfterSurfaceTimeout, SURFACE_WAIT_TIMEOUT_MS);
+                handler.postDelayed(prepareTimeoutRunnable, SURFACE_WAIT_TIMEOUT_MS);
                 return pendingPrepareFuture;
             }
             startPrepared();
@@ -295,7 +296,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         private void startPrepared() {
             SettableFuture<Void> future = pendingPrepareFuture;
             pendingPrepareFuture = null;
-            if (future != null) handler.removeCallbacks(this::prepareAfterSurfaceTimeout);
+            if (future != null) handler.removeCallbacks(prepareTimeoutRunnable);
             startInternal(positionMs);
             if (future != null) future.set(null);
         }
@@ -340,9 +341,20 @@ public class IjkPlayerEngine implements PlayerEngine {
 
         private void applyOptions(IjkMediaPlayer player) {
             boolean hard = decode == PlayerEngine.HARD;
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", hard ? 1L : 0L);
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1L);
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1L);
+            long decodeValue = hard ? 1L : 0L;
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", decodeValue);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-hevc", decodeValue);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-all-videos", decodeValue);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", decodeValue);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", decodeValue);
+            // RGBA overlay is required on most devices, otherwise ijk renders no picture.
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "overlay-format", (long) IjkMediaPlayer.SDL_FCC_RV32);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 0L);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 1L);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "subtitle", 1L);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", 1L);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", -1L);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "fastseek");
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 0L);
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", IjkPerformanceSetting.getFrameDropValue());
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", IjkPerformanceSetting.isPacketBuffering() ? 1L : 0L);

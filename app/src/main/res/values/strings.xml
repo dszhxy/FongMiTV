@@ -33,6 +33,7 @@
     <string name="play_exo">EXO</string>
     <string name="play_mpv">MPV</string>
     <string name="play_ijk">IJK</string>
+    <string name="play_system">System</string>
     <string name="play_other">Other</string>
     <string name="play_next">Next</string>
     <string name="play_prev">Prev</string>
@@ -409,6 +410,7 @@
         <item>EXO</item>
         <item>MPV</item>
         <item>IJK</item>
+        <item>System</item>
     </string-array>
 
     <string-array name="select_render">

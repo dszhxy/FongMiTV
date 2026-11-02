@@ -13,8 +13,10 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.FragmentSettingSubtitleBinding;
 import com.fongmi.android.tv.setting.SubtitleSetting;
 import com.fongmi.android.tv.ui.base.BaseFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;
+import java.util.function.IntConsumer;
 
 public class SettingSubtitleFragment extends BaseFragment {
 
@@ -85,33 +87,56 @@ public class SettingSubtitleFragment extends BaseFragment {
     }
 
     private void setSize(View view) {
-        int index = (findNearest(SCALES, SubtitleSetting.getScale()) + 1) % SCALES.length;
-        SubtitleSetting.putScale(SCALES[index]);
-        mBinding.subtitleSizeText.setText(formatScale(SCALES[index]));
+        String[] items = new String[SCALES.length];
+        for (int i = 0; i < SCALES.length; i++) items[i] = formatScale(SCALES[i]);
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(SCALES, SubtitleSetting.getScale()), (dialog, which) -> {
+            SubtitleSetting.putScale(SCALES[which]);
+            mBinding.subtitleSizeText.setText(items[which]);
+            dialog.dismiss();
+        }).show();
     }
 
     private void setPosition(View view) {
-        int index = (findNearest(POSITIONS, SubtitleSetting.getPosition()) + 1) % POSITIONS.length;
-        SubtitleSetting.putPosition(POSITIONS[index]);
-        mBinding.subtitlePositionText.setText(formatPosition(POSITIONS[index]));
+        String[] items = new String[POSITIONS.length];
+        for (int i = 0; i < POSITIONS.length; i++) items[i] = formatPosition(POSITIONS[i]);
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_position).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(POSITIONS, SubtitleSetting.getPosition()), (dialog, which) -> {
+            SubtitleSetting.putPosition(POSITIONS[which]);
+            mBinding.subtitlePositionText.setText(items[which]);
+            dialog.dismiss();
+        }).show();
     }
 
     private void setTextColor(View view) {
-        int index = (findIndex(TEXT_COLORS, SubtitleSetting.getTextBaseColor()) + 1) % TEXT_COLORS.length;
-        SubtitleSetting.putTextColor(TEXT_COLORS[index]);
-        mBinding.subtitleTextColorText.setText(getTextColorName(TEXT_COLORS[index]));
+        showColorDialog(R.string.subtitle_text_color, TEXT_COLORS, SubtitleSetting.getTextBaseColor(), color -> {
+            SubtitleSetting.putTextColor(color);
+            mBinding.subtitleTextColorText.setText(getString(getTextColorName(color)));
+        });
     }
 
     private void setEdgeColor(View view) {
-        int index = (findIndex(TEXT_COLORS, SubtitleSetting.getEdgeBaseColor()) + 1) % TEXT_COLORS.length;
-        SubtitleSetting.putEdgeColor(TEXT_COLORS[index]);
-        mBinding.subtitleEdgeColorText.setText(getTextColorName(TEXT_COLORS[index]));
+        showColorDialog(R.string.subtitle_edge_color, TEXT_COLORS, SubtitleSetting.getEdgeBaseColor(), color -> {
+            SubtitleSetting.putEdgeColor(color);
+            mBinding.subtitleEdgeColorText.setText(getString(getTextColorName(color)));
+        });
     }
 
     private void setBackground(View view) {
-        int index = (findIndex(BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor()) + 1) % BACKGROUND_COLORS.length;
-        SubtitleSetting.putBackgroundColor(BACKGROUND_COLORS[index]);
-        mBinding.subtitleBackgroundText.setText(getBackgroundColorName(BACKGROUND_COLORS[index]));
+        String[] names = new String[BACKGROUND_COLORS.length];
+        for (int i = 0; i < BACKGROUND_COLORS.length; i++) names[i] = getString(getBackgroundColorName(BACKGROUND_COLORS[i]));
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_background).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor()), (dialog, which) -> {
+            SubtitleSetting.putBackgroundColor(BACKGROUND_COLORS[which]);
+            mBinding.subtitleBackgroundText.setText(names[which]);
+            dialog.dismiss();
+        }).show();
+    }
+
+    private void showColorDialog(int title, int[] colors, int current, IntConsumer apply) {
+        String[] names = new String[colors.length];
+        for (int i = 0; i < colors.length; i++) names[i] = getString(getTextColorName(colors[i]));
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(title).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(colors, current), (dialog, which) -> {
+            apply.accept(colors[which]);
+            dialog.dismiss();
+        }).show();
     }
 
     private void setSecondary(View view) {
