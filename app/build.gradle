@@ -12,6 +12,16 @@ if (localPropsFile.exists()) {
 def hasReleaseSigning = localProps['storeFile'] && localProps['keyAlias'] && localProps['storePassword']
 def releaseKeyPassword = localProps['keyPassword'] ?: localProps['storePassword']
 
+// versionCode 随 git 提交数自动递增，每次提交/更新都会变化
+def commitCount = { ->
+    try {
+        def out = 'git rev-list --count HEAD'.execute([], rootProject.rootDir).text.trim()
+        return out.isInteger() ? out as Integer : 1
+    } catch (Exception ignored) {
+        return 1
+    }
+}()
+
 android {
     namespace = 'com.fongmi.android.tv'
 
@@ -21,8 +31,8 @@ android {
         applicationId "com.fongmi.android.ys"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
-        versionCode 563
-        versionName "5.6.3"
+        versionCode commitCount
+        versionName "0.0.1"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.fongmi.android.tv.event.EventIndex"]
@@ -57,10 +67,17 @@ android {
     signingConfigs {
         release {
             if (hasReleaseSigning) {
+                // 优先使用 local.properties 中配置的密钥（可选）
                 storeFile file(localProps['storeFile'])
                 keyAlias localProps['keyAlias']
                 keyPassword releaseKeyPassword
                 storePassword localProps['storePassword']
+            } else {
+                // 内置密钥：任何环境（本地/CI）打包均为同一签名，装好即可用，无需重新签名
+                storeFile file('ys.jks')
+                keyAlias 'ys'
+                keyPassword 'ys2026fongmi'
+                storePassword 'ys2026fongmi'
             }
         }
     }
@@ -69,7 +86,7 @@ android {
         release {
             minifyEnabled = true
             shrinkResources = true
-            signingConfig = hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+            signingConfig = signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-media.pro'
         }
     }

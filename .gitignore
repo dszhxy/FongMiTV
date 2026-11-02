@@ -23,9 +23,10 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Keystore files（app/ys.jks 为内置发布签名密钥，需入库，故显式排除例外）
 *.jks
 *.keystore
+!app/ys.jks
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json

@@ -1,147 +1,145 @@
-# 開發者文件
+# Ys影视
 
-基於 [CatVod](https://github.com/CatVodTVOfficial/CatVodTVJarLoader) 的開源 Android 影音應用程式，同時支援 **Android TV 大螢幕**與**手機**兩種使用情境，並且透過外部配置靈活擴展內容。
+基于 [FongMi TV](https://github.com/FongMi/TV)（CatVod 系）开源魔改的安卓影音应用，支持 **Android TV 大屏** 与 **手机** 两种形态，通过外部配置灵活扩展点播 / 直播内容。
 
-[討論群組](https://t.me/fongmi_official) | [發布頻道](https://t.me/fongmi_release)
+当前版本：**0.0.1**（versionCode 随提交自动递增，见[版本规则](#版本规则)）
 
-[![Star History Chart](https://api.star-history.com/svg?repos=FongMi/TV&type=Date)](https://www.star-history.com/#FongMi/TV&Date)
-
----
-
-## 目錄
-
-- [專案架構](#專案架構)
-- [播放器](#播放器)
-- [點播功能](#點播功能)
-- [直播功能](#直播功能)
-- [爬蟲引擎](#爬蟲引擎)
-- [網路功能](#網路功能)
-- [DLNA 投放](#dlna-投放)
-- [Android Auto](#android-auto)
-- [遠端控制](#遠端控制)
-- [配置說明](#配置說明)
-- [延伸閱讀](#延伸閱讀)
+[讨论群组](https://t.me/fongmi_official) | [发布频道](https://t.me/fongmi_release)
 
 ---
 
-## 專案架構
+## 目录
 
-| 項目      | 值                             |
-|---------|-------------------------------|
-| package | `com.fongmi.android.tv`       |
-| minSdk  | 24（Android 7.0 Nougat）        |
-| abi     | `arm64-v8a`、`armeabi-v7a`     |
-| flavor  | `leanback`（電視版）、`mobile`（手機版） |
+- [功能特性](#功能特性)
+- [项目架构](#项目架构)
+- [设置页结构](#设置页结构)
+- [版本规则](#版本规则)
+- [打包与签名](#打包与签名)
+- [配置说明](#配置说明)
+- [延伸阅读](#延伸阅读)
+
+---
+
+## 功能特性
+
+### 播放器
+- **ExoPlayer（Media3）+ FFmpeg 软解**，硬解 / 软解自动降级
+- **IJK 播放器**：已从 webhtv 移植 ijkplayer 0.8.8，可在播放器引擎中切换
+- 渲染支持 SurfaceView / TextureView
+- DRM：Widevine、PlayReady、ClearKey，支持 `#KODIPROP` 声明
+- 弹幕：DanmakuFlameMaster，与播放时间轴同步，支持远程推送
+- 字幕：SRT / SSA / ASS 外挂、系统 CaptioningManager、远程即时注入，独立**字幕设置**页
+- 倍速、多缩放比例、画中画、背景音频、片头 / 片尾自动跳过
+
+### 点播
+- 多站点分类浏览、Filter 筛选（年份 / 地区 / 类型）
+- 多站点并行搜索，关键字自动繁转简
+- 播放失败自动换源：解析器 → 线路 → 搜索其他站 → 下一站点
+- 观看记录（保留 60 天）、收藏、无痕模式
+
+### 直播
+- 支持 M3U、TXT（`#genre#` 分组）、JSON 三种直播源格式
+- EPG：XMLTV 格式（支持 `.gz`），每 6 小时自动刷新
+- 追看 / 时移、频道收藏、隐藏分组密码保护
+
+### 网络与扩展
+- 爬虫引擎：Java JAR（DexClassLoader）、JavaScript（QuickJS）、Python（Chaquopy）
+- DoH、代理（HTTP/HTTPS/SOCKS4/5）、Hosts 覆盖、CORS 注入、广告拦截
+- WebView 嗅探（regex 拦截媒体 URL，UA 伪装）
+- DLNA 投放：手机版 DMC 投放，电视版 DMR 接收
+- Android Auto：车机端浏览播放记录与直播频道
+- 远程控制：本地 HTTP 服务器（9978–9998 端口）
+
+---
+
+## 项目架构
+
+| 项目       | 值                             |
+|----------|-------------------------------|
+| 应用名     | Ys影视                        |
+| package  | `com.fongmi.android.ys`        |
+| minSdk   | 24（Android 7.0）              |
+| abi      | `arm64-v8a`、`armeabi-v7a`     |
+| flavor   | `leanback`（电视版）、`mobile`（手机版） |
 
 ```
-TV/
-├── app/            主應用程式（含兩套 UI Flavor）
-├── catvod/         爬蟲抽象層（Spider 介面、OkHttp 網路棧）
+FongMiTV/
+├── app/            主应用（leanback / mobile 两套 UI，main 为共用逻辑）
+├── catvod/         爬虫抽象层（Spider 接口、OkHttp 网络栈）
 ├── quickjs/        QuickJS JavaScript 引擎
 ├── chaquo/         Chaquopy Python 引擎
+└── docs/           配置与接口文档
 ```
 
-`app/src/main/` 為兩個版本共用的業務邏輯，`app/src/leanback/` 與 `app/src/mobile/` 各自實作對應 UI。
+---
+
+## 设置页结构
+
+主设置页入口：
+
+| 入口         | 内容                                       |
+|------------|------------------------------------------|
+| 播放器      | 播放相关参数（预加载、解码等）                 |
+| 弹幕        | 弹幕开关与加载设置                           |
+| 字幕设置    | 字幕样式、加载、偏移等（0.0.1 新增）           |
+| **个性设置** | **图片尺寸、无痕模式**（0.0.1 新增）          |
+| 外观与语言  | 语言切换、主题色（0.0.1 新增）                 |
+| 主题色 / DoH / 缓存 / 备份恢复 / 版本 | 主设置页内直接操作    |
 
 ---
 
-## 播放器
+## 版本规则
 
-- **核心**：ExoPlayer（Media3）+ FFmpeg 軟解，硬解 / 軟解自動降級切換
-- **渲染**：SurfaceView / TextureView
-- **DRM**：Widevine、PlayReady、ClearKey，支援 `#KODIPROP` 宣告
-- **彈幕**：DanmakuFlameMaster，與播放時間軸精確同步，支援遠端推送
-- **字幕**：SRT / SSA / ASS 外掛字幕、系統 CaptioningManager、遠端即時注入
-- **其他**：倍速、多縮放比例、畫中畫（PiP）、背景音訊、片頭 / 片尾自動跳過
+- `versionName`：`0.0.1` 起步，发布新版本时手动递增（如 `0.0.2`、`0.1.0`）
+- `versionCode`：构建时自动取 **git 提交数**（`git rev-list --count HEAD`），每次提交 / 更新自动变化，无需维护
+- 因此**本地与 CI 打包同一提交的 APK 完全一致**，新版本可直接覆盖安装
 
 ---
 
-## 點播功能
+## 打包与签名
 
-- 多站點分類瀏覽，Filter 篩選（年份 / 地區 / 類型等）
-- 多站點**並行搜尋**，關鍵字自動繁轉簡提升相容性
-- 播放失敗自動換源：解析器 → 線路 → 搜尋其他站 → 下一站點
-- 觀看記錄（保留 60 天）、收藏、無痕模式
-- 電視版使用遙控器操作；手機版支援手勢（亮度 / 音量 / 進度）、上下滑切集、螢幕旋轉與鎖定
+### 签名（无需重新签名）
 
----
+`app/ys.jks` 为内置签名密钥，仓库内自带，本地与 CI 打包均使用同一签名：
 
-## 直播功能
+- 打包产物**已签名、可直接安装**，无需重新签名
+- 新版本可直接覆盖升级，无需卸载重装
 
-- 支援 M3U、TXT（`#genre#` 分組）、JSON 三種直播源格式
-- **EPG**：XMLTV 格式（支援 `.gz`），每 6 小時自動刷新
-- **追看 / 時移**：`append`、`pltv` 等多種類型
-- 頻道收藏、隱藏分組密碼保護
-- 特殊引擎：TVBus、ForceTech
+> 如需换成自己的密钥，在 `local.properties` 中配置 `storeFile` / `keyAlias` / `storePassword` / `keyPassword` 即可覆盖内置签名。
 
----
+### 本地打包
 
-## 爬蟲引擎
+```bash
+# 需先在 local.properties 配置 sdk.dir（该文件已不再入库，需自行创建）
+./gradlew assembleMobileArm64_v8aRelease      # 手机版 arm64
+./gradlew assembleMobileArmeabi_v7aRelease     # 手机版 armv7
+./gradlew assembleLeanbackArm64_v8aRelease     # 电视版 arm64
+./gradlew assembleLeanbackArmeabi_v7aRelease   # 电视版 armv7
+```
 
-支援三種語言撰寫爬蟲：
+产物位于 `app/build/outputs/apk/`，文件名格式 `Ys影视-{mode}-{abi}.apk`。
 
-- Java JAR（DexClassLoader）
-- JavaScript（QuickJS）
-- Python（Chaquopy）
+### CI 打包
 
-透過 `api` 欄位指定爬蟲，`ext` 欄位傳入初始化參數。完整 API 規格見 [SPIDER.md](docs/SPIDER.md)。
+推送到 `trae` 分支自动触发 [trae.yml](.github/workflows/trae.yml) 工作流：4 个 ABI 全量打包，直接发布到 GitHub Release（预发布），产物为裸 APK，无需解压。
 
 ---
 
-## 網路功能
+## 配置说明
 
-- **DoH**：DNS over HTTPS，支援 Bootstrap IP
-- **代理**：HTTP / HTTPS / SOCKS4 / SOCKS5，依 host 正則規則動態選擇
-- **Hosts**：DNS 解析覆蓋，支援萬用字元 `*`
-- **CORS 注入**：依 host 規則在回應中注入自訂標頭
-- **廣告攔截**：`ads` 黑名單，符合域名直接攔截
-- **WebView 嗅探**：Sniffer 以 regex 攔截媒體 URL；支援 UA 偽裝
+Vod 配置为应用主入口，通过 URL 或本地路径加载，顶层字段：
 
----
-
-## DLNA 投放
-
-- **DMC（投放端）**：手機版，掃描區域網路 DLNA 設備並投放媒體
-- **DMR（被投放端）**：電視版，作為 DLNA Renderer 接收其他設備投放
-
-使用 JUPnP 3.0.4（UPnP），支援 play / pause / stop / seek / next / repeat 控制，可傳遞自訂 HTTP 標頭（User-Agent、Referer 等）至目標串流。
+- 点播站点（`sites`）、解析规则（`parses`）
+- 直播来源（`lives`）
+- 网络设置（`doh`、`proxy`、`hosts`、`ads`）
 
 ---
 
-## Android Auto
+## 延伸阅读
 
-電視版支援 Android Auto，PlaybackService 實作 MediaLibraryService，可在車機上瀏覽播放記錄與直播頻道：
-
-- **點播**：歷史記錄條目可直接續播，恢復上次進度
-- **直播**：依分組瀏覽頻道，可直接選台
-- **播放控制**：支援車機端 play / pause / prev / next / stop
-- **懶加載**：App 退出後 Auto 仍保持連線，配置自動重新載入
-
----
-
-## 遠端控制
-
-應用啟動後綁定本地 HTTP 伺服器（NanoHTTPD），埠號從 **9978** 起自動偵測至 **9998**，可用於播放控制、推送字幕 / 彈幕、多裝置同步等。完整端點說明見 [LOCAL.md](docs/LOCAL.md)。
-
----
-
-## 配置說明
-
-Vod 配置為應用主要入口，透過 URL 或本地路徑載入，頂層欄位定義：
-
-- 點播站點（`sites`）、解析規則（`parses`）
-- 直播來源（`lives`）
-- 網路設定（`doh`、`proxy`、`hosts`、`ads`）
-
-Live 配置可內嵌或獨立存放。完整欄位說明見 [CONFIG.md](docs/CONFIG.md)。
-
----
-
-## 延伸閱讀
-
-| 文件                          | 說明                   |
+| 文件                          | 说明                   |
 |-----------------------------|----------------------|
-| [CONFIG.md](docs/CONFIG.md) | Vod / Live 完整配置欄位說明  |
-| [SPIDER.md](docs/SPIDER.md) | Spider 所有方法規格與回傳格式   |
-| [LOCAL.md](docs/LOCAL.md)   | 本地 HTTP API 所有端點完整說明 |
-| [LIVE.md](docs/LIVE.md)     | 直播來源格式完整說明           |
+| [CONFIG.md](docs/CONFIG.md) | Vod / Live 完整配置字段说明  |
+| [SPIDER.md](docs/SPIDER.md) | Spider 所有方法规格与返回格式   |
+| [LOCAL.md](docs/LOCAL.md)   | 本地 HTTP API 所有端点完整说明 |
+| [LIVE.md](docs/LIVE.md)     | 直播来源格式完整说明           |
