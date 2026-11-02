@@ -25,7 +25,6 @@ public class Source {
     public Source() {
         extractors = new ArrayList<>();
         extractors.add(new Force());
-        extractors.add(new JianPian());
         extractors.add(new Push());
         extractors.add(new Strm());
         extractors.add(new Thunder());

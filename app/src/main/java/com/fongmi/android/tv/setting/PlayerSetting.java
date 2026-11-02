@@ -6,10 +6,11 @@ public class PlayerSetting {
 
     public static final int ENGINE_EXO = 0;
     public static final int ENGINE_MPV = 1;
+    public static final int ENGINE_IJK = 2;
     // Compatibility aliases used by the bundled FongMi MPV player.
     public static final int EXO = ENGINE_EXO;
     public static final int MPV = ENGINE_MPV;
-    public static final int IJK = 2;
+    public static final int IJK = ENGINE_IJK;
     public static final int MPV_RENDER_OPENGL = 0;
     public static final int MPV_RENDER_VULKAN = 1;
     public static final int RENDER_SURFACE = 0;
@@ -24,11 +25,11 @@ public class PlayerSetting {
     private static final int MAX_BACKGROUND = 2;
 
     public static int getEngine() {
-        return Math.clamp(Prefers.getInt("player_engine", ENGINE_EXO), ENGINE_EXO, ENGINE_MPV);
+        return Math.clamp(Prefers.getInt("player_engine", ENGINE_EXO), ENGINE_EXO, ENGINE_IJK);
     }
 
     public static void putEngine(int engine) {
-        Prefers.put("player_engine", Math.clamp(engine, ENGINE_EXO, ENGINE_MPV));
+        Prefers.put("player_engine", Math.clamp(engine, ENGINE_EXO, ENGINE_IJK));
         if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
     }
 
@@ -38,6 +39,10 @@ public class PlayerSetting {
 
     public static boolean isMpv() {
         return getEngine() == ENGINE_MPV;
+    }
+
+    public static boolean isIjk() {
+        return getEngine() == ENGINE_IJK;
     }
 
     public static boolean isDebug() {

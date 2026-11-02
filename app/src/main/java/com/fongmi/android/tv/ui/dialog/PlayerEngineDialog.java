@@ -61,6 +61,7 @@ public final class PlayerEngineDialog extends BaseBottomSheetDialog {
         binding.other.setOnClickListener(this::selectOther);
         binding.exo.setOnClickListener(view -> selectEngine(PlayerSetting.ENGINE_EXO));
         binding.mpv.setOnClickListener(view -> selectEngine(PlayerSetting.ENGINE_MPV));
+        binding.ijk.setOnClickListener(view -> selectEngine(PlayerSetting.ENGINE_IJK));
     }
 
     private void selectDebug(View view) {
@@ -87,10 +88,14 @@ public final class PlayerEngineDialog extends BaseBottomSheetDialog {
         int engine = getCurrentEngine(player);
         binding.exo.setSelected(engine == PlayerSetting.ENGINE_EXO);
         binding.mpv.setSelected(engine == PlayerSetting.ENGINE_MPV);
+        binding.ijk.setSelected(engine == PlayerSetting.ENGINE_IJK);
     }
 
     private View getSelectedView() {
-        return getCurrentEngine(player) == PlayerSetting.ENGINE_MPV ? binding.mpv : binding.exo;
+        int engine = getCurrentEngine(player);
+        if (engine == PlayerSetting.ENGINE_MPV) return binding.mpv;
+        if (engine == PlayerSetting.ENGINE_IJK) return binding.ijk;
+        return binding.exo;
     }
 
     private PlaybackActivity getPlaybackActivity() {

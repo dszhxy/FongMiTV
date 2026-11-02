@@ -1,11 +1,13 @@
 package com.fongmi.android.tv.player.engine;
 
 import static com.fongmi.android.tv.player.engine.PlayerEngine.Type.EXO;
+import static com.fongmi.android.tv.player.engine.PlayerEngine.Type.IJK;
 import static com.fongmi.android.tv.player.engine.PlayerEngine.Type.MPV;
 
 import androidx.media3.common.Player;
 
 import com.fongmi.android.tv.player.exo.ExoPlayerEngine;
+import com.fongmi.android.tv.player.ijk.IjkPlayerEngine;
 import com.fongmi.android.tv.player.media.PlaySpec;
 import com.fongmi.android.tv.player.mpv.MpvPlayerEngine;
 import com.fongmi.android.tv.setting.PlayerSetting;
@@ -23,6 +25,7 @@ public final class PlayerEngineFactory {
 
     public static PlayerEngine create(int decode, PlayerEngine.Type type, Player.Listener listener) {
         if (type == MPV && isMpvReady()) return new MpvPlayerEngine(decode, listener);
+        if (type == IJK && isIjkReady()) return new IjkPlayerEngine(decode, listener);
         return new ExoPlayerEngine(decode, listener);
     }
 
@@ -32,12 +35,13 @@ public final class PlayerEngineFactory {
 
     private static PlayerEngine.Type resolve(PlaySpec spec) {
         if (requiresExo(spec)) return EXO;
-        if (!PlayerSetting.isMpv() || !isMpvReady()) return EXO;
-        return MPV;
+        return resolve();
     }
 
     private static PlayerEngine.Type resolve() {
-        return PlayerSetting.isMpv() && isMpvReady() ? MPV : EXO;
+        if (PlayerSetting.isMpv()) return isMpvReady() ? MPV : EXO;
+        if (PlayerSetting.isIjk()) return isIjkReady() ? IJK : EXO;
+        return EXO;
     }
 
     private static boolean requiresExo(PlaySpec spec) {
@@ -46,5 +50,9 @@ public final class PlayerEngineFactory {
 
     private static boolean isMpvReady() {
         return MpvPlayerEngine.isAvailable();
+    }
+
+    private static boolean isIjkReady() {
+        return IjkPlayerEngine.isAvailable();
     }
 }

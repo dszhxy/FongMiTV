@@ -267,7 +267,12 @@ public class PlayerManager implements ParseCallback {
     }
 
     public int getEngine() {
-        return isMpvEngine() ? PlayerSetting.ENGINE_MPV : PlayerSetting.ENGINE_EXO;
+        if (engine == null) return PlayerSetting.getEngine();
+        return switch (engine.getType()) {
+            case MPV -> PlayerSetting.ENGINE_MPV;
+            case IJK -> PlayerSetting.ENGINE_IJK;
+            default -> PlayerSetting.ENGINE_EXO;
+        };
     }
 
     public void setEngine(int targetEngine) {
@@ -376,10 +381,6 @@ public class PlayerManager implements ParseCallback {
 
     public void previewAudioSetting(boolean original) {
         effects.previewAudioSetting(original);
-    }
-
-    private boolean isMpvEngine() {
-        return engine != null && engine.getType() == PlayerEngine.Type.MPV;
     }
 
     public void play() {

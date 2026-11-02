@@ -38,9 +38,6 @@
 -keep class com.github.catvod.crawler.** { *; }
 -keep class * extends com.github.catvod.crawler.Spider
 
-# Jianpian
--keep class com.p2p.** { *; }
-
 # JUPnP
 -dontwarn org.jupnp.**
 -keep class org.jupnp.** { *; }
@@ -72,6 +69,11 @@
 
 # XunLei
 -keep class com.xunlei.downloadlib.** { *; }
+
+# IJK
+-keep class tv.danmaku.ijk.media.player.** { *; }
+-keepclassmembers class tv.danmaku.ijk.media.player.** { native <methods>; }
+-dontwarn tv.danmaku.ijk.media.player.**
 
 # Zxing QRCode ABI
 -keep class com.google.zxing.* { *; }
