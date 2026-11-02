@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -27,10 +29,15 @@ import androidx.media3.common.VideoSize;
 import androidx.media3.common.util.UnstableApi;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.player.PlaybackAutoContext;
+import com.fongmi.android.tv.player.PlaybackSystemConditionPolicy;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.media.MediaItemFactory;
 import com.fongmi.android.tv.player.media.PlaySpec;
 import com.fongmi.android.tv.setting.IjkPerformanceSetting;
+import com.fongmi.android.tv.setting.PlaybackPerformanceCatalog;
+import com.fongmi.android.tv.setting.PlaybackPerformanceSetting;
+import com.fongmi.android.tv.setting.PlayerSetting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -39,6 +46,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -82,6 +90,11 @@ public class IjkPlayerEngine implements PlayerEngine {
     @Override
     public int getAudioChannelCount() {
         return Format.NO_VALUE;
+    }
+
+    @Override
+    public VideoPlaybackDetails getVideoPlaybackDetails() {
+        return player.getVideoPlaybackDetails();
     }
 
     @Override
@@ -205,6 +218,15 @@ public class IjkPlayerEngine implements PlayerEngine {
         private float volume = 1f;
         @Nullable
         private SettableFuture<Void> pendingPrepareFuture;
+        private final IjkFirstFrameWatchdog firstFrameWatchdog = new IjkFirstFrameWatchdog();
+        private final IjkDecodePressureController decodePressure = new IjkDecodePressureController();
+        @Nullable
+        private PowerManager powerManager;
+        private PlaybackAutoContext.SessionToken session = PlaybackAutoContext.SessionToken.none();
+        private IjkDecodePressurePolicy.Config decodeConfig = IjkDecodePressurePolicy.automaticInitialConfig();
+        private long generation;
+        private boolean firstFrame;
+        private boolean pressureReloadPending;
 
         private IjkPlayer(Context context, int decode) {
             super(Looper.getMainLooper());
@@ -261,6 +283,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         @Override
         protected ListenableFuture<?> handleSetMediaItems(List<MediaItem> mediaItems, int startIndex, long startPositionMs) {
             releasePlayer();
+            beginPlaybackSession();
             mediaItem = mediaItems.isEmpty() ? null : mediaItems.get(Math.max(0, Math.min(startIndex, mediaItems.size() - 1)));
             positionMs = startPositionMs == C.TIME_UNSET ? 0 : Math.max(0, startPositionMs);
             pendingSeekMs = startPositionMs == C.TIME_UNSET ? C.TIME_UNSET : Math.max(0, startPositionMs);
@@ -271,6 +294,20 @@ public class IjkPlayerEngine implements PlayerEngine {
             playerError = null;
             playbackState = Player.STATE_IDLE;
             return Futures.immediateVoidFuture();
+        }
+
+        /** 每个媒体项一个会话：看门狗与压降控制器都会随会话隔离复位。 */
+        private void beginPlaybackSession() {
+            generation++;
+            // PlaybackTrace.normalize 只认 "p-" 前缀 base36 格式，其它 traceId 会被视为无效会话。
+            String traceId = "p-" + Long.toString(SystemClock.elapsedRealtime(), 36).toLowerCase(Locale.US)
+                    + "-" + Long.toString(generation, 36).toLowerCase(Locale.US);
+            session = new PlaybackAutoContext.SessionToken(traceId, generation);
+            firstFrame = false;
+            pressureReloadPending = false;
+            firstFrameWatchdog.beginSession(session);
+            firstFrameWatchdog.beginAttempt(session, true);
+            decodePressure.beginSession(session);
         }
 
         @Override
@@ -308,6 +345,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         void startInternal(long startPositionMs) {
             releasePlayer();
             if (mediaItem == null) return;
+            firstFrameWatchdog.beginAttempt(session, true);
             Uri uri = mediaItem.requestMetadata.mediaUri;
             if (uri == null && mediaItem.localConfiguration != null) uri = mediaItem.localConfiguration.uri;
             if (uri == null) {
@@ -364,7 +402,9 @@ public class IjkPlayerEngine implements PlayerEngine {
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "first-high-water-mark-ms", IjkPerformanceSetting.getFirstWaterMs());
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "next-high-water-mark-ms", IjkPerformanceSetting.getNextWaterMs());
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "last-high-water-mark-ms", IjkPerformanceSetting.getLastWaterMs());
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "video-pictq-size", IjkPerformanceSetting.getPictureQueue());
+            resolveDecodeConfig();
+            configureSoftDecodeOptions(player);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "video-pictq-size", (long) decodeConfig.pictureQueue());
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", IjkPerformanceSetting.isAccurateSeek() ? 1L : 0L);
             int probe = IjkPerformanceSetting.getProbeMode();
             if (probe == IjkPerformanceSetting.PROBE_FAST) {
@@ -377,6 +417,77 @@ public class IjkPlayerEngine implements PlayerEngine {
             int transport = IjkPerformanceSetting.getRtspTransport();
             if (transport == IjkPerformanceSetting.RTSP_TCP) player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "tcp");
             else if (transport == IjkPerformanceSetting.RTSP_UDP) player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "udp");
+        }
+
+        /**
+         * 解码控制档位：自动档取压降控制器分级 stage 的 tune（自动画面队列固定 3 帧）；
+         * 手动档尊重用户设置，且硬解 profile 强制 OFF（跳帧/滤波只对软解有意义）。
+         */
+        private void resolveDecodeConfig() {
+            boolean automaticPictureQueue = PlaybackPerformanceSetting.isAuto(PlayerSetting.IJK, PlaybackPerformanceCatalog.IJK_PICTURE_QUEUE);
+            boolean automaticSoftTune = PlaybackPerformanceSetting.isAuto(PlayerSetting.IJK, PlaybackPerformanceCatalog.IJK_SOFT_TUNE);
+            decodeConfig = IjkDecodePressurePolicy.prepareConfig(
+                    automaticPictureQueue || automaticSoftTune,
+                    decodePressure.snapshot().stagedConfig(),
+                    decode == PlayerEngine.SOFT,
+                    IjkPerformanceSetting.getPictureQueue(),
+                    configuredSoftTuneMode());
+            decodeConfig = new IjkDecodePressurePolicy.Config(
+                    automaticPictureQueue ? decodeConfig.pictureQueue() : IjkPerformanceSetting.getPictureQueue(),
+                    automaticSoftTune ? decodeConfig.tuneMode()
+                            : decode == PlayerEngine.SOFT ? configuredSoftTuneMode()
+                            : IjkDecodePressurePolicy.TuneMode.OFF);
+        }
+
+        private void configureSoftDecodeOptions(IjkMediaPlayer player) {
+            IjkDecodePressurePolicy.TuneMode mode = decodeConfig.tuneMode();
+            if (mode == null || mode == IjkDecodePressurePolicy.TuneMode.OFF) return;
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "fast", (long) mode.fast());
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", (long) mode.skipLoopFilter());
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_frame", (long) mode.skipFrame());
+        }
+
+        private IjkDecodePressurePolicy.TuneMode configuredSoftTuneMode() {
+            return switch (IjkPerformanceSetting.getSoftTuneMode()) {
+                case IjkPerformanceSetting.SOFT_TUNE_AGGRESSIVE -> IjkDecodePressurePolicy.TuneMode.AGGRESSIVE;
+                case IjkPerformanceSetting.SOFT_TUNE_MILD -> IjkDecodePressurePolicy.TuneMode.MILD;
+                default -> IjkDecodePressurePolicy.TuneMode.OFF;
+            };
+        }
+
+        VideoPlaybackDetails getVideoPlaybackDetails() {
+            Format selected = selectedVideoFormat();
+            boolean hasNative = mediaPlayer != null && prepared;
+            if (selected == null && !hasNative) return VideoPlaybackDetails.empty();
+            String sourceCodecs = selected == null || selected.codecs == null ? "" : selected.codecs;
+            String decodedCodec = selected == null || selected.sampleMimeType == null ? "" : selected.sampleMimeType;
+            String decoderName = "";
+            String hwdecCurrent = "";
+            if (hasNative) {
+                IjkMediaPlayer player = mediaPlayer;
+                try {
+                    decoderName = player.getVideoCodecInfo();
+                } catch (Throwable ignored) {
+                    decoderName = "";
+                }
+                int decoder = videoDecoderSnapshot();
+                hwdecCurrent = decoder == IjkMediaPlayer.FFP_PROPV_DECODER_MEDIACODEC ? "mediacodec"
+                        : decoder == IjkMediaPlayer.FFP_PROPV_DECODER_AVCODEC ? "ffmpeg" : "";
+            }
+            return new VideoPlaybackDetails(
+                    sourceCodecs, C.INDEX_UNSET, C.INDEX_UNSET,
+                    decodedCodec, decoderName, hwdecCurrent, null, false, false);
+        }
+
+        private Format selectedVideoFormat() {
+            if (currentTracks == null) return null;
+            for (Tracks.Group group : currentTracks.getGroups()) {
+                if (group.getType() != C.TRACK_TYPE_VIDEO) continue;
+                for (int i = 0; i < group.length; i++) {
+                    return group.getTrackFormat(i);
+                }
+            }
+            return null;
         }
 
         private Map<String, String> headers(@Nullable Bundle extras) {
@@ -392,6 +503,11 @@ public class IjkPlayerEngine implements PlayerEngine {
         private void onPrepared(IMediaPlayer mp) {
             if (released || mp != mediaPlayer) return;
             prepared = true;
+            firstFrameWatchdog.onPrepared(session, SystemClock.elapsedRealtime());
+            if (pressureReloadPending) {
+                pressureReloadPending = false;
+                decodePressure.completeAction(session, true);
+            }
             long duration = mp.getDuration();
             durationMs = duration > 0 ? duration : C.TIME_UNSET;
             refreshTracks();
@@ -441,6 +557,11 @@ public class IjkPlayerEngine implements PlayerEngine {
         private boolean onError(IMediaPlayer mp, int what, int extra) {
             if (released || mp != mediaPlayer) return false;
             prepared = false;
+            if (pressureReloadPending) {
+                pressureReloadPending = false;
+                decodePressure.completeAction(session, false);
+            }
+            decodePressure.onPlaybackError(session);
             playbackState = Player.STATE_IDLE;
             playerError = new PlaybackException(what + "/" + extra, null, mapError(what));
             stopPolling();
@@ -464,6 +585,8 @@ public class IjkPlayerEngine implements PlayerEngine {
             }
             if (what == IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
                 if (playbackState == Player.STATE_BUFFERING) playbackState = Player.STATE_READY;
+                firstFrame = true;
+                firstFrameWatchdog.onFirstFrame(session);
                 invalidateState();
             }
         }
@@ -527,6 +650,8 @@ public class IjkPlayerEngine implements PlayerEngine {
                     int h = info.getHeight();
                     if (w > 0) builder.setWidth(w);
                     if (h > 0) builder.setHeight(h);
+                    float fps = info.getFps();
+                    if (fps > 0f) builder.setFrameRate(fps);
                 }
                 String language = info.getLanguage();
                 if (language != null && !language.isEmpty() && !"und".equals(language)) builder.setLanguage(language);
@@ -549,6 +674,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         private void refreshPosition() {
             if (released || mediaPlayer == null || !prepared || !playWhenReady) return;
             if (playbackState != Player.STATE_READY && playbackState != Player.STATE_BUFFERING) return;
+            evaluateRuntime();
             try {
                 positionMs = Math.max(0, mediaPlayer.getCurrentPosition());
                 long duration = mediaPlayer.getDuration();
@@ -566,6 +692,138 @@ public class IjkPlayerEngine implements PlayerEngine {
 
         private void stopPolling() {
             handler.removeCallbacks(positionRunnable);
+        }
+
+        /** 500ms 心跳：先评首帧看门狗，再评软解压降（内部有 4 秒采样下限）。 */
+        private void evaluateRuntime() {
+            if (!session.active() || mediaPlayer == null) return;
+            long now = SystemClock.elapsedRealtime();
+            IjkFirstFrameWatchdog.Decision decision = firstFrameWatchdog.evaluate(session, runtimeSample(), now);
+            if (decision.timedOut()) onFirstFrameTimeout(decision.activeDurationMs());
+            else evaluateDecodePressure(now);
+        }
+
+        private IjkFirstFrameWatchdog.RuntimeSample runtimeSample() {
+            return new IjkFirstFrameWatchdog.RuntimeSample(
+                    prepared && playWhenReady && playbackState == Player.STATE_READY,
+                    hasVideoTrackEvidence(),
+                    outputFramesPresent());
+        }
+
+        /** 轨道列表在 prepared 后即可得，不依赖 onVideoSizeChanged：黑屏且从未回调尺寸也能被看门狗判定。 */
+        private boolean hasVideoTrackEvidence() {
+            if (currentTracks != null && currentTracks.containsType(C.TRACK_TYPE_VIDEO)) return true;
+            return videoSize != null && videoSize != VideoSize.UNKNOWN;
+        }
+
+        private boolean outputFramesPresent() {
+            IjkMediaPlayer player = mediaPlayer;
+            if (player == null || !prepared) return false;
+            try {
+                return player.getVideoOutputFramesPerSecond() > 0f;
+            } catch (Throwable ignored) {
+                return false;
+            }
+        }
+
+        /**
+         * 首帧看门狗超时：IJK 处于活跃播放却始终没有渲染出画面。按解码失败上报，
+         * 让 PlayerManager 走既有的硬/软解切换重建链路，而不是无限黑屏等待。
+         */
+        private void onFirstFrameTimeout(long activeDurationMs) {
+            decodePressure.onPlaybackError(session);
+            firstFrame = false;
+            prepared = false;
+            playbackState = Player.STATE_IDLE;
+            playerError = new PlaybackException("IJK 首帧超时 activeMs=" + activeDurationMs, null, PlaybackException.ERROR_CODE_DECODING_FAILED);
+            stopPolling();
+            invalidateState();
+        }
+
+        private void evaluateDecodePressure(long now) {
+            boolean automaticSoftTune = PlaybackPerformanceSetting.isAuto(PlayerSetting.IJK, PlaybackPerformanceCatalog.IJK_SOFT_TUNE);
+            int decoder = videoDecoderSnapshot();
+            IjkDecodePressurePolicy.Input policyInput = new IjkDecodePressurePolicy.Input(
+                    automaticSoftTune,
+                    true,
+                    prepared && playWhenReady && playbackState == Player.STATE_READY,
+                    firstFrame,
+                    playbackParameters.speed == 1f,
+                    false,
+                    pressureReloadPending,
+                    decoder != IjkMediaPlayer.FFP_PROPV_DECODER_UNKNOWN,
+                    decoderKind(decoder),
+                    true,
+                    currentThermalState(),
+                    targetFrameRate() > 0f,
+                    targetFrameRate(),
+                    decodeFpsSnapshot());
+            IjkDecodePressureController.Decision decision = decodePressure.evaluate(
+                    new IjkDecodePressureController.Input(session, session, policyInput, decodeConfig, pressureReloadPending, now));
+            if (decision.requestsReload() && decodePressure.beginAction(session, decision)) {
+                pressureReloadPending = true;
+                // 以确认后的压降档位重建 IJK 管线，位置保持连续。
+                startInternal(Math.max(0, positionMs));
+            }
+        }
+
+        private int videoDecoderSnapshot() {
+            IjkMediaPlayer player = mediaPlayer;
+            if (player == null || !prepared) return IjkMediaPlayer.FFP_PROPV_DECODER_UNKNOWN;
+            try {
+                return player.getVideoDecoder();
+            } catch (Throwable ignored) {
+                return IjkMediaPlayer.FFP_PROPV_DECODER_UNKNOWN;
+            }
+        }
+
+        private PlaybackAutoContext.DecodeMode decoderKind(int decoder) {
+            return switch (decoder) {
+                case IjkMediaPlayer.FFP_PROPV_DECODER_MEDIACODEC -> PlaybackAutoContext.DecodeMode.HARDWARE;
+                case IjkMediaPlayer.FFP_PROPV_DECODER_AVCODEC -> PlaybackAutoContext.DecodeMode.SOFTWARE;
+                default -> PlaybackAutoContext.DecodeMode.UNKNOWN;
+            };
+        }
+
+        private IjkDecodePressurePolicy.DecodeSnapshot decodeFpsSnapshot() {
+            IjkMediaPlayer player = mediaPlayer;
+            if (player == null || !prepared) return IjkDecodePressurePolicy.DecodeSnapshot.unknown();
+            try {
+                return new IjkDecodePressurePolicy.DecodeSnapshot(true, player.getVideoDecodeFramesPerSecond(), player.getVideoOutputFramesPerSecond());
+            } catch (Throwable ignored) {
+                return IjkDecodePressurePolicy.DecodeSnapshot.unknown();
+            }
+        }
+
+        private float targetFrameRate() {
+            if (currentTracks == null) return -1f;
+            for (Tracks.Group group : currentTracks.getGroups()) {
+                if (group.getType() != C.TRACK_TYPE_VIDEO) continue;
+                for (int i = 0; i < group.length; i++) {
+                    Format format = group.getTrackFormat(i);
+                    if (format.frameRate > 0f) return format.frameRate;
+                }
+            }
+            return -1f;
+        }
+
+        private PlaybackAutoContext.ThermalState currentThermalState() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return PlaybackAutoContext.ThermalState.UNKNOWN;
+            PowerManager manager = powerManager;
+            if (manager == null) {
+                try {
+                    manager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                } catch (Throwable ignored) {
+                    manager = null;
+                }
+                powerManager = manager;
+            }
+            if (manager == null) return PlaybackAutoContext.ThermalState.UNKNOWN;
+            try {
+                return PlaybackSystemConditionPolicy.thermalState(manager.getCurrentThermalStatus(), Build.VERSION.SDK_INT);
+            } catch (Throwable ignored) {
+                return PlaybackAutoContext.ThermalState.UNKNOWN;
+            }
         }
 
         @Override
@@ -614,6 +872,9 @@ public class IjkPlayerEngine implements PlayerEngine {
         protected ListenableFuture<?> handleRelease() {
             released = true;
             stopPolling();
+            firstFrameWatchdog.endSession(session);
+            decodePressure.endSession(session);
+            session = PlaybackAutoContext.SessionToken.none();
             releasePlayer();
             invalidateState();
             return Futures.immediateVoidFuture();
@@ -664,6 +925,8 @@ public class IjkPlayerEngine implements PlayerEngine {
             long target = positionMs == C.TIME_UNSET ? 0 : Math.max(0, positionMs);
             this.positionMs = target;
             if (prepared && mediaPlayer != null) {
+                // 用户 seek 后的 FPS 波动不代表压降证据，抑制一段时间内的采样。
+                decodePressure.onUserSeek(session, SystemClock.elapsedRealtime());
                 try {
                     mediaPlayer.seekTo(target);
                     if (playbackState == Player.STATE_ENDED) {

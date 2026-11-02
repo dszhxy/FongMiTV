@@ -234,6 +234,10 @@ public class PlayerManager implements ParseCallback {
         return player.getCurrentPosition();
     }
 
+    public PlayerEngine.VideoPlaybackDetails getVideoPlaybackDetails() {
+        return engine == null ? PlayerEngine.VideoPlaybackDetails.empty() : engine.getVideoPlaybackDetails();
+    }
+
     public String getSizeText() {
         String size = (getVideoWidth() == 0 && getVideoHeight() == 0) ? "" : getVideoWidth() + " x " + getVideoHeight();
         String dolby = getDolbyVisionLabel();
@@ -242,10 +246,12 @@ public class PlayerManager implements ParseCallback {
     }
 
     /**
-     * Returns a short Dolby Vision tag such as "DV05" when the current video
-     * track declares a DV profile (dvh1./dvhe. codec strings), empty otherwise.
+     * 优先使用引擎上报的真实杜比链路（DV profile/level、HDR10 降级、P8.1 转换），
+     * 引擎未实现时回退到轨道 codecs 解析。
      */
     private String getDolbyVisionLabel() {
+        String tag = DolbyVisionFormatLabel.shortTag(getVideoPlaybackDetails());
+        if (!tag.isEmpty()) return tag;
         try {
             Tracks tracks = getCurrentTracks();
             if (tracks == null) return "";
