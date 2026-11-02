@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,6 +21,7 @@ import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
 import androidx.media3.common.SimpleBasePlayer;
+import androidx.media3.common.TrackGroup;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.VideoSize;
 import androidx.media3.common.util.UnstableApi;
@@ -33,12 +35,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 
 @UnstableApi
 public class IjkPlayerEngine implements PlayerEngine {
@@ -170,6 +174,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         private Surface ownedSurface;
         private VideoSize videoSize = VideoSize.UNKNOWN;
         private PlaybackParameters playbackParameters = PlaybackParameters.DEFAULT;
+        private Tracks currentTracks = Tracks.EMPTY;
         private boolean textureListenerAttached;
         private boolean prepared;
         private boolean playWhenReady = true;
@@ -231,7 +236,7 @@ public class IjkPlayerEngine implements PlayerEngine {
                     .setDurationUs(duration == C.TIME_UNSET ? C.TIME_UNSET : duration * 1000)
                     .setIsSeekable(duration > 0)
                     .setIsDynamic(duration == C.TIME_UNSET)
-                    .setTracks(Tracks.EMPTY)
+                    .setTracks(currentTracks)
                     .build();
         }
 
@@ -244,6 +249,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             durationMs = C.TIME_UNSET;
             bufferedMs = 0;
             videoSize = VideoSize.UNKNOWN;
+            currentTracks = Tracks.EMPTY;
             playerError = null;
             playbackState = Player.STATE_IDLE;
             return Futures.immediateVoidFuture();
@@ -276,6 +282,8 @@ public class IjkPlayerEngine implements PlayerEngine {
                 mediaPlayer = player;
                 player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 player.setVolume(volume, volume);
+                player.setScreenOnWhilePlaying(true);
+                player.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
                 player.setOnPreparedListener(this::onPrepared);
                 player.setOnCompletionListener(this::onCompletion);
                 player.setOnErrorListener(this::onError);
@@ -341,6 +349,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             prepared = true;
             long duration = mp.getDuration();
             durationMs = duration > 0 ? duration : C.TIME_UNSET;
+            refreshTracks();
             if (pendingSeekMs != C.TIME_UNSET && pendingSeekMs > 0) {
                 try {
                     mp.seekTo(pendingSeekMs);
@@ -420,12 +429,69 @@ public class IjkPlayerEngine implements PlayerEngine {
             if (width <= 0 || height <= 0) return;
             float ratio = sarNum > 0 && sarDen > 0 ? (float) sarNum / sarDen : 1f;
             videoSize = new VideoSize(width, height, ratio);
+            refreshTracks();
             invalidateState();
         }
 
         private void onBufferingUpdate(IMediaPlayer mp, int percent) {
             if (durationMs <= 0) return;
             bufferedMs = durationMs * Math.max(0, Math.min(100, percent)) / 100;
+        }
+
+        private void refreshTracks() {
+            if (mediaPlayer == null) {
+                currentTracks = Tracks.EMPTY;
+                return;
+            }
+            try {
+                ITrackInfo[] infos = mediaPlayer.getTrackInfo();
+                if (infos == null || infos.length == 0) {
+                    currentTracks = Tracks.EMPTY;
+                    return;
+                }
+                List<Tracks.Group> groups = new ArrayList<>();
+                for (int i = 0; i < infos.length; i++) {
+                    ITrackInfo info = infos[i];
+                    int type = toMedia3TrackType(info.getTrackType());
+                    if (type == C.TRACK_TYPE_UNKNOWN) continue;
+                    Format format = toFormat(info, type);
+                    if (format == null) continue;
+                    TrackGroup group = new TrackGroup("ijk:" + type + ":" + i, format);
+                    groups.add(new Tracks.Group(group, false, new int[]{C.FORMAT_HANDLED}, new boolean[]{true}));
+                }
+                currentTracks = groups.isEmpty() ? Tracks.EMPTY : new Tracks(groups);
+            } catch (Throwable ignored) {
+                currentTracks = Tracks.EMPTY;
+            }
+        }
+
+        private static int toMedia3TrackType(int ijkType) {
+            return switch (ijkType) {
+                case ITrackInfo.MEDIA_TRACK_TYPE_VIDEO -> C.TRACK_TYPE_VIDEO;
+                case ITrackInfo.MEDIA_TRACK_TYPE_AUDIO -> C.TRACK_TYPE_AUDIO;
+                case ITrackInfo.MEDIA_TRACK_TYPE_SUBTITLE, ITrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT -> C.TRACK_TYPE_TEXT;
+                default -> C.TRACK_TYPE_UNKNOWN;
+            };
+        }
+
+        private static Format toFormat(ITrackInfo info, int type) {
+            try {
+                if (info.getFormat() == null) return null;
+                Format.Builder builder = new Format.Builder();
+                String mime = info.getFormat().getString(ITrackInfo.IMediaFormat.KEY_MIME);
+                if (mime != null) builder.setSampleMimeType(mime);
+                if (type == C.TRACK_TYPE_VIDEO) {
+                    int w = info.getFormat().getInteger(ITrackInfo.IMediaFormat.KEY_WIDTH);
+                    int h = info.getFormat().getInteger(ITrackInfo.IMediaFormat.KEY_HEIGHT);
+                    if (w > 0) builder.setWidth(w);
+                    if (h > 0) builder.setHeight(h);
+                }
+                String language = info.getLanguage();
+                if (language != null && !language.isEmpty()) builder.setLanguage(language);
+                return builder.build();
+            } catch (Throwable ignored) {
+                return null;
+            }
         }
 
         private int mapError(int what) {
