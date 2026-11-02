@@ -42,7 +42,7 @@ import java.util.Map;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
-import tv.danmaku.ijk.media.player.misc.IMediaFormat;
+import tv.danmaku.ijk.media.player.IjkTimedText;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 
 @UnstableApi
@@ -59,7 +59,9 @@ public class IjkPlayerEngine implements PlayerEngine {
 
     public static boolean isAvailable() {
         try {
-            IjkMediaPlayer.loadLibrariesOnce(null);
+            System.loadLibrary("ijkffmpeg");
+            System.loadLibrary("ijksdl");
+            System.loadLibrary("ijkplayer");
             return true;
         } catch (Throwable e) {
             return false;
@@ -161,6 +163,16 @@ public class IjkPlayerEngine implements PlayerEngine {
         private final Context context;
         private final Handler handler;
         private final Runnable positionRunnable = this::refreshPosition;
+        private final IMediaPlayer.Listener listener = new IMediaPlayer.Listener() {
+            @Override public void onPrepared(IMediaPlayer mp) { IjkPlayer.this.onPrepared(mp); }
+            @Override public void onCompletion(IMediaPlayer mp) { IjkPlayer.this.onCompletion(mp); }
+            @Override public boolean onError(IMediaPlayer mp, int what, int extra) { return IjkPlayer.this.onError(mp, what, extra); }
+            @Override public void onInfo(IMediaPlayer mp, int what, int extra) { IjkPlayer.this.onInfo(mp, what, extra); }
+            @Override public void onBufferingUpdate(IMediaPlayer mp, int percent) { IjkPlayer.this.onBufferingUpdate(mp, percent); }
+            @Override public void onBufferingUpdate(IMediaPlayer mp, long bytes) { }
+            @Override public void onVideoSizeChanged(IMediaPlayer mp, int width, int height, int sarNum, int sarDen) { IjkPlayer.this.onVideoSizeChanged(mp, width, height, sarNum, sarDen); }
+            @Override public void onTimedText(IMediaPlayer mp, IjkTimedText timedText) { }
+        };
         @Nullable
         private IjkMediaPlayer mediaPlayer;
         @Nullable
@@ -285,12 +297,7 @@ public class IjkPlayerEngine implements PlayerEngine {
                 player.setVolume(volume, volume);
                 player.setScreenOnWhilePlaying(true);
                 player.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
-                player.setOnPreparedListener(this::onPrepared);
-                player.setOnCompletionListener(this::onCompletion);
-                player.setOnErrorListener(this::onError);
-                player.setOnInfoListener(this::onInfo);
-                player.setOnVideoSizeChangedListener(this::onVideoSizeChanged);
-                player.setOnBufferingUpdateListener(this::onBufferingUpdate);
+                player.setListener(listener);
                 applyOptions(player);
                 player.setDataSource(context, uri, headers(mediaItem.requestMetadata.extras));
                 positionMs = Math.max(0, startPositionMs);
@@ -361,7 +368,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             pendingSeekMs = C.TIME_UNSET;
             if (playbackParameters.speed != 1f) {
                 try {
-                    mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
+                    mp.setSpeed(playbackParameters.speed);
                 } catch (Throwable ignored) {
                 }
             }
@@ -404,26 +411,24 @@ public class IjkPlayerEngine implements PlayerEngine {
             return true;
         }
 
-        private boolean onInfo(IMediaPlayer mp, int what, int extra) {
-            if (released || mp != mediaPlayer) return false;
+        private void onInfo(IMediaPlayer mp, int what, int extra) {
+            if (released || mp != mediaPlayer) return;
             if (what == IMediaPlayer.MEDIA_INFO_BUFFERING_START) {
                 if (playbackState != Player.STATE_ENDED) {
                     playbackState = Player.STATE_BUFFERING;
                     invalidateState();
                 }
-                return true;
+                return;
             }
             if (what == IMediaPlayer.MEDIA_INFO_BUFFERING_END) {
                 if (playbackState == Player.STATE_BUFFERING) playbackState = Player.STATE_READY;
                 invalidateState();
-                return true;
+                return;
             }
             if (what == IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
                 if (playbackState == Player.STATE_BUFFERING) playbackState = Player.STATE_READY;
                 invalidateState();
-                return true;
             }
-            return false;
         }
 
         private void onVideoSizeChanged(IMediaPlayer mp, int width, int height, int sarNum, int sarDen) {
@@ -445,14 +450,14 @@ public class IjkPlayerEngine implements PlayerEngine {
                 return;
             }
             try {
-                ITrackInfo[] infos = mediaPlayer.getTrackInfo();
-                if (infos == null || infos.length == 0) {
+                List<ITrackInfo> infos = mediaPlayer.getTrackInfo();
+                if (infos == null || infos.isEmpty()) {
                     currentTracks = Tracks.EMPTY;
                     return;
                 }
                 List<Tracks.Group> groups = new ArrayList<>();
-                for (int i = 0; i < infos.length; i++) {
-                    ITrackInfo info = infos[i];
+                for (int i = 0; i < infos.size(); i++) {
+                    ITrackInfo info = infos.get(i);
                     int type = toMedia3TrackType(info.getTrackType());
                     if (type == C.TRACK_TYPE_UNKNOWN) continue;
                     Format format = toFormat(info, type);
@@ -470,25 +475,24 @@ public class IjkPlayerEngine implements PlayerEngine {
             return switch (ijkType) {
                 case ITrackInfo.MEDIA_TRACK_TYPE_VIDEO -> C.TRACK_TYPE_VIDEO;
                 case ITrackInfo.MEDIA_TRACK_TYPE_AUDIO -> C.TRACK_TYPE_AUDIO;
-                case ITrackInfo.MEDIA_TRACK_TYPE_SUBTITLE, ITrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT -> C.TRACK_TYPE_TEXT;
+                case ITrackInfo.MEDIA_TRACK_TYPE_TEXT -> C.TRACK_TYPE_TEXT;
                 default -> C.TRACK_TYPE_UNKNOWN;
             };
         }
 
         private static Format toFormat(ITrackInfo info, int type) {
             try {
-                if (info.getFormat() == null) return null;
                 Format.Builder builder = new Format.Builder();
-                String mime = info.getFormat().getString(IMediaFormat.KEY_MIME);
-                if (mime != null) builder.setSampleMimeType(mime);
+                String mime = info.getMimeType();
+                if (mime != null && !mime.isEmpty()) builder.setSampleMimeType(mime);
                 if (type == C.TRACK_TYPE_VIDEO) {
-                    int w = info.getFormat().getInteger(IMediaFormat.KEY_WIDTH);
-                    int h = info.getFormat().getInteger(IMediaFormat.KEY_HEIGHT);
+                    int w = info.getWidth();
+                    int h = info.getHeight();
                     if (w > 0) builder.setWidth(w);
                     if (h > 0) builder.setHeight(h);
                 }
                 String language = info.getLanguage();
-                if (language != null && !language.isEmpty()) builder.setLanguage(language);
+                if (language != null && !language.isEmpty() && !"und".equals(language)) builder.setLanguage(language);
                 return builder.build();
             } catch (Throwable ignored) {
                 return null;
@@ -597,7 +601,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             this.playbackParameters = playbackParameters;
             if (mediaPlayer != null) {
                 try {
-                    mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
+                    mediaPlayer.setSpeed(playbackParameters.speed);
                 } catch (Throwable ignored) {
                 }
             }
