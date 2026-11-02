@@ -35,9 +35,11 @@ jobs:
           python-version: '3.10'
 
 
-      # Android SDK
+      # Android SDK（不安装已被移除的 tools 包，runner 已预装 SDK）
       - name: 配置 Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
 
       # 编译全部 APK
