@@ -205,6 +205,9 @@ public class IjkPlayerEngine implements PlayerEngine {
         private PlaybackParameters playbackParameters = PlaybackParameters.DEFAULT;
         private Tracks currentTracks = Tracks.EMPTY;
         private boolean textureListenerAttached;
+        private boolean surfaceBound;
+        private boolean preparedWithoutSurface;
+        private int surfaceReloadAttempts;
         private boolean prepared;
         private boolean playWhenReady = true;
         private boolean repeatOne;
@@ -305,6 +308,9 @@ public class IjkPlayerEngine implements PlayerEngine {
             session = new PlaybackAutoContext.SessionToken(traceId, generation);
             firstFrame = false;
             pressureReloadPending = false;
+            surfaceBound = false;
+            preparedWithoutSurface = false;
+            surfaceReloadAttempts = 0;
             firstFrameWatchdog.beginSession(session);
             firstFrameWatchdog.beginAttempt(session, true);
             decodePressure.beginSession(session);
@@ -368,6 +374,8 @@ public class IjkPlayerEngine implements PlayerEngine {
                 pendingSeekMs = startPositionMs > 0 ? startPositionMs : C.TIME_UNSET;
                 playbackState = Player.STATE_BUFFERING;
                 attachVideoOutput();
+                // 记录 prepare 时刻是否有有效窗口：IJK 会在此时决定是否创建视频输出。
+                preparedWithoutSurface = !surfaceBound;
                 player.prepareAsync();
             } catch (Throwable e) {
                 releasePlayer();
@@ -534,6 +542,8 @@ public class IjkPlayerEngine implements PlayerEngine {
                 startPolling();
             }
             invalidateState();
+            // 窗口在 prepare 之后才就绪时，原生仍停留在纯音频管线，需要重开一次。
+            reloadAfterLateSurface();
         }
 
         private void onCompletion(IMediaPlayer mp) {
@@ -966,24 +976,59 @@ public class IjkPlayerEngine implements PlayerEngine {
             if (output instanceof SurfaceView view) {
                 surfaceHolder = view.getHolder();
                 surfaceHolder.addCallback(surfaceCallback);
-                if (mediaPlayer != null) mediaPlayer.setDisplay(surfaceHolder);
+                bindSurfaceHolder(surfaceHolder);
             } else if (output instanceof SurfaceHolder holder) {
                 surfaceHolder = holder;
-                if (mediaPlayer != null) mediaPlayer.setDisplay(holder);
+                bindSurfaceHolder(holder);
             } else if (output instanceof TextureView view) {
                 if (view.getSurfaceTexture() != null) {
+                    if (ownedSurface != null) ownedSurface.release();
                     ownedSurface = new Surface(view.getSurfaceTexture());
-                    if (mediaPlayer != null) mediaPlayer.setSurface(ownedSurface);
+                    bindSurface(ownedSurface);
                 } else if (!textureListenerAttached) {
                     view.setSurfaceTextureListener(textureListener);
                     textureListenerAttached = true;
                 }
             } else if (output instanceof Surface surface) {
-                if (mediaPlayer != null) mediaPlayer.setSurface(surface);
+                bindSurface(surface);
             }
         }
 
+        private void bindSurfaceHolder(@Nullable SurfaceHolder holder) {
+            if (holder == null || !holder.getSurface().isValid()) return;
+            if (mediaPlayer != null) mediaPlayer.setDisplay(holder);
+            onSurfaceBound();
+        }
+
+        private void bindSurface(@Nullable Surface surface) {
+            if (surface == null || !surface.isValid()) return;
+            if (mediaPlayer != null) mediaPlayer.setSurface(surface);
+            onSurfaceBound();
+        }
+
+        private void onSurfaceBound() {
+            surfaceBound = true;
+            reloadAfterLateSurface();
+        }
+
+        private void reloadAfterLateSurface() {
+            if (!prepared || firstFrame || !surfaceBound || !preparedWithoutSurface) return;
+            if (surfaceReloadAttempts >= 1 || !hasVideoTrack()) return;
+            // prepare 时无窗口会导致 IJK 只建音频输出，补绑窗口不会重建 vout，只能按当前位置重开一次。
+            preparedWithoutSurface = false;
+            surfaceReloadAttempts++;
+            handler.post(() -> startInternal(positionMs));
+        }
+
+        private boolean hasVideoTrack() {
+            for (Tracks.Group group : currentTracks.getGroups()) {
+                if (group.getType() == C.TRACK_TYPE_VIDEO) return true;
+            }
+            return false;
+        }
+
         private void detachVideoOutput() {
+            surfaceBound = false;
             if (surfaceHolder != null) {
                 try {
                     surfaceHolder.removeCallback(surfaceCallback);
@@ -1032,16 +1077,17 @@ public class IjkPlayerEngine implements PlayerEngine {
 
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                if (mediaPlayer != null) mediaPlayer.setDisplay(holder);
+                bindSurfaceHolder(holder);
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                if (mediaPlayer != null) mediaPlayer.setDisplay(holder);
+                bindSurfaceHolder(holder);
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
+                surfaceBound = false;
                 if (mediaPlayer != null) mediaPlayer.setDisplay(null);
             }
         };
@@ -1053,7 +1099,7 @@ public class IjkPlayerEngine implements PlayerEngine {
                 if (mediaPlayer == null) return;
                 if (ownedSurface != null) ownedSurface.release();
                 ownedSurface = new Surface(texture);
-                mediaPlayer.setSurface(ownedSurface);
+                bindSurface(ownedSurface);
             }
 
             @Override
@@ -1062,6 +1108,7 @@ public class IjkPlayerEngine implements PlayerEngine {
 
             @Override
             public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
+                surfaceBound = false;
                 if (mediaPlayer != null) mediaPlayer.setSurface(null);
                 if (ownedSurface != null) {
                     ownedSurface.release();
