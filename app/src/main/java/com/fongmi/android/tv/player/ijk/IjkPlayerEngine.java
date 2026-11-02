@@ -42,6 +42,7 @@ import java.util.Map;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+import tv.danmaku.ijk.media.player.misc.IMediaFormat;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 
 @UnstableApi
@@ -360,7 +361,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             pendingSeekMs = C.TIME_UNSET;
             if (playbackParameters.speed != 1f) {
                 try {
-                    mp.setSpeed(playbackParameters.speed);
+                    mp.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
                 } catch (Throwable ignored) {
                 }
             }
@@ -478,11 +479,11 @@ public class IjkPlayerEngine implements PlayerEngine {
             try {
                 if (info.getFormat() == null) return null;
                 Format.Builder builder = new Format.Builder();
-                String mime = info.getFormat().getString(ITrackInfo.IMediaFormat.KEY_MIME);
+                String mime = info.getFormat().getString(IMediaFormat.KEY_MIME);
                 if (mime != null) builder.setSampleMimeType(mime);
                 if (type == C.TRACK_TYPE_VIDEO) {
-                    int w = info.getFormat().getInteger(ITrackInfo.IMediaFormat.KEY_WIDTH);
-                    int h = info.getFormat().getInteger(ITrackInfo.IMediaFormat.KEY_HEIGHT);
+                    int w = info.getFormat().getInteger(IMediaFormat.KEY_WIDTH);
+                    int h = info.getFormat().getInteger(IMediaFormat.KEY_HEIGHT);
                     if (w > 0) builder.setWidth(w);
                     if (h > 0) builder.setHeight(h);
                 }
@@ -596,7 +597,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             this.playbackParameters = playbackParameters;
             if (mediaPlayer != null) {
                 try {
-                    mediaPlayer.setSpeed(playbackParameters.speed);
+                    mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
                 } catch (Throwable ignored) {
                 }
             }
