@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.db.AppDatabase;
+import com.fongmi.android.tv.utils.UrlUtil;
 import com.github.catvod.utils.Prefers;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -91,18 +92,23 @@ public class Config {
     }
 
     public static Config vod() {
-        Config item = AppDatabase.get().getConfigDao().findOne(0);
-        return item == null ? create(0) : item;
+        return fixUrl(AppDatabase.get().getConfigDao().findOne(0), 0);
     }
 
     public static Config live() {
-        Config item = AppDatabase.get().getConfigDao().findOne(1);
-        return item == null ? create(1) : item;
+        return fixUrl(AppDatabase.get().getConfigDao().findOne(1), 1);
     }
 
     public static Config wall() {
-        Config item = AppDatabase.get().getConfigDao().findOne(2);
-        return item == null ? create(2) : item;
+        return fixUrl(AppDatabase.get().getConfigDao().findOne(2), 2);
+    }
+
+    /** 把历史遗留的 externalstorage content:// 地址就地迁移为 file://。 */
+    private static Config fixUrl(@Nullable Config item, int type) {
+        if (item == null) return create(type);
+        String url = UrlUtil.toLocalUrl(item.getUrl());
+        if (!url.equals(item.getUrl())) item.save(item.url(url));
+        return item;
     }
 
     public static Config find(int id) {

@@ -113,7 +113,8 @@ public final class FileChooser {
     }
 
     private static Uri originalUri(Uri uri) {
-        File file = getLocalFile(uri);
+        File file = getDocumentFile(uri);
+        if (file == null) file = getLocalFile(uri);
         if (file != null) return Uri.fromFile(file);
         if (ContentResolver.SCHEME_CONTENT.equalsIgnoreCase(uri.getScheme())) {
             try {
@@ -122,6 +123,23 @@ public final class FileChooser {
             }
         }
         return uri;
+    }
+
+    /**
+     * 仅按 documentId 推导真实文件（不做可读性检查）。文件访问权限会在加载配置时申请，
+     * 避免导入瞬间因权限未授予而退回 content://。
+     */
+    @Nullable
+    private static File getDocumentFile(Uri uri) {
+        try {
+            if (!DocumentsContract.isDocumentUri(App.get(), uri) || !isExternalStorageDocument(uri)) return null;
+            String[] split = DocumentsContract.getDocumentId(uri).split(":", 2);
+            if (split.length < 2) return null;
+            if ("primary".equalsIgnoreCase(split[0])) return new File(Environment.getExternalStorageDirectory(), split[1]);
+            return new File("/storage/" + split[0] + "/" + split[1]);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     public static void getUri(ActivityResult result, Consumer<Uri> callback) {

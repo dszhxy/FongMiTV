@@ -2,6 +2,8 @@ package com.fongmi.android.tv.utils;
 
 import android.content.ContentResolver;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.text.TextUtils;
 
 import com.fongmi.android.tv.server.Server;
@@ -50,6 +52,23 @@ public class UrlUtil {
         String root = Path.rootPath();
         if (!ContentResolver.SCHEME_FILE.equalsIgnoreCase(uri.getScheme()) || TextUtils.isEmpty(path) || !path.startsWith(root + File.separator)) return uri.toString();
         return "file://" + path.substring(root.length() + 1);
+    }
+
+    /**
+     * 把 SAF 的 externalstorage document 地址还原成本地 file:// 地址，
+     * 例如 content://com.android.externalstorage.documents/document/primary%3AYsBox%2F优雅.json
+     * 转为 file://YsBox/优雅.json。其他地址原样返回。
+     */
+    public static String toLocalUrl(String url) {
+        if (TextUtils.isEmpty(url) || !url.startsWith("content://com.android.externalstorage.documents/")) return url;
+        try {
+            String[] split = DocumentsContract.getDocumentId(Uri.parse(url)).split(":", 2);
+            if (split.length < 2) return url;
+            File file = "primary".equalsIgnoreCase(split[0]) ? new File(Environment.getExternalStorageDirectory(), split[1]) : new File("/storage/" + split[0] + "/" + split[1]);
+            return toLocalUrl(Uri.fromFile(file));
+        } catch (RuntimeException e) {
+            return url;
+        }
     }
 
     public static String resolve(String baseUri, String referenceUri) {
