@@ -6,6 +6,7 @@ public final class KernelPerformanceSetting {
 
     private static final String KEY_MIGRATED = "perf_kernel_shared_migrated";
     private static final String KEY_PAUSE_PRELOAD_MIGRATED = "perf_pause_preload_policy_v2_migrated";
+    private static final String KEY_PRELOAD_DEFAULT_ON = "perf_preload_default_on_v1";
 
     private KernelPerformanceSetting() {
     }
@@ -52,7 +53,8 @@ public final class KernelPerformanceSetting {
 
     public static boolean isPreload(int kernel) {
         ensureMigrated();
-        return Prefers.getBoolean(key(kernel, "preload"));
+        ensurePreloadDefaultOn();
+        return Prefers.getBoolean(key(kernel, "preload"), true);
     }
 
     public static void putPreload(int kernel, boolean value) {
@@ -282,13 +284,21 @@ public final class KernelPerformanceSetting {
         return PlayerSetting.sanitizePlayer(kernel) != PlayerSetting.IJK;
     }
 
+    private static synchronized void ensurePreloadDefaultOn() {
+        if (Prefers.getBoolean(KEY_PRELOAD_DEFAULT_ON)) return;
+        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.MPV, PlayerSetting.IJK}) {
+            Prefers.put(key(kernel, "preload"), true);
+        }
+        Prefers.put(KEY_PRELOAD_DEFAULT_ON, true);
+    }
+
     private static synchronized void ensureMigrated() {
         if (Prefers.getBoolean(KEY_MIGRATED)) return;
         int buffer = clamp(Prefers.getInt("buffer"), 1, 10);
         int bufferBytes = clamp(Prefers.getInt("buffer_bytes"), 0, 3);
         int backBuffer = clamp(Prefers.getInt("back_buffer"), 0, 3);
         int playCache = clamp(Prefers.getInt("play_cache"), 0, 4);
-        boolean preload = Prefers.getBoolean("preload");
+        boolean preload = Prefers.getBoolean("preload", true);
         int preloadThreads = clamp(Prefers.getInt("preload_threads", PreloadSetting.DEFAULT_THREADS), PreloadSetting.MIN_THREADS, PreloadSetting.MAX_THREADS);
         int preloadSize = closestPreloadSize(Prefers.getInt("preload_size", PreloadSetting.MIN_SIZE_MB));
         int preloadTime = clamp(Prefers.getInt("preload_time", PreloadSetting.DEFAULT_TIME_SECONDS), PreloadSetting.MIN_TIME_SECONDS, PreloadSetting.MAX_TIME_SECONDS);

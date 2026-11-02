@@ -75,6 +75,12 @@ public class OkHttp {
         return get().selector = new OkProxySelector();
     }
 
+    public static synchronized void setProxy(String proxy) {
+        selector().setProxy(proxy);
+        get().client = null;
+        get().player = null;
+    }
+
     public static synchronized OkHttpClient client() {
         if (get().client != null) return get().client;
         return get().client = getBuilder().build();

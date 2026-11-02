@@ -21,6 +21,8 @@ public class ProxyAuthenticator extends Authenticator {
     }
 
     private String findUserInfo(String proxyHost) {
+        String manual = selector.getManualUserInfo(proxyHost);
+        if (manual != null) return manual;
         return selector.getProxy().stream().map(item -> item.getUserInfo(proxyHost)).filter(Objects::nonNull).findFirst().orElse(null);
     }
 }

@@ -70,7 +70,7 @@ public class IjkPlayerEngine implements PlayerEngine {
         try {
             System.loadLibrary("ijkffmpeg");
             System.loadLibrary("ijksdl");
-            System.loadLibrary("ijkplayer");
+            System.loadLibrary("player");
             return true;
         } catch (Throwable e) {
             return false;

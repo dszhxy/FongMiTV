@@ -13,6 +13,7 @@ import com.fongmi.android.tv.impl.BufferListener;
 import com.fongmi.android.tv.impl.UaListener;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.setting.SpeedSetting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.dialog.BufferDialog;
 import com.fongmi.android.tv.ui.dialog.MpvConfDialog;
@@ -43,6 +44,8 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
         setPlaybackModeText();
         mBinding.engine.requestFocus();
         mBinding.flagText.setText((flag = ResUtil.getStringArray(R.array.select_flag))[Setting.getFlag()]);
+        mBinding.playSpeedText.setText(SpeedSetting.format(SpeedSetting.getPlayback()));
+        mBinding.longPressText.setText(SpeedSetting.format(SpeedSetting.getLongPress()));
         mBinding.bufferText.setText(String.valueOf(PlayerSetting.getBuffer()));
         mBinding.mpvVulkanText.setText(Setting.getSwitch(PlayerSetting.isMpvVulkan()));
         mBinding.mpvGpuNextText.setText(Setting.getSwitch(PlayerSetting.isMpvGpuNext()));
@@ -55,6 +58,8 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
         mBinding.engine.setOnClickListener(this::setEngine);
         mBinding.decode.setOnClickListener(this::onDecodeSetting);
         mBinding.flag.setOnClickListener(this::setFlag);
+        mBinding.playSpeed.setOnClickListener(this::onPlaybackSpeed);
+        mBinding.longPress.setOnClickListener(this::onLongPress);
         mBinding.mpvConf.setOnClickListener(this::onMpvConf);
         mBinding.mpvGpuNext.setOnClickListener(this::setMpvGpuNext);
         mBinding.mpvVulkan.setOnClickListener(this::setMpvVulkan);
@@ -133,6 +138,31 @@ public class SettingPlayerActivity extends BaseActivity implements UaListener, B
     private void onBackground(View view) {
         PlayerSetting.putBackground(PlayerSetting.isBackgroundOn() ? 0 : 1);
         mBinding.backgroundText.setText(Setting.getSwitch(PlayerSetting.isBackgroundOn()));
+    }
+
+    private void onPlaybackSpeed(View view) {
+        showSpeedDialog(false);
+    }
+
+    private void onLongPress(View view) {
+        showSpeedDialog(true);
+    }
+
+    private void showSpeedDialog(boolean longPress) {
+        float[] values = longPress ? SpeedSetting.getLongPressPresets() : SpeedSetting.getPresets();
+        String[] labels = new String[values.length];
+        for (int i = 0; i < values.length; i++) labels[i] = SpeedSetting.format(values[i]);
+        float current = longPress ? SpeedSetting.getLongPress() : SpeedSetting.getPlayback();
+        new MaterialAlertDialogBuilder(this).setTitle(longPress ? R.string.speed_setting_long_press : R.string.speed_setting_current).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(labels, SpeedSetting.indexOf(values, current), (dialog, which) -> {
+            if (longPress) {
+                SpeedSetting.putLongPress(values[which]);
+                mBinding.longPressText.setText(labels[which]);
+            } else {
+                SpeedSetting.putPlayback(values[which]);
+                mBinding.playSpeedText.setText(labels[which]);
+            }
+            dialog.dismiss();
+        }).show();
     }
 
     private void setFlag(View view) {

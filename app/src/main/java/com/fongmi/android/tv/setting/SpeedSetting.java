@@ -16,6 +16,7 @@ public class SpeedSetting {
     private static final float LONG_PRESS_STEP = 0.5f;
     private static final float EPSILON = 0.001f;
     private static final float[] PRESETS = {0.5f, 0.8f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f, 5.0f};
+    private static final float[] LONG_PRESS_PRESETS = {2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f};
 
     public static void setup(Slider slider) {
         slider.setValueFrom(MIN);
@@ -41,6 +42,22 @@ public class SpeedSetting {
 
     public static float[] getPresets() {
         return PRESETS.clone();
+    }
+
+    public static float[] getLongPressPresets() {
+        return LONG_PRESS_PRESETS.clone();
+    }
+
+    public static int indexOf(float[] presets, float value) {
+        int index = 0;
+        float distance = Float.MAX_VALUE;
+        for (int i = 0; i < presets.length; i++) {
+            float current = Math.abs(presets[i] - value);
+            if (current >= distance) continue;
+            distance = current;
+            index = i;
+        }
+        return index;
     }
 
     public static float getPlayback() {

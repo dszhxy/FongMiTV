@@ -1,0 +1,29 @@
+plugins {
+    alias libs.plugins.android.library
+}
+
+android {
+    namespace = 'tv.danmaku.ijk.media.player'
+
+    compileSdk libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    lint {
+        disable 'UnsafeOptInUsageError'
+    }
+}
+
+dependencies {
+    implementation project(':catvod')
+    implementation libs.media3.common
+    implementation libs.media3.ui
+}

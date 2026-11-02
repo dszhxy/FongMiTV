@@ -3,7 +3,9 @@ package com.fongmi.android.tv.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.viewbinding.ViewBinding;
 
@@ -34,8 +36,10 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
+import com.fongmi.android.tv.utils.ResUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -46,6 +50,7 @@ import java.util.List;
 public class SettingActivity extends BaseActivity implements ConfigListener, SiteListener, LiveListener, DohDialog.Listener {
 
     private ActivitySettingBinding mBinding;
+    private String[] backup;
 
     public static void start(Activity activity) {
         activity.startActivity(new Intent(activity, SettingActivity.class));
@@ -80,6 +85,8 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.aboutText.setText(BuildConfig.FLAVOR_mode);
+        mBinding.proxyText.setText(TextUtils.isEmpty(Setting.getProxy()) ? getString(R.string.setting_proxy_none) : Setting.getProxy());
+        mBinding.backupText.setText((backup = ResUtil.getStringArray(R.array.select_backup))[Setting.getBackupMode()]);
     }
 
     private void setCacheText() {
@@ -95,10 +102,12 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     protected void initEvent() {
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.doh.setOnClickListener(this::setDoh);
+        mBinding.proxy.setOnClickListener(this::setProxy);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.wall.setOnClickListener(this::onWall);
         mBinding.cache.setOnClickListener(this::onCache);
         mBinding.backup.setOnClickListener(this::onBackup);
+        mBinding.backup.setOnLongClickListener(this::onBackupMode);
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.danmaku.setOnClickListener(this::onDanmaku);
         mBinding.subtitle.setOnClickListener(this::onSubtitle);
@@ -261,6 +270,22 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         return true;
     }
 
+    private void setProxy(View view) {
+        EditText edit = new EditText(this);
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+        edit.setPadding(padding, padding, padding, padding);
+        edit.setSingleLine(true);
+        edit.setHint("socks5://127.0.0.1:1080");
+        edit.setText(Setting.getProxy());
+        edit.setSelection(edit.getText().length());
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_proxy).setView(edit).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+            String proxy = edit.getText().toString().trim();
+            Setting.putProxy(proxy);
+            OkHttp.setProxy(proxy);
+            mBinding.proxyText.setText(TextUtils.isEmpty(proxy) ? getString(R.string.setting_proxy_none) : proxy);
+        }).show();
+    }
+
     private void setDoh(View view) {
         DohDialog.create().index(getDohIndex()).show(this);
     }
@@ -293,6 +318,13 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
                 Notify.show(R.string.backup_fail);
             }
         }));
+    }
+
+    private boolean onBackupMode(View view) {
+        int index = Setting.getBackupMode();
+        Setting.putBackupMode(index = index == backup.length - 1 ? 0 : index + 1);
+        mBinding.backupText.setText(backup[index]);
+        return true;
     }
 
     private void onRestore(View view) {

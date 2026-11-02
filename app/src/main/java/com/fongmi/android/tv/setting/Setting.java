@@ -43,6 +43,22 @@ public class Setting {
         Prefers.put("ua", ua);
     }
 
+    public static String getProxy() {
+        return Prefers.getString("proxy");
+    }
+
+    public static void putProxy(String proxy) {
+        Prefers.put("proxy", proxy);
+    }
+
+    public static int getBackupMode() {
+        return Prefers.getInt("backup_mode", 0);
+    }
+
+    public static void putBackupMode(int mode) {
+        Prefers.put("backup_mode", mode);
+    }
+
     public static String getKeyword() {
         return Prefers.getString("keyword");
     }

@@ -1,8 +1,10 @@
 package com.fongmi.android.tv.ui.fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -86,6 +88,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
+        mBinding.proxyText.setText(TextUtils.isEmpty(Setting.getProxy()) ? getString(R.string.setting_proxy_none) : Setting.getProxy());
     }
 
     private void setCacheText() {
@@ -101,6 +104,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     protected void initEvent() {
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.doh.setOnClickListener(this::setDoh);
+        mBinding.proxy.setOnClickListener(this::setProxy);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.wall.setOnClickListener(this::onWall);
         mBinding.cache.setOnClickListener(this::onCache);
@@ -260,6 +264,22 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private boolean onWallHistory(View view) {
         HistoryDialog.create().wall().show(this);
         return true;
+    }
+
+    private void setProxy(View view) {
+        EditText edit = new EditText(requireActivity());
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+        edit.setPadding(padding, padding, padding, padding);
+        edit.setSingleLine(true);
+        edit.setHint("socks5://127.0.0.1:1080");
+        edit.setText(Setting.getProxy());
+        edit.setSelection(edit.getText().length());
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.setting_proxy).setView(edit).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+            String proxy = edit.getText().toString().trim();
+            Setting.putProxy(proxy);
+            OkHttp.setProxy(proxy);
+            mBinding.proxyText.setText(TextUtils.isEmpty(proxy) ? getString(R.string.setting_proxy_none) : proxy);
+        }).show();
     }
 
     private void setDoh(View view) {

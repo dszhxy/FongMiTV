@@ -271,6 +271,7 @@
     <string name="setting_language">語言</string>
     <string name="setting_default">預設</string>
     <string name="setting_incognito">無痕模式</string>
+    <string name="setting_proxy_none">未設定</string>
     <string name="setting_aggregated_search">聚合搜尋</string>
     <string name="setting_reset">重置App</string>
     <string name="setting_about">關於</string>
@@ -432,6 +433,11 @@
         <item>4:3</item>
         <item>填充</item>
         <item>裁剪</item>
+    </string-array>
+
+    <string-array name="select_backup">
+        <item>自動</item>
+        <item>手動</item>
     </string-array>
 
     <string-array name="select_flag">

@@ -272,6 +272,7 @@
     <string name="setting_language">Language</string>
     <string name="setting_default">Default</string>
     <string name="setting_incognito">Incognito mode</string>
+    <string name="setting_proxy_none">Not set</string>
     <string name="setting_aggregated_search">Aggregated search</string>
     <string name="setting_reset">Reset app</string>
     <string name="setting_about">About</string>
@@ -437,6 +438,11 @@
         <item>4:3</item>
         <item>Fill</item>
         <item>Zoom</item>
+    </string-array>
+
+    <string-array name="select_backup">
+        <item>Auto</item>
+        <item>Manual</item>
     </string-array>
 
     <string-array name="select_flag">

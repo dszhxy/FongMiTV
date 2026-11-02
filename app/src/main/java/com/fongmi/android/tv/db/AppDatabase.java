@@ -21,6 +21,7 @@ import com.fongmi.android.tv.db.dao.KeepDao;
 import com.fongmi.android.tv.db.dao.LiveDao;
 import com.fongmi.android.tv.db.dao.SiteDao;
 import com.fongmi.android.tv.db.dao.TrackDao;
+import com.fongmi.android.tv.setting.Setting;
 
 @Database(entities = {Keep.class, Site.class, Live.class, Track.class, Config.class, Device.class, History.class}, version = AppDatabase.VERSION)
 public abstract class AppDatabase extends RoomDatabase {
@@ -38,7 +39,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     /** Compatibility shim for newer HomeActivity call sites. */
     public static void backup() {
-        BackupManager.backup();
+        if (Setting.getBackupMode() == 0) BackupManager.backup();
     }
 
     private static AppDatabase create(Context context) {
