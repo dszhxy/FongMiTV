@@ -3,9 +3,11 @@ name: OK影视 ARM64 全版本自动发布
 permissions:
   contents: write
 
-# 手动触发，不再 push 自动重复构建
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 
 jobs:
