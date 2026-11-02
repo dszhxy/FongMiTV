@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     branches:
-      - dav
+      - trae
   workflow_dispatch:
 
 concurrency:
