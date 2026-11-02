@@ -361,7 +361,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             pendingSeekMs = C.TIME_UNSET;
             if (playbackParameters.speed != 1f) {
                 try {
-                    mp.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
+                    mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "speed", String.valueOf(playbackParameters.speed));
                 } catch (Throwable ignored) {
                 }
             }
