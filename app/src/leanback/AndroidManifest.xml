@@ -180,7 +180,12 @@
             android:screenOrientation="sensorLandscape" />
 
         <activity
-            android:name=".ui.activity.SettingPersonalActivity"
+            android:name=".ui.activity.SettingSubtitleActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="sensorLandscape" />
+
+        <activity
+            android:name=".ui.activity.SettingAppearanceActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="sensorLandscape" />
 

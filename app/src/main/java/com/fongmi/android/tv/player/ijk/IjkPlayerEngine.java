@@ -34,6 +34,7 @@ import com.fongmi.android.tv.setting.IjkPerformanceSetting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,6 +139,7 @@ public class IjkPlayerEngine implements PlayerEngine {
     private static final class IjkPlayer extends SimpleBasePlayer {
 
         private static final long POSITION_INTERVAL_MS = 500;
+        private static final long SURFACE_WAIT_TIMEOUT_MS = 2000;
         private static final int COMMON_BUFFER_BYTES = 1024 * 1024;
 
         private static final Commands COMMANDS = new Commands.Builder()
@@ -200,6 +202,8 @@ public class IjkPlayerEngine implements PlayerEngine {
         private long bufferedMs;
         private long pendingSeekMs = C.TIME_UNSET;
         private float volume = 1f;
+        @Nullable
+        private SettableFuture<Void> pendingPrepareFuture;
 
         private IjkPlayer(Context context, int decode) {
             super(Looper.getMainLooper());
@@ -275,8 +279,29 @@ public class IjkPlayerEngine implements PlayerEngine {
                 invalidateState();
                 return Futures.immediateVoidFuture();
             }
-            startInternal(positionMs);
+            // ijk needs a valid video surface bound BEFORE prepareAsync, otherwise it
+            // falls back to an audio-only pipeline (no picture) and reports an unknown
+            // duration (no seek). The PlayerView surface is attached asynchronously
+            // after prepare(), so wait a short time for it before opening the source.
+            if (videoOutput == null && pendingPrepareFuture == null) {
+                pendingPrepareFuture = SettableFuture.create();
+                handler.postDelayed(this::prepareAfterSurfaceTimeout, SURFACE_WAIT_TIMEOUT_MS);
+                return pendingPrepareFuture;
+            }
+            startPrepared();
             return Futures.immediateVoidFuture();
+        }
+
+        private void startPrepared() {
+            SettableFuture<Void> future = pendingPrepareFuture;
+            pendingPrepareFuture = null;
+            if (future != null) handler.removeCallbacks(this::prepareAfterSurfaceTimeout);
+            startInternal(positionMs);
+            if (future != null) future.set(null);
+        }
+
+        private void prepareAfterSurfaceTimeout() {
+            if (pendingPrepareFuture != null) startPrepared();
         }
 
         void startInternal(long startPositionMs) {
@@ -647,6 +672,7 @@ public class IjkPlayerEngine implements PlayerEngine {
             detachVideoOutput();
             this.videoOutput = videoOutput;
             attachVideoOutput();
+            if (pendingPrepareFuture != null) startPrepared();
             return Futures.immediateVoidFuture();
         }
 

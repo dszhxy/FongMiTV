@@ -107,7 +107,8 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.backup.setOnClickListener(this::onBackup);
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.danmaku.setOnClickListener(this::onDanmaku);
-        mBinding.personal.setOnClickListener(this::onPersonal);
+        mBinding.subtitle.setOnClickListener(this::onSubtitle);
+        mBinding.appearance.setOnClickListener(this::onAppearance);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
@@ -229,8 +230,12 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         SettingDanmakuActivity.start(this);
     }
 
-    private void onPersonal(View view) {
-        SettingPersonalActivity.start(this);
+    private void onSubtitle(View view) {
+        SettingSubtitleActivity.start(this);
+    }
+
+    private void onAppearance(View view) {
+        SettingAppearanceActivity.start(this);
     }
 
     private void onVersion(View view) {

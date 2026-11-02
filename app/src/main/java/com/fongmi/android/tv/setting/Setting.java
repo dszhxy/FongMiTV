@@ -1,8 +1,14 @@
 package com.fongmi.android.tv.setting;
 
+import android.content.Context;
+import android.content.res.Configuration;
+import android.text.TextUtils;
+
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.github.catvod.utils.Prefers;
+
+import java.util.Locale;
 
 public class Setting {
 
@@ -73,6 +79,22 @@ public class Setting {
 
     public static void putThemeColor(int color) {
         Prefers.put("theme_color", color);
+    }
+
+    public static String getLanguage() {
+        return Prefers.getString("language", "");
+    }
+
+    public static void putLanguage(String language) {
+        Prefers.put("language", language);
+    }
+
+    public static Context wrapLocale(Context context) {
+        String tag = getLanguage();
+        if (TextUtils.isEmpty(tag)) return context;
+        Configuration config = new Configuration(context.getResources().getConfiguration());
+        config.setLocale(Locale.forLanguageTag(tag));
+        return context.createConfigurationContext(config);
     }
 
     public static int getWallColor() {
