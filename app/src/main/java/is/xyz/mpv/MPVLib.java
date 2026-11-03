@@ -33,18 +33,6 @@ public final class MPVLib {
             "mpv",
             "player"
     };
-    private static final String[] LEGACY_LOAD_ORDER = {
-            "c++_shared",
-            "mvutil",
-            "mwresample",
-            "mwscale",
-            "mvcodec",
-            "mvformat",
-            "mvfilter",
-            "mvdevice",
-            "mpv",
-            "player"
-    };
 
     private static final List<EventObserver> OBSERVERS = new ArrayList<>();
     private static final List<LogObserver> LOG_OBSERVERS = new ArrayList<>();
@@ -76,9 +64,8 @@ public final class MPVLib {
             File marker = new File(root, BUNDLE_MARKER);
             String bundleId = getBundleId(app, abi);
             boolean refreshBundle = !bundleId.equals(readMarker(marker));
-            String[] order = loadOrder(app.getAssets(), abi);
-            for (String lib : order) copyLibrary(app.getAssets(), abi, lib, dir, refreshBundle);
-            for (String lib : order) System.load(new File(dir, System.mapLibraryName(lib)).getAbsolutePath());
+            for (String lib : LOAD_ORDER) copyLibrary(app.getAssets(), abi, lib, dir, refreshBundle);
+            for (String lib : LOAD_ORDER) System.load(new File(dir, System.mapLibraryName(lib)).getAbsolutePath());
             loadedAbi = abi;
             loaded = true;
             try {
@@ -208,15 +195,6 @@ public final class MPVLib {
 
     private static String assetPath(String abi, String lib) {
         return ASSET_ROOT + "/" + abi + "/" + System.mapLibraryName(lib);
-    }
-
-    private static String[] loadOrder(AssetManager assets, String abi) throws IOException {
-        String[] files = assets.list(ASSET_ROOT + "/" + abi);
-        if (files != null) {
-            String ffmpeg = System.mapLibraryName("ffmpeg");
-            for (String file : files) if (ffmpeg.equals(file)) return LOAD_ORDER;
-        }
-        return LEGACY_LOAD_ORDER;
     }
 
     private static boolean hasBundledFeature(AssetManager assets, String abi, String feature) throws IOException {
