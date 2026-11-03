@@ -1,6 +1,9 @@
 package com.fongmi.android.tv.ui.fragment;
 
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -10,60 +13,66 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.Product;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Collect;
-import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.FragmentCollectBinding;
-import com.fongmi.android.tv.impl.Callback;
-import com.fongmi.android.tv.search.MultiConfigSearchEngine;
-import com.fongmi.android.tv.setting.SearchBlockManager;
+import com.fongmi.android.tv.model.SearchProgress;
+import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.activity.FolderActivity;
 import com.fongmi.android.tv.ui.activity.VideoActivity;
 import com.fongmi.android.tv.ui.adapter.CollectAdapter;
 import com.fongmi.android.tv.ui.adapter.SearchAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
-import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.MobileWindow;
 import com.fongmi.android.tv.utils.ResUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public class CollectFragment extends BaseFragment implements
-        MenuProvider,
-        CollectAdapter.OnClickListener,
-        SearchAdapter.OnClickListener,
-        CustomScroller.Callback {
+public class CollectFragment extends BaseFragment implements MenuProvider, CollectAdapter.OnClickListener, SearchAdapter.OnClickListener, CustomScroller.Callback {
+
+    private static final int GRID_ITEM_MARGIN_DP = 4;
+    private static final int GRID_TOP_PADDING_DP = 8;
 
     private FragmentCollectBinding mBinding;
     private CollectAdapter mCollectAdapter;
     private SearchAdapter mSearchAdapter;
-    private MultiConfigSearchEngine mSearch;
-
-    private final List<Config> mLines = new ArrayList<>();
-    private final Map<Integer, Collect> mCollects = new HashMap<>();
-    private final Map<String, Collect> mSiteCollects = new HashMap<>();
-    private final Map<String, Config> mSiteConfigs = new HashMap<>();
-    private final Set<Integer> mExpandableConfigs = new HashSet<>();
-    private final Map<Integer, Vod> mVodByIdentity = new HashMap<>();
-
-    private Set<String> mBlocked = new HashSet<>();
+    private CustomScroller mScroller;
+    private SiteViewModel mViewModel;
+    private List<Site> mSites;
+    private final List<Collect> mCollects = new ArrayList<>();
+    private final List<Vod> mAllResults = new ArrayList<>();
+    private int collectWidth;
 
     public static CollectFragment newInstance(String keyword) {
+        return newInstance(keyword, null);
+    }
+
+    public static CollectFragment newInstance(String keyword, String siteKey) {
+        return newInstance(keyword, siteKey, null, null);
+    }
+
+    public static CollectFragment newInstance(String keyword, String siteKey, String pic, String wallPic) {
         Bundle args = new Bundle();
         args.putString("keyword", keyword);
+        args.putString("siteKey", siteKey);
+        args.putString("pic", pic);
+        args.putString("wallPic", wallPic);
         CollectFragment fragment = new CollectFragment();
         fragment.setArguments(args);
         return fragment;
@@ -73,12 +82,16 @@ public class CollectFragment extends BaseFragment implements
         return getArguments().getString("keyword");
     }
 
-    private String lineKey(Config config) {
-        return "config:" + config.getUrl();
+    private String getSiteKey() {
+        return getArguments().getString("siteKey");
     }
 
-    private String siteLineKey(Config config, Site site) {
-        return "site:" + config.getUrl() + "#" + site.getKey();
+    private String getPic() {
+        return getArguments().getString("pic");
+    }
+
+    private String getWallPic() {
+        return getArguments().getString("wallPic");
     }
 
     @Override
@@ -98,12 +111,12 @@ public class CollectFragment extends BaseFragment implements
 
     @Override
     protected void initView() {
-        setRecyclerView();
-        loadBlocked();
-        loadLines();
+        mScroller = new CustomScroller(this);
+        setSites();
         setWidth();
-        buildLineList();
-        startSearch();
+        setRecyclerView();
+        setViewModel();
+        search();
     }
 
     @Override
@@ -120,336 +133,176 @@ public class CollectFragment extends BaseFragment implements
         mBinding.collect.setItemAnimator(null);
         mBinding.collect.setHasFixedSize(true);
         mBinding.collect.setAdapter(mCollectAdapter = new CollectAdapter(this));
-
         mBinding.recycler.setHasFixedSize(true);
+        mBinding.recycler.addOnScrollListener(mScroller);
         mBinding.recycler.setAdapter(mSearchAdapter = new SearchAdapter(this));
-        ((GridLayoutManager) mBinding.recycler.getLayoutManager()).setSpanCount(getCount());
+        setResultLayout(false);
+        mBinding.recycler.post(() -> setResultLayout(false));
     }
 
-    private void loadBlocked() {
-        mBlocked = SearchBlockManager.getBlocked(requireContext());
+    private void setViewModel() {
+        mViewModel = new ViewModelProvider(this).get(SiteViewModel.class).init();
+        mViewModel.getSearch().observe(this, this::setCollect);
+        mViewModel.getSearchProgress().observe(this, this::setSearchProgress);
+        mViewModel.getResult().observe(this, this::setSearch);
     }
 
-    private void loadLines() {
-        mLines.clear();
-        mLines.addAll(Config.findUrls());
-    }
-
-    private List<Config> getSearchOrder() {
-        List<Config> source = new ArrayList<>(mLines);
-        List<Config> order = new ArrayList<>();
-
-        Config current = VodConfig.get().getConfig();
-        if (current != null && !current.getUrl().isEmpty()) {
-            moveConfig(source, order, current.getUrl());
+    private void setSites() {
+        String siteKey = getSiteKey();
+        mSites = new ArrayList<>();
+        for (Site site : VodConfig.get().getSites()) {
+            if (!site.isSearchable()) continue;
+            if (!TextUtils.isEmpty(siteKey) && !site.getKey().equals(siteKey)) continue;
+            mSites.add(site);
         }
-
-        order.addAll(source);
-        return order;
-    }
-
-    private void moveConfig(List<Config> source, List<Config> target, String url) {
-        if (url == null || url.isEmpty()) return;
-        for (int i = 0; i < source.size(); i++) {
-            if (url.equals(source.get(i).getUrl())) {
-                target.add(source.remove(i));
-                return;
-            }
-        }
+        SiteHealthStore.sortSites(mSites);
     }
 
     private void setWidth() {
         int width = 0;
         int space = ResUtil.dp2px(48);
-        int maxWidth = ResUtil.getScreenWidth() / (getCount() + 1) - ResUtil.dp2px(40);
-
-        for (Config config : mLines) {
-            width = Math.max(width, ResUtil.getTextWidth(config.getDesc(), 14));
-        }
-
+        int maxWidth = ResUtil.getScreenWidth() / 2 - ResUtil.dp2px(40);
+        for (Site site : mSites) width = Math.max(width, ResUtil.getTextWidth(site.getName(), 14));
         int contentWidth = width + space;
         int minWidth = ResUtil.dp2px(120);
-        int finalWidth = Math.clamp(contentWidth, minWidth, Math.max(minWidth, maxWidth));
-
+        int finalWidth = Math.max(minWidth, Math.min(contentWidth, maxWidth));
+        collectWidth = finalWidth;
         ViewGroup.LayoutParams params = mBinding.collect.getLayoutParams();
         params.width = finalWidth;
         mBinding.collect.setLayoutParams(params);
     }
 
-    private int getCount() {
-        int count = ResUtil.isLand(requireActivity()) ? 2 : 1;
-        if (ResUtil.isPad()) count++;
-        return count;
-    }
-
-    private void buildLineList() {
+    private void search() {
+        if (mSites.isEmpty()) return;
         mCollects.clear();
-        mSiteCollects.clear();
-        mSiteConfigs.clear();
-        mExpandableConfigs.clear();
-
-        for (Config config : mLines) {
-            Site fake = Site.get(lineKey(config), config.getDesc());
-            mCollects.put(config.getId(), new Collect(fake, new ArrayList<>()));
-        }
-
-        refreshLineList(true);
-        mSearchAdapter.setItems(new ArrayList<>());
+        mAllResults.clear();
+        mCollects.add(Collect.all());
+        mCollectAdapter.setItems(new ArrayList<>(mCollects), () -> mViewModel.searchContent(mSites, getKeyword(), false));
     }
 
-    private void refreshLineList(boolean first) {
-        List<Collect> items = new ArrayList<>();
-        Collect all = mCollectAdapter.getItemCount() > 0
-                ? findExisting("all")
-                : null;
-        if (all == null) all = Collect.all();
-        items.add(all);
-
-        for (Config config : mLines) {
-            Collect group = mCollects.get(config.getId());
-            if (group != null) items.add(group);
-
-            if (mExpandableConfigs.contains(config.getId())) {
-                for (Map.Entry<String, Config> entry : mSiteConfigs.entrySet()) {
-                    if (entry.getValue().getId() != config.getId()) continue;
-                    Collect child = mSiteCollects.get(entry.getKey());
-                    if (child != null) items.add(child);
-                }
-            }
-        }
-
-        mCollectAdapter.setItems(items, () -> {
-            if (first) mCollectAdapter.setSelected(0);
-            mCollectAdapter.setBlocked(mBlocked);
-        });
+    private int getCount() {
+        return Setting.getSearchColumn();
     }
 
-    private Collect findExisting(String key) {
-        for (Collect item : mCollectAdapter.getItems()) {
-            if (item.getSite().getKey().equals(key)) return item;
-        }
-        return null;
+    private boolean isGrid() {
+        return getCount() == 2;
     }
 
-    private void ensureSiteLine(Config config, Site site) {
-        if (!mExpandableConfigs.contains(config.getId()) || site == null || site.isEmpty()) return;
-
-        String key = siteLineKey(config, site);
-        if (mSiteCollects.containsKey(key)) return;
-
-        Site fake = Site.get(key, "↳ " + site.getName());
-        mSiteCollects.put(key, new Collect(fake, new ArrayList<>()));
-        mSiteConfigs.put(key, config);
-        refreshLineList(false);
+    private int getSpanCount() {
+        if (!isGrid()) return 1;
+        if (!MobileWindow.isWide(requireActivity())) return 2;
+        int column = Product.getColumn(requireActivity());
+        int targetWidth = Product.getSpec(requireActivity(), column)[0];
+        int available = getResultWidth() - getResultPadding();
+        int span = targetWidth > 0 ? available / targetWidth : 2;
+        return Math.max(2, Math.min(column, span));
     }
 
-    private void startSearch() {
-        if (mLines.isEmpty() || getKeyword().isEmpty()) return;
-
-        if (mSearch != null) mSearch.stop();
-        mSearch = new MultiConfigSearchEngine();
-
-        mSearch.start(getSearchOrder(), getKeyword(), new MultiConfigSearchEngine.Callback() {
-            @Override
-            public void onSites(Config config, List<Site> sites) {
-                // 空壳版对所有用户添加的 Config 一视同仁：
-                // 单 Site 不重复展开；多 Site 自动显示为子线路。
-                if (sites == null || sites.size() <= 1) return;
-                mExpandableConfigs.add(config.getId());
-                for (Site site : sites) ensureSiteLine(config, site);
-            }
-
-            @Override
-            public void onSiteResult(Config config, Site site, List<Vod> items) {
-                addSiteResult(config, site, items);
-            }
-
-            @Override
-            public void onLineError(Config config, Throwable error) {
-            }
-
-            @Override
-            public void onFinish() {
-            }
-        });
+    private int getResultWidth() {
+        int width = mBinding.recycler.getWidth();
+        return width > 0 ? width : ResUtil.getScreenWidth(requireActivity()) - collectWidth;
     }
 
-    private void addSiteResult(Config config, Site site, List<Vod> items) {
-        if (items == null || items.isEmpty() || site == null) return;
-
-        Collect group = mCollects.get(config.getId());
-        if (group == null) return;
-
-        boolean total = mExpandableConfigs.contains(config.getId());
-        String childKey = siteLineKey(config, site);
-        boolean childBlocked = total && mBlocked.contains(childKey);
-
-        if (!childBlocked) group.getList().addAll(items);
-
-        if (total) {
-            ensureSiteLine(config, site);
-            Collect child = mSiteCollects.get(childKey);
-            if (child != null) child.getList().addAll(items);
-        }
-
-        Collect all = mCollectAdapter.getItem(0);
-        if (!mBlocked.contains(lineKey(config)) && !childBlocked) {
-            all.getList().addAll(items);
-        }
-
-        Collect active = mCollectAdapter.getActivated();
-        String activeKey = active.getSite().getKey();
-
-        if ("all".equals(activeKey)) {
-            if (!mBlocked.contains(lineKey(config)) && !childBlocked) mSearchAdapter.addAll(items);
-        } else if (activeKey.equals(lineKey(config))) {
-            if (!childBlocked) mSearchAdapter.addAll(items);
-        } else if (activeKey.equals(childKey)) {
-            mSearchAdapter.addAll(items);
-        }
+    private int getResultPadding() {
+        return mBinding.recycler.getPaddingStart() + mBinding.recycler.getPaddingEnd();
     }
 
-    private void rebuildAll() {
-        if (mCollectAdapter.getItemCount() == 0) return;
+    private int[] getGridSize() {
+        int span = getSpanCount();
+        int margin = ResUtil.dp2px(GRID_ITEM_MARGIN_DP);
+        int space = getResultPadding() + margin * 2 * span;
+        int width = (getResultWidth() - space) / span;
+        width = Math.max(ResUtil.dp2px(96), width);
+        return new int[]{width, (int) (width / 0.75f), margin};
+    }
 
-        Collect all = mCollectAdapter.getItem(0);
-        all.getList().clear();
+    private void setResultLayout(boolean scrollTop) {
+        setWidth();
+        int span = getSpanCount();
+        ((GridLayoutManager) (mBinding.recycler.getLayoutManager())).setSpanCount(span);
+        setResultPadding();
+        mSearchAdapter.setGrid(isGrid(), getGridSize());
+        if (scrollTop) mBinding.recycler.scrollToPosition(0);
+    }
 
-        for (Config config : mLines) {
-            Collect group = mCollects.get(config.getId());
-            if (group == null) continue;
+    private void setResultPadding() {
+        int top = isGrid() ? ResUtil.dp2px(GRID_TOP_PADDING_DP) : 0;
+        mBinding.recycler.setPadding(mBinding.recycler.getPaddingStart(), top, mBinding.recycler.getPaddingEnd(), mBinding.recycler.getPaddingBottom());
+    }
 
-            if (mExpandableConfigs.contains(config.getId())) {
-                group.getList().clear();
+    private void onColumnToggle() {
+        Setting.putSearchColumn(getCount() == 1 ? 2 : 1);
+        setResultLayout(true);
+        requireActivity().invalidateOptionsMenu();
+    }
 
-                for (Map.Entry<String, Config> entry : mSiteConfigs.entrySet()) {
-                    if (entry.getValue().getId() != config.getId()) continue;
-                    String childKey = entry.getKey();
-                    Collect child = mSiteCollects.get(childKey);
-                    if (child == null || mBlocked.contains(childKey)) continue;
-                    group.getList().addAll(child.getList());
-                }
-            }
+    private void setCollect(Result result) {
+        if (result == null || result.getList().isEmpty()) return;
+        List<Vod> items = new ArrayList<>(result.getList());
+        mAllResults.addAll(items);
+        mCollects.get(0).getList().addAll(items);
+        mCollects.add(Collect.create(items));
+        mCollectAdapter.setItems(new ArrayList<>(mCollects));
+        if (mCollectAdapter.getPosition() == 0) mSearchAdapter.setItems(new ArrayList<>(mAllResults));
+    }
 
-            if (!mBlocked.contains(lineKey(config))) all.getList().addAll(group.getList());
-        }
+    private void setSearchProgress(SearchProgress progress) {
+        if (progress != null) mCollectAdapter.setProgress(progress.current(), progress.total());
+    }
 
-        Collect active = mCollectAdapter.getActivated();
-        String activeKey = active.getSite().getKey();
-
-        if ("all".equals(activeKey)) {
-            mSearchAdapter.setItems(all.getList(), () -> mBinding.recycler.scrollToPosition(0));
-        } else {
-            // 当前如果正好是被改变的多 Site Config/子源，也立即刷新。
-            mSearchAdapter.setItems(active.getList(), () -> mBinding.recycler.scrollToPosition(0));
-        }
+    private void setSearch(Result result) {
+        if (result == null) return;
+        mScroller.endLoading(result);
+        boolean same = !result.getList().isEmpty() && mCollectAdapter.getActivated().getSite().equals(result.getVod().getSite());
+        if (same) mCollectAdapter.getActivated().getList().addAll(result.getList());
+        if (same) mSearchAdapter.setItems(new ArrayList<>(mCollectAdapter.getActivated().getList()));
     }
 
     @Override
     public void onItemClick(int position, Collect item) {
-        mCollectAdapter.setSelected(position);
         mSearchAdapter.setItems(item.getList(), () -> mBinding.recycler.scrollToPosition(0));
-    }
-
-    @Override
-    public void onItemDoubleClick(int position, Collect item) {
-        if (item == null || item.getSite() == null) return;
-
-        String key = item.getSite().getKey();
-        if ("all".equals(key) || key.isEmpty()) return;
-
-        boolean blocked = SearchBlockManager.toggle(requireContext(), key);
-        mBlocked = SearchBlockManager.getBlocked(requireContext());
-        mCollectAdapter.setBlocked(mBlocked);
-        rebuildAll();
-
-        String text = blocked
-                ? "已永久屏蔽：" + item.getSite().getName()
-                : "已永久解除：" + item.getSite().getName();
-
-        android.widget.Toast.makeText(requireContext(), text, android.widget.Toast.LENGTH_SHORT).show();
+        mCollectAdapter.setSelected(position);
+        mScroller.setPage(item.getPage());
     }
 
     @Override
     public void onItemClick(Vod item) {
-        Runnable action = () -> openAfterSearch(item);
-        if (mSearch != null) mSearch.stop(action);
-        else action.run();
-    }
-
-    private void openAfterSearch(Vod item) {
-        Config config = item.getSearchCid() <= 0 ? null : Config.find(item.getSearchCid());
-
-        if (config != null && config.getId() != VodConfig.getCid()) {
-            Config previous = VodConfig.get().getConfig();
-
-            VodConfig.load(config, new Callback() {
-                @Override
-                public void success() {
-                    if (VodConfig.get().getSite(item.getSiteKey()).isEmpty()) {
-                        restoreAfterOpenFail(previous, "线路站点初始化失败");
-                        return;
-                    }
-                    openVideo(item);
-                }
-
-                @Override
-                public void error(String msg) {
-                    restoreAfterOpenFail(previous, msg);
-                }
-            });
-        } else {
-            openVideo(item);
-        }
-    }
-
-    private void restoreAfterOpenFail(Config previous, String msg) {
-        if (previous == null || previous.getUrl().isEmpty()) {
-            Notify.show(msg);
-            return;
-        }
-
-        VodConfig.load(previous, new Callback() {
-            @Override
-            public void success() {
-                Notify.show(msg);
-            }
-
-            @Override
-            public void error(String ignored) {
-                Notify.show(msg);
-            }
-        });
-    }
-
-    private void openVideo(Vod item) {
-        if (item.isFolder()) {
-            FolderActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-        } else {
-            VideoActivity.collect(
-                    requireActivity(),
-                    item.getSiteKey(),
-                    item.getId(),
-                    item.getName(),
-                    item.getPic()
-            );
+        if (item.isFolder()) FolderActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
+        else {
+            String pic = item.getPic().isEmpty() ? getPic() : item.getPic();
+            VideoActivity.collect(requireActivity(), item.getSiteKey(), item.getId(), item.getName(), pic, getWallPic());
         }
     }
 
     @Override
     public boolean onLoadMore(String page) {
-        return false;
+        Collect activated = mCollectAdapter.getActivated();
+        if ("all".equals(activated.getSite().getKey())) return false;
+        mViewModel.searchContent(activated.getSite(), getKeyword(), false, page);
+        activated.setPage(Integer.parseInt(page));
+        return true;
     }
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.menu_collect, menu);
+    }
+
+    @Override
+    public void onPrepareMenu(@NonNull Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_column);
+        if (item == null) return;
+        Drawable icon = ContextCompat.getDrawable(requireContext(), getCount() == 1 ? R.drawable.ic_site_double_column : R.drawable.ic_site_single_column);
+        if (icon == null) return;
+        icon = icon.mutate();
+        icon.setTint(Color.WHITE);
+        item.setIcon(icon);
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
-            requireActivity().getOnBackPressedDispatcher().onBackPressed();
-        }
+        if (menuItem.getItemId() == android.R.id.home) requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        if (menuItem.getItemId() == R.id.action_column) onColumnToggle();
         return true;
     }
 
@@ -461,8 +314,9 @@ public class CollectFragment extends BaseFragment implements
 
     @Override
     public void onDestroyView() {
-        if (mSearch != null) mSearch.stop();
-        requireActivity().removeMenuProvider(this);
         super.onDestroyView();
+        mViewModel.stopSearch();
+        SiteHealthStore.flush();
+        requireActivity().removeMenuProvider(this);
     }
 }

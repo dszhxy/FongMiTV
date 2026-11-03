@@ -153,6 +153,10 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         start(activity, key, id, name, pic, null, true, false);
     }
 
+    public static void collect(Activity activity, String key, String id, String name, String pic, String wallPic) {
+        start(activity, key, id, name, pic, null, true, false);
+    }
+
     public static void start(Activity activity, String url) {
         start(activity, SiteApi.PUSH, url, url);
     }

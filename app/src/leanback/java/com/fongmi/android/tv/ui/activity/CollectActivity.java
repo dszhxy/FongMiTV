@@ -3,75 +3,87 @@ package com.fongmi.android.tv.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
-import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Collect;
-import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityCollectBinding;
-import com.fongmi.android.tv.impl.Callback;
-import com.fongmi.android.tv.search.MultiConfigSearchEngine;
-import com.fongmi.android.tv.setting.SearchBlockManager;
+import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.adapter.CollectAdapter;
+import com.fongmi.android.tv.ui.adapter.SearchAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
-import com.fongmi.android.tv.ui.fragment.CollectFragment;
-import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.ui.custom.CustomScroller;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.github.catvod.crawler.SpiderDebug;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
-public class CollectActivity extends BaseActivity implements CollectAdapter.OnClickListener {
+public class CollectActivity extends BaseActivity implements CollectAdapter.OnClickListener, SearchAdapter.OnClickListener, CustomScroller.Callback {
 
     private ActivityCollectBinding mBinding;
-    private CollectAdapter mAdapter;
-    private PageAdapter mPageAdapter;
-    private MultiConfigSearchEngine mSearch;
-
-    private final List<Config> mLines = new ArrayList<>();
-    private final Map<String, Collect> mSiteCollects = new LinkedHashMap<>();
-    private final Map<String, Integer> mSitePositions = new LinkedHashMap<>();
-
-    private Collect mAll;
-    private Set<String> mBlocked;
-    private View mOldView;
+    private CollectAdapter mCollectAdapter;
+    private SearchAdapter mSearchAdapter;
+    private CustomScroller mScroller;
+    private SiteViewModel mViewModel;
+    private RecyclerView.OnScrollListener mImageScrollListener;
+    private List<Site> mSites;
+    private final List<Vod> mPendingItems = new ArrayList<>();
+    private Runnable mApplyCollect;
+    private int mPendingCollectPosition = RecyclerView.NO_POSITION;
+    private boolean mScrolling;
+    private boolean mLeavingForPlayback;
 
     public static void start(Activity activity, String keyword) {
+        start(activity, keyword, null);
+    }
+
+    public static void start(Activity activity, String keyword, String siteKey) {
+        start(activity, keyword, siteKey, null, null);
+    }
+
+    public static void start(Activity activity, String keyword, String siteKey, String pic, String wallPic) {
         Intent intent = new Intent(activity, CollectActivity.class);
         intent.putExtra("keyword", keyword);
+        intent.putExtra("siteKey", siteKey);
+        intent.putExtra("pic", pic);
+        intent.putExtra("wallPic", wallPic);
         activity.startActivity(intent);
     }
 
     private String getKeyword() {
-        String value = getIntent().getStringExtra("keyword");
-        return value == null ? "" : value;
+        return Objects.toString(getIntent().getStringExtra("keyword"), "");
     }
 
-    private String siteLineKey(Config config, Site site) {
-        return "site:" + config.getUrl() + "#" + site.getKey();
+    private String getSiteKey() {
+        return Objects.toString(getIntent().getStringExtra("siteKey"), "");
+    }
+
+    private String getPic() {
+        return Objects.toString(getIntent().getStringExtra("pic"), "");
+    }
+
+    private String getWallPic() {
+        return Objects.toString(getIntent().getStringExtra("wallPic"), "");
     }
 
     @Override
@@ -80,321 +92,319 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
     }
 
     @Override
-    protected void initView(Bundle savedInstanceState) {
-        setRecyclerView();
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        getIntent().putExtras(intent);
+        if (mViewModel != null) mViewModel.stopSearch();
         saveKeyword();
-        loadBlocked();
-        loadLines();
-        buildLineList();
-        setPager();
-        startSearch();
+        search();
     }
 
     @Override
-    protected void initEvent() {
-        mBinding.pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                if (position >= 0 && position < mAdapter.getItemCount()) {
-                    mBinding.recycler.setSelectedPosition(position);
-                    mBinding.recycler.requestFocus();
-                }
-            }
-        });
-
-        mBinding.recycler.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                onChildSelected(child);
-            }
-        });
+    protected void initView(Bundle savedInstanceState) {
+        setRecyclerView();
+        setViewModel();
+        saveKeyword();
+        setSites();
+        search();
     }
 
     private void setRecyclerView() {
-        // 原版 FM：搜索源标签横向排列在海报墙上方。
-        mBinding.recycler.setHorizontalSpacing(ResUtil.dp2px(16));
-        mBinding.recycler.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        mBinding.recycler.setAdapter(mAdapter = new CollectAdapter(this));
+        int count = getCount();
+        mScroller = new CustomScroller(this);
+        mBinding.collect.setHasFixedSize(true);
+        mBinding.collect.setItemAnimator(null);
+        mBinding.collect.setVerticalSpacing(ResUtil.dp2px(12));
+        mBinding.collect.setAdapter(mCollectAdapter = new CollectAdapter(this));
+        mBinding.collect.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
+            @Override
+            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
+                scheduleCollect(position, 260);
+            }
+        });
+        mBinding.collect.setOnKeyListener((view, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN || keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
+            return focusFirstSearchResult();
+        });
+        mBinding.recycler.setHasFixedSize(true);
+        mBinding.recycler.setItemAnimator(null);
+        mBinding.recycler.setItemViewCacheSize(count * 3);
+        mBinding.recycler.setLayoutManager(new GridLayoutManager(this, count));
+        mBinding.recycler.addOnScrollListener(mScroller);
+        mBinding.recycler.addOnScrollListener(mImageScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!canLoadImage()) return;
+                ensureSearchRows(count, 2);
+                preloadNextRows(count);
+            }
+
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!canLoadImage()) return;
+                boolean scrolling = newState != RecyclerView.SCROLL_STATE_IDLE;
+                if (scrolling == mScrolling) return;
+                mScrolling = scrolling;
+                if (mScrolling) {
+                    ensureSearchRows(count, 2);
+                    preloadNextRows(count);
+                } else {
+                    Glide.with(CollectActivity.this).resumeRequests();
+                    flushPendingItems();
+                    ensureSearchRows(count, 2);
+                    preloadNextRows(count);
+                }
+            }
+        });
+        mBinding.recycler.setAdapter(mSearchAdapter = new SearchAdapter(this, getItemWidth(count), getItemHeight(count)));
+    }
+
+    private boolean canLoadImage() {
+        return !isFinishing() && !isDestroyed();
+    }
+
+    private void setViewModel() {
+        mViewModel = new ViewModelProvider(this).get(SiteViewModel.class).init();
+        mViewModel.getSearch().observe(this, this::setCollect);
+        mViewModel.getResult().observe(this, this::setSearch);
     }
 
     private void saveKeyword() {
-        if (getKeyword().isEmpty()) return;
-        List<String> items = Setting.getKeyword().isEmpty()
-                ? new ArrayList<>()
-                : App.gson().fromJson(Setting.getKeyword(), TypeToken.getParameterized(List.class, String.class).getType());
+        List<String> items = Setting.getKeyword().isEmpty() ? new ArrayList<>() : App.gson().fromJson(Setting.getKeyword(), TypeToken.getParameterized(List.class, String.class).getType());
         items.remove(getKeyword());
         items.add(0, getKeyword());
         if (items.size() > 9) items.remove(9);
         Setting.putKeyword(App.gson().toJson(items));
     }
 
-    private void loadBlocked() {
-        mBlocked = SearchBlockManager.getBlocked(this);
-    }
-
-    private void loadLines() {
-        mLines.clear();
-        mLines.addAll(Config.findUrls());
-    }
-
-    private List<Config> getSearchOrder() {
-        List<Config> source = new ArrayList<>(mLines);
-        List<Config> order = new ArrayList<>();
-
-        // 当前正在看的 Config 最先搜。
-        Config current = VodConfig.get().getConfig();
-        if (current != null && !current.getUrl().isEmpty()) moveConfig(source, order, current.getUrl());
-
-        order.addAll(source);
-        return order;
-    }
-
-    private void moveConfig(List<Config> source, List<Config> target, String url) {
-        if (url == null || url.isEmpty()) return;
-        for (int i = 0; i < source.size(); i++) {
-            if (url.equals(source.get(i).getUrl())) {
-                target.add(source.remove(i));
-                return;
-            }
+    private void setSites() {
+        String siteKey = getSiteKey();
+        mSites = new ArrayList<>();
+        for (Site site : VodConfig.get().getSites()) {
+            if (!site.isSearchable()) continue;
+            if (!siteKey.isEmpty() && !site.getKey().equals(siteKey)) continue;
+            mSites.add(site);
         }
+        SiteHealthStore.sortSites(mSites);
     }
 
-    private void buildLineList() {
-        mAdapter.clear();
-        mSiteCollects.clear();
-        mSitePositions.clear();
-
-        // 原版 FM 的关键：开始搜索时只有“全部”，绝不提前把线路定死。
-        mAll = Collect.all();
-        mAdapter.add(mAll);
-        mAdapter.setBlocked(mBlocked);
-    }
-
-    private void setPager() {
-        mBinding.pager.setAdapter(null);
-        mBinding.pager.setAdapter(mPageAdapter = new PageAdapter(getSupportFragmentManager()));
-    }
-
-    private void startSearch() {
+    private void search() {
+        removeApplyCollect();
+        mCollectAdapter.clear();
+        mSearchAdapter.clear();
+        mPendingItems.clear();
+        mScroller.reset();
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
-        if (mLines.isEmpty() || getKeyword().isEmpty()) return;
-
-        if (mSearch != null) mSearch.stop();
-        mSearch = new MultiConfigSearchEngine();
-        mSearch.start(getSearchOrder(), getKeyword(), new MultiConfigSearchEngine.Callback() {
-            @Override
-            public void onSites(Config config, List<Site> sites) {
-                // 原版 FM 不在“拿到站点清单”时先画空标签。
-            }
-
-            @Override
-            public void onSiteResult(Config config, Site site, List<Vod> items) {
-                addSiteResult(config, site, items);
-            }
-
-            @Override
-            public void onLineError(Config config, Throwable error) {
-            }
-
-            @Override
-            public void onFinish() {
-            }
-        });
+        if (mSites.isEmpty()) return;
+        mCollectAdapter.add(Collect.all());
+        mViewModel.searchContent(mSites, getKeyword(), false);
     }
 
-    private Collect ensureSiteLine(Config config, Site site) {
-        if (config == null || site == null || site.isEmpty()) return null;
-        String key = siteLineKey(config, site);
-        Collect collect = mSiteCollects.get(key);
-        if (collect != null) return collect;
-
-        // 标签显示真实 Site 名称；key 带 Config URL，避免不同 Config 同名 Site 冲突。
-        String name = site.getName().isEmpty() ? config.getDesc() : site.getName();
-        Site display = Site.get(key, name);
-        collect = new Collect(display, new ArrayList<>());
-
-        int position = mAdapter.getItemCount();
-        mSiteCollects.put(key, collect);
-        mSitePositions.put(key, position);
-        mAdapter.add(collect);
-        mAdapter.setBlocked(mBlocked);
-        if (mPageAdapter != null) mPageAdapter.notifyDataSetChanged();
-        return collect;
+    private int getCount() {
+        return 5;
     }
 
-    private void addSiteResult(Config config, Site site, List<Vod> items) {
-        if (items == null || items.isEmpty() || config == null || site == null) return;
-
-        // 哪个 Site 先返回，就先创建哪个标签并立即出这一批海报。
-        Collect collect = ensureSiteLine(config, site);
-        if (collect == null) return;
-
-        String key = siteLineKey(config, site);
-        collect.getList().addAll(items);
-        Integer position = mSitePositions.get(key);
-        if (position != null) pushToFragment(position, items);
-
-        // “全部”页同样流式追加：不等待其它线路完成。
-        if (!mBlocked.contains(key)) {
-            mAll.getList().addAll(items);
-            pushToFragment(0, items);
-        }
+    private int getItemWidth(int count) {
+        int width = ResUtil.getScreenWidth() - ResUtil.dp2px(220);
+        int spacing = ResUtil.dp2px(8) * (count - 1);
+        return (width - spacing) / count;
     }
 
-    private void pushToFragment(int position, List<Vod> items) {
-        if (mPageAdapter == null) return;
-        CollectFragment fragment = mPageAdapter.getCreated(position);
-        if (fragment != null && fragment.isReady()) fragment.addVideo(items);
+    private int getItemHeight(int count) {
+        return (int) (getItemWidth(count) / 0.72f);
     }
 
-    private void rebuildAll() {
-        if (mAll == null) return;
-        mAll.getList().clear();
-        for (Map.Entry<String, Collect> entry : mSiteCollects.entrySet()) {
-            if (!mBlocked.contains(entry.getKey())) mAll.getList().addAll(entry.getValue().getList());
-        }
-        CollectFragment all = mPageAdapter == null ? null : mPageAdapter.getCreated(0);
-        if (all != null && all.isReady()) all.replaceVideo(mAll.getList());
+    private void setCollect(Result result) {
+        if (mLeavingForPlayback) return;
+        if (result == null || result.getList().isEmpty()) return;
+        mCollectAdapter.add(Collect.create(result.getList()));
+        mCollectAdapter.add(result.getList());
+        if (mCollectAdapter.getPosition() == 0) addSearchItems(result.getList());
     }
 
-    private void onChildSelected(@Nullable RecyclerView.ViewHolder child) {
-        if (mOldView != null) mOldView.setSelected(false);
-        mOldView = child == null ? null : child.itemView;
-        if (mOldView == null) return;
-        mOldView.setSelected(true);
-        App.post(mRunnable, 100);
+    private void setSearch(Result result) {
+        if (mLeavingForPlayback) return;
+        if (result == null) return;
+        mScroller.endLoading(result);
+        Collect activated = mCollectAdapter.getActivated();
+        boolean same = !result.getList().isEmpty() && activated.getSite().equals(result.getVod().getSite());
+        if (same) activated.getList().addAll(result.getList());
+        if (same) addSearchItems(result.getList());
     }
 
-    private final Runnable mRunnable = () -> {
-        int position = mBinding.recycler.getSelectedPosition();
-        if (position >= 0 && position < mAdapter.getItemCount()) mBinding.pager.setCurrentItem(position);
-    };
+    private void addSearchItems(List<Vod> items) {
+        if (mScrolling) mPendingItems.addAll(items);
+        else mSearchAdapter.appendSource(items, getCount() * 4);
+    }
+
+    private void flushPendingItems() {
+        if (mPendingItems.isEmpty()) return;
+        mSearchAdapter.appendSource(new ArrayList<>(mPendingItems), getCount() * 4);
+        mPendingItems.clear();
+    }
+
+    private void preloadNextRows(int count) {
+        RecyclerView.LayoutManager manager = mBinding.recycler.getLayoutManager();
+        if (!(manager instanceof GridLayoutManager layoutManager)) return;
+        int first = layoutManager.findFirstVisibleItemPosition();
+        int last = layoutManager.findLastVisibleItemPosition();
+        if (first < 0 || last < 0) return;
+        int direction = last >= first ? last + 1 : first + 1;
+        mSearchAdapter.ensureLoaded(direction, count * 2);
+    }
+
+    private void ensureSearchRows(int count, int rows) {
+        RecyclerView.LayoutManager manager = mBinding.recycler.getLayoutManager();
+        if (!(manager instanceof GridLayoutManager layoutManager)) return;
+        int last = layoutManager.findLastVisibleItemPosition();
+        if (last < 0) return;
+        mSearchAdapter.ensureLoaded(last + 1, count * rows);
+    }
 
     @Override
     public void onItemClick(int position, Collect item) {
-        mBinding.recycler.setSelectedPosition(position);
-        mBinding.pager.setCurrentItem(position);
+        scheduleCollect(position, 0);
     }
 
     @Override
-    public void onItemDoubleClick(int position, Collect item) {
-        if (item == null || item.getSite() == null) return;
-        String key = item.getSite().getKey();
-        if ("all".equals(key) || key.isEmpty()) return;
-
-        boolean blocked = SearchBlockManager.toggle(this, key);
-        mBlocked = SearchBlockManager.getBlocked(this);
-        mAdapter.setBlocked(mBlocked);
-        rebuildAll();
-
-        String text = blocked ? "已永久屏蔽：" + item.getSite().getName() : "已永久解除：" + item.getSite().getName();
-        android.widget.Toast.makeText(this, text, android.widget.Toast.LENGTH_SHORT).show();
+    public boolean onCollectKey(int position, int keyCode, KeyEvent event) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN || keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
+        return focusFirstSearchResult();
     }
 
-    public void openVideo(Vod item) {
-        if (item == null) return;
-        Runnable action = () -> openVideoAfterSearch(item);
-        if (mSearch != null) mSearch.stop(action);
-        else action.run();
+    private void scheduleCollect(int position, long delayMillis) {
+        if (position < 0 || position >= mCollectAdapter.getItemCount()) return;
+        Collect item = mCollectAdapter.get(position);
+        boolean same = mCollectAdapter.getPosition() == position;
+        mCollectAdapter.setSelected(position);
+        mScroller.reset();
+        mScroller.setPage(item.getPage());
+        mPendingItems.clear();
+        if (same && delayMillis > 0 && mPendingCollectPosition == position) return;
+        applyCollectDeferred(position, item, delayMillis);
     }
 
-    private void openVideoAfterSearch(Vod item) {
-        Config config = item.getSearchCid() <= 0 ? null : Config.find(item.getSearchCid());
-        if (config != null && config.getId() != VodConfig.getCid()) {
-            Config previous = VodConfig.get().getConfig();
-            VodConfig.load(config, new Callback() {
-                @Override
-                public void success() {
-                    if (VodConfig.get().getSite(item.getSiteKey()).isEmpty()) {
-                        restoreAfterOpenFail(previous, "线路站点初始化失败");
-                        return;
-                    }
-                    openAfterConfig(item);
-                }
-
-                @Override
-                public void error(String msg) {
-                    restoreAfterOpenFail(previous, msg);
-                }
-            });
-        } else {
-            openAfterConfig(item);
-        }
+    private void applyCollectDeferred(int position, Collect item, long delayMillis) {
+        removeApplyCollect();
+        mPendingCollectPosition = position;
+        mApplyCollect = () -> {
+            if (isFinishing() || isDestroyed()) return;
+            if (mCollectAdapter.getPosition() != position) return;
+            setSearchItemsLazy(new ArrayList<>(item.getList()));
+        };
+        App.post(mApplyCollect, delayMillis);
     }
 
-    private void restoreAfterOpenFail(Config previous, String msg) {
-        if (previous == null || previous.getUrl().isEmpty()) {
-            Notify.show(msg);
-            return;
-        }
-        VodConfig.load(previous, new Callback() {
-            @Override
-            public void success() { Notify.show(msg); }
-            @Override
-            public void error(String ignored) { Notify.show(msg); }
+    private void removeApplyCollect() {
+        if (mApplyCollect != null) App.removeCallbacks(mApplyCollect);
+        mApplyCollect = null;
+        mPendingCollectPosition = RecyclerView.NO_POSITION;
+    }
+
+    private void setSearchItemsLazy(List<Vod> items) {
+        mSearchAdapter.setSource(items, getCount() * 4);
+        mBinding.recycler.post(() -> {
+            scrollSearchToTop();
+            ensureSearchRows(getCount(), 2);
+            preloadNextRows(getCount());
         });
     }
 
-    private void openAfterConfig(Vod item) {
+    private void scrollSearchToTop() {
+        RecyclerView.LayoutManager manager = mBinding.recycler.getLayoutManager();
+        if (manager instanceof GridLayoutManager layoutManager) layoutManager.scrollToPositionWithOffset(0, 0);
+        else mBinding.recycler.scrollToPosition(0);
+    }
+
+    private boolean focusFirstSearchResult() {
+        if (mSearchAdapter == null || mSearchAdapter.getItemCount() == 0) return false;
+        mBinding.recycler.post(() -> {
+            scrollSearchToTop();
+            mBinding.recycler.post(() -> {
+                RecyclerView.LayoutManager manager = mBinding.recycler.getLayoutManager();
+                View target = manager == null ? null : manager.findViewByPosition(0);
+                if (target != null) target.requestFocus();
+                else mBinding.recycler.requestFocus();
+            });
+        });
+        return true;
+    }
+
+    @Override
+    public void onItemClick(Vod item) {
+        long start = System.currentTimeMillis();
         setResult(Activity.RESULT_OK);
+        mLeavingForPlayback = true;
+        removeApplyCollect();
+        SpiderDebug.log("collect-flow", "item click site=%s id=%s name=%s folder=%s", item.getSiteKey(), item.getId(), item.getName(), item.isFolder());
         if (item.isFolder()) {
             VodActivity.start(this, item.getSiteKey(), Result.folder(item));
         } else {
-            VideoActivity.collect(this, item.getSiteKey(), item.getId(), item.getName(), item.getPic());
+            String pic = item.getPic().isEmpty() ? getPic() : item.getPic();
+            VideoActivity.collect(this, item.getSiteKey(), item.getId(), item.getName(), pic, getWallPic());
         }
+        SpiderDebug.log("collect-flow", "activity launch requested cost=%dms", System.currentTimeMillis() - start);
+        App.post(() -> {
+            long cleanup = System.currentTimeMillis();
+            if (mViewModel != null) mViewModel.stopSearch();
+            mPendingItems.clear();
+            if (canLoadImage()) Glide.with(this).pauseRequests();
+            SpiderDebug.log("collect-flow", "leave cleanup cost=%dms", System.currentTimeMillis() - cleanup);
+        }, 200);
+    }
+
+    @Override
+    public boolean onItemKey(int position, int keyCode, KeyEvent event) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN || position < 0) return false;
+        int count = getCount();
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return onSearchDown(position, count);
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return position < count;
+        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) return position % count == count - 1;
+        return false;
+    }
+
+    private boolean onSearchDown(int position, int count) {
+        int next = position + count;
+        if (next + count >= mSearchAdapter.getItemCount()) flushPendingItems();
+        mSearchAdapter.ensureLoaded(next + 1, count * 3);
+        boolean bottom = next >= mSearchAdapter.getItemCount();
+        if (bottom) mScroller.checkMore();
+        return bottom;
+    }
+
+    @Override
+    public boolean onLoadMore(String page) {
+        Collect activated = mCollectAdapter.getActivated();
+        if ("all".equals(activated.getSite().getKey())) return false;
+        mViewModel.searchContent(activated.getSite(), getKeyword(), false, page);
+        activated.setPage(Integer.parseInt(page));
+        return true;
+    }
+
+    @Override
+    protected void onBackInvoked() {
+        removeApplyCollect();
+        mViewModel.stopSearch();
+        super.onBackInvoked();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mLeavingForPlayback = false;
+        if (canLoadImage()) Glide.with(this).resumeRequests();
     }
 
     @Override
     protected void onDestroy() {
-        if (mSearch != null) mSearch.stop();
+        if (mBinding != null) {
+            mBinding.recycler.removeOnScrollListener(mScroller);
+            if (mImageScrollListener != null) mBinding.recycler.removeOnScrollListener(mImageScrollListener);
+        }
+        if (mViewModel != null) mViewModel.stopSearch();
+        removeApplyCollect();
+        mPendingItems.clear();
+        SiteHealthStore.flush();
         super.onDestroy();
-    }
-
-    class PageAdapter extends FragmentStatePagerAdapter {
-
-        private final SparseArray<CollectFragment> fragments = new SparseArray<>();
-
-        PageAdapter(@NonNull FragmentManager fm) {
-            super(fm);
-        }
-
-        @NonNull
-        @Override
-        public Fragment getItem(int position) {
-            return CollectFragment.newInstance(getKeyword(), mAdapter.get(position));
-        }
-
-        @Override
-        public int getCount() {
-            return mAdapter.getItemCount();
-        }
-
-        @NonNull
-        @Override
-        public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            Object object = super.instantiateItem(container, position);
-            if (object instanceof CollectFragment) fragments.put(position, (CollectFragment) object);
-            return object;
-        }
-
-        @Override
-        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-            fragments.remove(position);
-            super.destroyItem(container, position, object);
-        }
-
-        @Nullable
-        @Override
-        public Parcelable saveState() {
-            return null;
-        }
-
-        @Override
-        public void restoreState(@Nullable Parcelable state, @Nullable ClassLoader loader) {
-        }
-
-        CollectFragment getCreated(int position) {
-            return fragments.get(position);
-        }
     }
 }

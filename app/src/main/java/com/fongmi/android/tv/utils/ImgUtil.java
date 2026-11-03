@@ -91,6 +91,24 @@ public class ImgUtil {
         }
     }
 
+    public static void load(String text, String url, ImageView view, int width, int height) {
+        load(text, url, view, true, width, height);
+    }
+
+    public static void load(String text, String url, ImageView view, boolean vod, int width, int height) {
+        view.setScaleType(vod ? CENTER_CROP : FIT_CENTER);
+        if (!vod) view.setVisibility(TextUtils.isEmpty(url) ? View.GONE : View.VISIBLE);
+        if (TextUtils.isEmpty(url) || failed.contains(url)) view.setImageDrawable(getTextDrawable(text, vod));
+        else try {
+            RequestBuilder<Drawable> builder = Glide.with(view).load(getUrl(url)).listener(getListener(text, url, view, vod));
+            if (width > 0 && height > 0) builder = builder.override(width, height);
+            if (vod) builder.centerCrop().into(view);
+            else builder.fitCenter().into(view);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
     public static Object getUrl(String url) {
         String param = null;
         url = UrlUtil.convert(url);

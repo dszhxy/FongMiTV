@@ -20,11 +20,11 @@ public class SearchSuggest {
     private static final int LIMIT = 20;
 
     public static String iqiyiUrl(String keyword) {
-        return "https://suggest.video.iqiyi.com/?if=mobile&key=" + URLEncoder.encode(Trans.t2s(keyword));
+        return "https://suggest.video.iqiyi.com/?if=mobile&key=" + URLEncoder.encode(Trans.t2s(false, keyword));
     }
 
     public static String tencentUrl(String keyword) {
-        return "https://tv.aiseet.atianqi.com/i-tvbin/qtv_video/search/get_search_smart_box?format=json&page_num=0&page_size=10&key=" + URLEncoder.encode(Trans.t2s(keyword));
+        return "https://tv.aiseet.atianqi.com/i-tvbin/qtv_video/search/get_search_smart_box?format=json&page_num=0&page_size=10&key=" + URLEncoder.encode(Trans.t2s(false, keyword));
     }
 
     public static List<Word.Data> parseIqiyi(String result) {

@@ -7,6 +7,13 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
+    <View
+        android:id="@+id/health"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/shape_site_health" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/text"
         style="?attr/materialButtonOutlinedStyle"
@@ -15,10 +22,10 @@
         android:layout_weight="1"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:textColor="@color/selector_control"
+        android:textColor="@color/dialog_outlined_button_text"
         android:textSize="14sp"
-        app:backgroundTint="@color/selector_button"
-        app:strokeColor="@color/selector_stroke"
+        app:backgroundTint="@color/dialog_outlined_button_bg"
+        app:strokeColor="@color/dialog_outlined_button_stroke"
         tools:text="泥巴" />
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -27,7 +34,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_site_search" />
+        android:src="@drawable/ic_site_search"
+        app:tint="@color/dialog_outlined_button_text" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/change"
@@ -35,6 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_site_change" />
+        android:src="@drawable/ic_site_change"
+        app:tint="@color/dialog_outlined_button_text" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

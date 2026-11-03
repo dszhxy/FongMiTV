@@ -13,6 +13,14 @@
 
     <style name="Theme.App" parent="Theme.Base" />
 
+    <style name="ThemeOverlay_WebHTV_LightDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurfaceContainerHigh">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="shapeAppearanceCornerSmall">8dp</item>
+        <item name="shapeAppearanceCornerLarge">8dp</item>
+    </style>
+
     <style name="Theme.Crash" parent="Theme.Base">
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowBackground">@color/grey_700</item>
