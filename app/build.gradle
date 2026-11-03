@@ -111,11 +111,7 @@ android {
     sourceSets {
         main {
             java {
-                // Real bundled MPV is enabled. The three legacy effect wrappers below
-                // target the older private MPV API and stay excluded.
-                exclude 'com/fongmi/android/tv/player/mpv/MpvPlayerEffect.java'
-                exclude 'com/fongmi/android/tv/player/effect/audio/MpvAudioEffectFilter.java'
-                exclude 'com/fongmi/android/tv/player/effect/video/MpvVideoEffectController.java'
+                // MPV 已切换到 TVboxOSC 的 lib-mpvplayer AAR，旧版私有 API 的排除规则不再需要。
             }
         }
     }
