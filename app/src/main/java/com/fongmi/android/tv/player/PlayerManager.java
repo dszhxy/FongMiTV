@@ -41,14 +41,9 @@ import com.fongmi.android.tv.player.effect.PlayerEffectManager;
 import com.fongmi.android.tv.player.effect.audio.AudioEffectBands;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.engine.PlayerEngineFactory;
-import com.fongmi.android.tv.player.exo.ExoCommand;
 import com.fongmi.android.tv.player.exo.ExoPlayerEngine;
 import com.fongmi.android.tv.player.media.MediaItemFactory;
 import com.fongmi.android.tv.player.media.PlaySpec;
-import com.fongmi.android.tv.player.mpv.MpvPlayerEngine;
-import com.fongmi.android.tv.player.mpv.MpvScriptSession;
-import com.fongmi.android.tv.player.mpv.MpvScripts;
-import com.fongmi.android.tv.player.mpv.MpvUtil;
 import com.fongmi.android.tv.player.parse.ParseJob;
 import com.fongmi.android.tv.player.track.TrackUtil;
 import com.fongmi.android.tv.server.LogSession;
@@ -62,8 +57,6 @@ import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Util;
 import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonObject;
-
-import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,7 +88,6 @@ public class PlayerManager implements ParseCallback {
     private boolean browseItemReady;
     private boolean danmakuEnabled;
     private boolean refreshAttempted;
-    private boolean mpvDrmExoFallback;
     private boolean initTrack;
     private final List<Track> pendingTrackRestore = new ArrayList<>();
 
@@ -167,27 +159,6 @@ public class PlayerManager implements ParseCallback {
 
     public boolean isDiscMenuAvailable() {
         return !isEmpty() && player.getDiscMenuState().availability == DiscMenuState.AVAILABILITY_AVAILABLE;
-    }
-
-    public boolean runMpvScript(MpvScripts.Item item) {
-        return engine instanceof MpvPlayerEngine mpv && mpv.runScript(item);
-    }
-
-    public ExoCommand.Result runExoCommand(MpvScripts.Item item, PlayerView playerView) {
-        if (!(engine instanceof ExoPlayerEngine) || !item.enabled || !item.isCommand()) return ExoCommand.Result.UNAVAILABLE;
-        return ExoCommand.execute(this, playerView, item.command);
-    }
-
-    public MpvScriptSession.Status getMpvScriptStatus(String id) {
-        return engine instanceof MpvPlayerEngine mpv ? mpv.getScriptStatus(id) : null;
-    }
-
-    public List<String> getMpvScriptBindings() throws JSONException {
-        return engine instanceof MpvPlayerEngine mpv ? mpv.getScriptBindings() : List.of();
-    }
-
-    public void reloadMpvScripts(boolean reloadStartupScripts, String reloadButtonId) {
-        if (engine instanceof MpvPlayerEngine mpv) mpv.reloadScripts(reloadStartupScripts, reloadButtonId);
     }
 
     private void setPlayer(Player player) {
@@ -401,12 +372,11 @@ public class PlayerManager implements ParseCallback {
     }
 
     public int getEngine() {
-        return isMpvEngine() ? PlayerSetting.ENGINE_MPV : PlayerSetting.ENGINE_EXO;
+        return PlayerSetting.ENGINE_EXO;
     }
 
     public void setEngine(int targetEngine) {
-        if (targetEngine == PlayerSetting.ENGINE_MPV && !MpvUtil.checkInstalled()) return;
-        PlayerSetting.putEngine(targetEngine);
+        PlayerSetting.putEngine(PlayerSetting.ENGINE_EXO);
         if (isEmpty() || PlayerEngineFactory.matches(engine, spec)) return;
         restartCurrent();
     }
@@ -605,10 +575,6 @@ public class PlayerManager implements ParseCallback {
         effects.previewAudioSetting(original);
     }
 
-    private boolean isMpvEngine() {
-        return engine != null && engine.getType() == PlayerEngine.Type.MPV;
-    }
-
     public void play() {
         player.play();
     }
@@ -740,16 +706,6 @@ public class PlayerManager implements ParseCallback {
         callback.onError(engine.getErrorMessage(e));
     }
 
-    private void fallbackToExoForDrm() {
-        mpvDrmExoFallback = true;
-        PlaybackSnapshot snapshot = PlaybackSnapshot.capture(this);
-        replaceEngine(PlayerEngineFactory.create(PlayerEngine.Type.EXO, listener));
-        engine.prepareForNewMedia();
-        beginPlaybackAttempt(false);
-        engine.start(spec.checkUa(), snapshot.positionMs());
-        snapshot.restorePlayerState(this);
-    }
-
     private void restartCurrent() {
         if (spec == null || spec.getUrl() == null) return;
         endSpeedPress();
@@ -768,10 +724,6 @@ public class PlayerManager implements ParseCallback {
     }
 
     private void ensureEngine(PlaySpec spec) {
-        if (mpvDrmExoFallback) {
-            if (engine.getType() != PlayerEngine.Type.EXO || engine.needsRebuild()) replaceEngine(PlayerEngineFactory.create(PlayerEngine.Type.EXO, listener));
-            return;
-        }
         if (PlayerEngineFactory.matches(engine, spec)) return;
         replaceEngine(PlayerEngineFactory.create(spec, listener));
     }
@@ -857,7 +809,6 @@ public class PlayerManager implements ParseCallback {
     private void startMediaItem(long timeout, long startPositionMs, boolean newMedia, boolean prepare) {
         endSpeedPress();
         if (newMedia && refreshAttempted) spec.refresh();
-        if (newMedia) mpvDrmExoFallback = false;
         MediaItem current = player.getCurrentMediaItem();
         boolean newContent = newMedia && (current == null || !TextUtils.equals(current.mediaId, spec.getKey()));
         boolean playWhenReady = player.getPlayWhenReady();
@@ -1174,10 +1125,6 @@ public class PlayerManager implements ParseCallback {
             if (LogSession.get().isRunning()) Log.e("TV-Playback", "player=" + Integer.toHexString(System.identityHashCode(player)) + " event=playerError playbackId=" + playbackId + " attempt=" + playbackAttempt + " code=" + e.getErrorCodeName());
             if (spec == null) return;
             clearPreload();
-            if (engine.getType() == PlayerEngine.Type.MPV && e.errorCode == PlaybackException.ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED && !mpvDrmExoFallback) {
-                fallbackToExoForDrm();
-                return;
-            }
             PlayerEngine.ErrorAction action = engine.handleError(e);
             if (action != PlayerEngine.ErrorAction.RECOVERED) App.removeCallbacks(runnable);
             switch (action) {

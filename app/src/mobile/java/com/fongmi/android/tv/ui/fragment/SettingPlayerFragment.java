@@ -18,7 +18,6 @@ import com.fongmi.android.tv.setting.SpeedSetting;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.BufferDialog;
-import com.fongmi.android.tv.ui.dialog.MpvConfDialog;
 import com.fongmi.android.tv.ui.dialog.UaDialog;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -49,8 +48,6 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.playSpeedText.setText(SpeedSetting.format(SpeedSetting.getPlayback()));
         mBinding.longPressText.setText(SpeedSetting.format(SpeedSetting.getLongPress()));
         mBinding.bufferText.setText(String.valueOf(PlayerSetting.getBuffer()));
-        mBinding.mpvVulkanText.setText(Setting.getSwitch(PlayerSetting.isMpvVulkan()));
-        mBinding.mpvGpuNextText.setText(Setting.getSwitch(PlayerSetting.isMpvGpuNext()));
         mBinding.scaleText.setText((scale = ResUtil.getStringArray(R.array.select_scale))[PlayerSetting.getScale()]);
         mBinding.backgroundText.setText((background = ResUtil.getStringArray(R.array.select_background))[PlayerSetting.getBackground()]);
     }
@@ -62,9 +59,6 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.flag.setOnClickListener(this::onFlag);
         mBinding.playSpeed.setOnClickListener(this::onPlaybackSpeed);
         mBinding.longPress.setOnClickListener(this::onLongPress);
-        mBinding.mpvConf.setOnClickListener(this::onMpvConf);
-        mBinding.mpvGpuNext.setOnClickListener(this::setMpvGpuNext);
-        mBinding.mpvVulkan.setOnClickListener(this::setMpvVulkan);
         mBinding.render.setOnClickListener(this::setRender);
         mBinding.scale.setOnClickListener(this::onScale);
         mBinding.background.setOnClickListener(this::onBackground);
@@ -75,10 +69,6 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
 
     private void setVisible() {
         boolean exo = PlayerSetting.isExo();
-        boolean mpv = PlayerSetting.isMpv();
-        mBinding.mpvConf.setVisibility(mpv ? View.VISIBLE : View.GONE);
-        mBinding.mpvVulkan.setVisibility(mpv ? View.VISIBLE : View.GONE);
-        mBinding.mpvGpuNext.setVisibility(mpv ? View.VISIBLE : View.GONE);
         mBinding.buffer.setVisibility(exo ? View.VISIBLE : View.GONE);
     }
 
@@ -89,20 +79,6 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
             setVisible();
             dialog.dismiss();
         }).show();
-    }
-
-    private void onMpvConf(View view) {
-        MpvConfDialog.show(this);
-    }
-
-    private void setMpvGpuNext(View view) {
-        PlayerSetting.putMpvGpuNext(!PlayerSetting.isMpvGpuNext());
-        mBinding.mpvGpuNextText.setText(Setting.getSwitch(PlayerSetting.isMpvGpuNext()));
-    }
-
-    private void setMpvVulkan(View view) {
-        PlayerSetting.putMpvVulkan(!PlayerSetting.isMpvVulkan());
-        mBinding.mpvVulkanText.setText(Setting.getSwitch(PlayerSetting.isMpvVulkan()));
     }
 
     private void setRender(View view) {

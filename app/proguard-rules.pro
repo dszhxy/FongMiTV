@@ -78,10 +78,7 @@
 -keep class com.google.zxing.qrcode.QRCodeWriter { *; }
 -keep class com.google.zxing.qrcode.decoder.ErrorCorrectionLevel { *; }
 
-# Bundled MPV JNI bridge
--keep class is.xyz.mpv.MPVLib { *; }
--keep class is.xyz.mpv.MPVLib$* { *; }
-
+# Keep the bundled ISO callback surface.
 # libplayer.so resolves these ISO callbacks by literal JNI names.
 -keep class com.fongmi.android.tv.player.iso.IsoSessionManager {
     public static long length(long);
@@ -89,11 +86,6 @@
     public static void close(long);
     public static void prepareTrackMetadata(long, int);
 }
-
-# Keep MPV player lifecycle and the TV adapter intact under R8.
--keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer { *; }
--keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer$* { *; }
--keep,allowobfuscation class com.fongmi.android.tv.player.mpv.MpvPlayerEngine { *; }
 
 # JNI entry points are resolved by name at runtime.
 -keepclasseswithmembernames class com.fongmi.android.tv.player.subtitle.AssNative { native <methods>; }

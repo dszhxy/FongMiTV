@@ -9,7 +9,7 @@ import androidx.media3.datasource.DataSource;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.text.DefaultSubtitleContentLoader;
-import androidx.media3.mpvplayer.MpvSubtitleContentLoader;
+import androidx.media3.exoplayer.text.SubtitleContentLoader;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.player.exo.ExoUtil;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Set;
 
-public final class SubtitleFileContent implements MpvSubtitleContentLoader {
+public final class SubtitleFileContent implements SubtitleContentLoader {
 
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("file", "content", "http", "https");
 

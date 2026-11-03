@@ -12,7 +12,6 @@ import androidx.media3.ui.SubtitleView;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.VodConfig;
-import com.fongmi.android.tv.player.mpv.MpvConfigFile;
 import com.fongmi.android.tv.player.subtitle.ExternalFont;
 import com.github.catvod.utils.Prefers;
 
@@ -255,7 +254,7 @@ public class SubtitleSetting {
 
     @Nullable
     public static ExternalFont.Item getFont() {
-        return ExternalFont.find(Prefers.getString("subtitle_font", ""), MpvConfigFile.getSubtitleFontsDirectory());
+        return ExternalFont.find(Prefers.getString("subtitle_font", ""), ExternalFont.getMpvDirectory());
     }
 
     public static void putFont(@Nullable ExternalFont.Item font) {

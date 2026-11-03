@@ -5,7 +5,6 @@ import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
 import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
 
 import com.github.catvod.utils.Prefers;
-import com.github.catvod.utils.RuntimeModule;
 
 public class PlayerSetting {
 
@@ -13,7 +12,7 @@ public class PlayerSetting {
     public static final int ENGINE_MPV = 1;
     public static final int ENGINE_IJK = 2;
     public static final int ENGINE_SYSTEM = 3;
-    // Compatibility aliases used by the bundled FongMi MPV player.
+    // Compatibility aliases for legacy engine selectors.
     public static final int EXO = ENGINE_EXO;
     public static final int MPV = ENGINE_MPV;
     public static final int IJK = ENGINE_IJK;
@@ -32,21 +31,17 @@ public class PlayerSetting {
     private static final int MAX_BACKGROUND = 2;
 
     public static int getEngine() {
-        int engine = Prefers.getInt("player_engine", ENGINE_EXO);
-        if (engine != ENGINE_EXO && engine != ENGINE_MPV) {
-            engine = ENGINE_EXO;
-            Prefers.put("player_engine", ENGINE_EXO);
-        }
-        return engine;
+        if (Prefers.getInt("player_engine", ENGINE_EXO) != ENGINE_EXO) Prefers.put("player_engine", ENGINE_EXO);
+        return ENGINE_EXO;
     }
 
     public static void putEngine(int engine) {
-        Prefers.put("player_engine", engine == ENGINE_MPV ? ENGINE_MPV : ENGINE_EXO);
+        Prefers.put("player_engine", ENGINE_EXO);
         if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
     }
 
     public static int getEngineCount() {
-        return RuntimeModule.MPV.isInstalled() ? ENGINE_MPV + 1 : ENGINE_EXO + 1;
+        return ENGINE_EXO + 1;
     }
 
     public static int getScaleMode(int index) {
@@ -58,7 +53,7 @@ public class PlayerSetting {
     }
 
     public static boolean isMpv() {
-        return getEngine() == ENGINE_MPV;
+        return false;
     }
 
     public static boolean isDebug() {
