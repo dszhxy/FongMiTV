@@ -97,6 +97,6 @@ jobs:
             - Leanback ARM64 / ARMv7
           prerelease: true
           files: |
-            apk/*.apk
+            apk/**/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
