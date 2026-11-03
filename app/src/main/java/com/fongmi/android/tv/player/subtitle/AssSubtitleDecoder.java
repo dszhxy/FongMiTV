@@ -18,8 +18,8 @@ import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.SubtitleSetting;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -210,7 +210,8 @@ public final class AssSubtitleDecoder extends SimpleDecoder<SubtitleInputBuffer,
                     if (shared) embeddedCues = List.of();
                     return last = List.of();
                 }
-                Bitmap bitmap = Bitmap.createBitmap(frame, 4, frame[2], frame[3], Bitmap.Config.ARGB_8888);
+                int[] pixels = Arrays.copyOfRange(frame, 4, 4 + frame[2] * frame[3]);
+                Bitmap bitmap = Bitmap.createBitmap(pixels, frame[2], frame[3], Bitmap.Config.ARGB_8888);
                 last = List.of(new Cue.Builder().setBitmap(bitmap).setPosition(frame[0] / 1920f).setPositionAnchor(Cue.ANCHOR_TYPE_START)
                         .setLine(frame[1] / 1080f, Cue.LINE_TYPE_FRACTION).setLineAnchor(Cue.ANCHOR_TYPE_START)
                         .setSize(frame[2] / 1920f).setBitmapHeight(frame[3] / 1080f).build());
