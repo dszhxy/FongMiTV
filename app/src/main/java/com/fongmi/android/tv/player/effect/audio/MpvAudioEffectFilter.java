@@ -1,12 +1,14 @@
 package com.fongmi.android.tv.player.effect.audio;
 
 import androidx.annotation.Nullable;
-import androidx.media3.mpvplayer.audio.AudioChannelMix;
+import androidx.media3.common.audio.AudioChannelMix;
+import androidx.media3.common.audio.AudioChannelMode;
+import androidx.media3.common.audio.AudioEffectParameters;
 import androidx.media3.mpvplayer.audio.MpvAudioFilter;
 
 public final class MpvAudioEffectFilter {
 
-    public static MpvAudioFilter create(AudioEffectConfig config, int channelCount) {
+    public static MpvAudioFilter create(AudioEffectParameters config, int channelCount) {
         if (!config.hasEffect()) return MpvAudioFilter.EMPTY;
         MpvAudioFilter.Builder builder = new MpvAudioFilter.Builder();
         PanMix panMix = new PanMix(channelCount);
@@ -17,14 +19,14 @@ public final class MpvAudioEffectFilter {
         panMix.appendTo(builder);
         appendLoudness(builder, config.isLoudnessEnabled());
         appendStability(builder, config);
-        appendVolume(builder, "boost", config.getBoost(), hasBands);
-        appendVolume(builder, "preamp", config.getPreamp(), hasBands);
-        appendEqualizer(builder, config.getLevels());
+        appendVolume(builder, "boost", config.getBoostMillibels(), hasBands);
+        appendVolume(builder, "preamp", config.getPreampMillibels(), hasBands);
+        appendEqualizer(builder, config.getEqualizerLevelsMillibels());
         appendLimiter(builder, config.shouldLimitOutput(channelCount));
         return builder.build();
     }
 
-    private static void appendCenterGain(PanMix panMix, AudioEffectConfig config, int channelCount) {
+    private static void appendCenterGain(PanMix panMix, AudioEffectParameters config, int channelCount) {
         if (!config.hasCenterGain(channelCount)) return;
         panMix.add(AudioChannelMix.createFrontCenterGainMix(channelCount, config.getCenterGainFactor()));
     }
@@ -37,18 +39,18 @@ public final class MpvAudioEffectFilter {
         }
     }
 
-    private static void appendBalance(PanMix panMix, int balance, int mode, int channelCount) {
+    private static void appendBalance(PanMix panMix, float balance, int mode, int channelCount) {
         if (balance == 0 || !AudioChannelMode.isAvailable(mode, channelCount)) return;
-        panMix.add(AudioChannelMix.createFrontBalanceMix(channelCount, balance / 100.0f));
+        panMix.add(AudioChannelMix.createFrontBalanceMix(channelCount, balance));
     }
 
     private static void appendLoudness(MpvAudioFilter.Builder builder, boolean enabled) {
-        if (enabled) builder.addLoudnessNormalization("loudness", -18.0, 11.0, -1.5);
+        if (enabled) builder.addDynamicNormalization("loudness", 0.125, 4.0);
     }
 
-    private static void appendStability(MpvAudioFilter.Builder builder, AudioEffectConfig config) {
+    private static void appendStability(MpvAudioFilter.Builder builder, AudioEffectParameters config) {
         if (!config.hasBands() && config.getStability() <= 0) return;
-        float amount = config.getStabilityAmount();
+        float amount = config.getStability();
         float threshold = 0.25f - 0.08f * amount;
         float ratio = 1.4f + 2.6f * amount;
         float makeup = 1.0f + 0.8f * amount;

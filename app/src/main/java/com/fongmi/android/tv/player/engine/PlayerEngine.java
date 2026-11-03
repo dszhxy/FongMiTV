@@ -2,42 +2,102 @@ package com.fongmi.android.tv.player.engine;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.C;
-import androidx.media3.common.ColorInfo;
+import androidx.media3.common.DecoderMode;
+import androidx.media3.common.DiscMenuController;
+import androidx.media3.common.Format;
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.common.TrackSelectionOverride;
-import androidx.media3.common.text.CueGroup;
+import androidx.media3.common.text.SubtitleContent;
+import androidx.media3.common.text.SubtitleOffsets;
+import androidx.media3.common.text.SubtitleSelectionState;
 import androidx.media3.ui.PlayerView;
 
 import com.fongmi.android.tv.bean.Sub;
 import com.fongmi.android.tv.player.effect.PlayerEffect;
 import com.fongmi.android.tv.player.media.PlaySpec;
+import com.google.gson.JsonObject;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public interface PlayerEngine {
 
-    int SOFT = 0;
-    int HARD = 1;
+    @Nullable
+    default DiscMenuController getDiscMenuController() {
+        return null;
+    }
 
     Type getType();
 
+    default boolean needsRebuild() {
+        return false;
+    }
+
     Player getPlayer();
+
+    @Nullable
+    default JsonObject getPlaybackLog() {
+        return null;
+    }
 
     int getAudioChannelCount();
 
     void release();
 
-    void setDecode(int decode);
+    default List<DecoderMode> getSupportedDecoderModes(@C.TrackType int trackType) {
+        return List.of();
+    }
+
+    @Nullable
+    default DecoderMode getDecoderMode(@C.TrackType int trackType) {
+        return null;
+    }
+
+    default void setDecoderMode(@C.TrackType int trackType, DecoderMode mode) {
+    }
+
+    default void prepareForNewMedia() {
+    }
 
     default PlayerEffect getEffect() {
         return PlayerEffect.NONE;
     }
 
-    void start(PlaySpec spec, long startPositionMs);
+    boolean setMediaItem(PlaySpec spec, long startPositionMs);
 
-    default void preload(PlaySpec spec, long startPositionMs) {
+    default void start(PlaySpec spec, long startPositionMs) {
+        if (!setMediaItem(spec, startPositionMs)) return;
+        getPlayer().prepare();
+        getPlayer().play();
+    }
+
+    default void setEnding(long endingMs) {
+    }
+
+    default boolean isEndingManaged() {
+        return false;
+    }
+
+    default long getOriginalDurationMs() {
+        return C.TIME_UNSET;
+    }
+
+    default boolean preload(PlaySpec spec, long startPositionMs) {
+        return preload(spec, startPositionMs, () -> {});
+    }
+
+    default boolean preload(PlaySpec spec, long startPositionMs, Runnable onError) {
+        return false;
+    }
+
+    @Nullable
+    default PlaySpec consumePreload(MediaItem mediaItem) {
+        return null;
+    }
+
+    default boolean seekToNext() {
+        return false;
     }
 
     default void clearPreload() {
@@ -48,22 +108,46 @@ public interface PlayerEngine {
 
     void stop();
 
-    default void setSubtitleStyle() {
-    }
-
     default void applySubtitleStyle() {
-        setSubtitleStyle();
     }
 
-    default void setSecondarySubtitleOutput(Consumer<CueGroup> output) {
+    default SubtitleSelectionState getSubtitleSelectionState() {
+        return SubtitleSelectionState.EMPTY;
     }
 
-    default SecondarySubtitleState getSecondarySubtitleState() {
-        return SecondarySubtitleState.EMPTY;
+    default SubtitleContent getSubtitleContent(TrackSelectionOverride selection) {
+        return SubtitleContent.UNSUPPORTED;
     }
 
-    default void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
+    default void setSubtitleContentEnabled(boolean enabled) {
     }
+
+    default boolean canRetrySubtitleContent(Format format) {
+        return false;
+    }
+
+    default void retrySubtitleContent(Format format) {
+    }
+
+    default boolean supportsSubtitleTranscript() {
+        return false;
+    }
+
+    default SubtitleOffsets getSubtitleOffsets() {
+        long offset = getPlayer().isCommandAvailable(Player.COMMAND_GET_TEXT_OFFSET) ? getPlayer().getTextOffsetMs() : 0;
+        return new SubtitleOffsets(offset, offset);
+    }
+
+    default void setSubtitleOffsets(SubtitleOffsets offsets) {
+    }
+
+    default boolean supportsSubtitleOffsets() {
+        return false;
+    }
+
+    void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection);
+
+    void restoreSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection);
 
     default boolean addSubtitle(Sub sub) {
         return false;
@@ -73,72 +157,14 @@ public interface PlayerEngine {
 
     ErrorAction handleError(PlaybackException e);
 
-    /** 当前选中视频轨的源信息与实际解码/输出运行时事实。 */
-    default VideoPlaybackDetails getVideoPlaybackDetails() {
-        return VideoPlaybackDetails.empty();
-    }
-
-    record VideoPlaybackDetails(
-            String sourceCodecs,
-            int dolbyVisionProfile,
-            int dolbyVisionLevel,
-            String decodedCodec,
-            String decoderName,
-            String hwdecCurrent,
-            @Nullable ColorInfo outputColorInfo,
-            boolean dolbyVisionHdr10Fallback,
-            boolean dolbyVisionP81Conversion) {
-
-        public VideoPlaybackDetails(
-                String sourceCodecs,
-                int dolbyVisionProfile,
-                int dolbyVisionLevel,
-                String decodedCodec,
-                String decoderName,
-                String hwdecCurrent,
-                ColorInfo outputColorInfo,
-                boolean dolbyVisionHdr10Fallback) {
-            this(sourceCodecs, dolbyVisionProfile, dolbyVisionLevel, decodedCodec,
-                    decoderName, hwdecCurrent, outputColorInfo, dolbyVisionHdr10Fallback, false);
-        }
-
-        public VideoPlaybackDetails {
-            sourceCodecs = sourceCodecs == null ? "" : sourceCodecs;
-            decodedCodec = decodedCodec == null ? "" : decodedCodec;
-            decoderName = decoderName == null ? "" : decoderName;
-            hwdecCurrent = hwdecCurrent == null ? "" : hwdecCurrent;
-        }
-
-        public boolean hasDolbyVisionSource() {
-            return dolbyVisionProfile > 0;
-        }
-
-        public static VideoPlaybackDetails empty() {
-            return new VideoPlaybackDetails("", C.INDEX_UNSET, C.INDEX_UNSET,
-                    "", "", "", null, false);
-        }
-    }
-
     enum ErrorAction {
         RECOVERED,
-        DECODE,
+        REFRESH,
         FATAL
     }
 
     enum Type {
         EXO,
         MPV
-    }
-
-    record SecondarySubtitleState(@Nullable TrackSelectionOverride primarySelection,
-                                  @Nullable TrackSelectionOverride explicitSelection,
-                                  List<TrackSelectionOverride> secondaryCandidates,
-                                  boolean secondaryPromotedToPrimary) {
-
-        public static final SecondarySubtitleState EMPTY = new SecondarySubtitleState(null, null, List.of(), false);
-
-        public SecondarySubtitleState {
-            secondaryCandidates = List.copyOf(secondaryCandidates);
-        }
     }
 }

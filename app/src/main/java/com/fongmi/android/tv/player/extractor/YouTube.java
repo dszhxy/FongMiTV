@@ -1,17 +1,20 @@
 package com.fongmi.android.tv.player.extractor;
 
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import androidx.media3.common.MimeTypes;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Episode;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Sub;
 import com.fongmi.android.tv.bean.Vod;
-import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.exception.ExtractException;
 import com.fongmi.android.tv.impl.NewPipeImpl;
-import com.fongmi.android.tv.utils.UrlUtil;
+import com.fongmi.android.tv.utils.ResUtil;
+import com.github.catvod.utils.UriUtil;
 
 import org.schabi.newpipe.extractor.ListExtractor;
 import org.schabi.newpipe.extractor.MediaFormat;
@@ -40,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,24 +65,25 @@ public class YouTube implements Source.Extractor {
 
     @Override
     public boolean match(Uri uri) {
-        String host = UrlUtil.host(uri);
-        return host.contains("youtube.com") || host.contains("youtu.be");
+        return isYouTube(uri);
+    }
+
+    static boolean isYouTube(Uri uri) {
+        String host = UriUtil.host(uri);
+        return host.equals("youtube.com") || host.endsWith(".youtube.com") || host.equals("youtu.be") || host.endsWith(".youtu.be");
     }
 
     @Override
     public String fetch(String url) throws Exception {
-        return fetch(StreamInfo.getInfo(url));
+        return getPlayUrl(StreamInfo.getInfo(url));
     }
 
     @Override
     public String fetch(Result result) throws Exception {
         StreamInfo info = StreamInfo.getInfo(result.getUrl().v());
+        result.setDirect();
         result.setSubs(getSubtitles(info.getSubtitles()));
-        return fetch(info);
-    }
-
-    private String fetch(StreamInfo info) throws Exception {
-        RefreshEvent.vod(convert(info).trans());
+        result.setList(List.of(convert(info).trans()));
         return getPlayUrl(info);
     }
 
@@ -88,19 +92,12 @@ public class YouTube implements Source.Extractor {
     }
 
     private Vod convert(StreamInfo info) {
-        try {
-            Vod vod = new Vod();
-            vod.setName(info.getName());
-            vod.setDirector(info.getUploaderName());
-            vod.setContent(info.getDescription().getContent());
-            vod.setPic(info.getThumbnails().get(info.getThumbnails().size() - 1).getUrl());
-            return vod;
-        } catch (Exception e) {
-            Vod vod = new Vod();
-            vod.setName(info.getName());
-            vod.setContent(info.getDescription().getContent());
-            return vod;
-        }
+        Vod vod = new Vod();
+        vod.setName(info.getName());
+        vod.setDirector(info.getUploaderName());
+        if (info.getDescription() != null) vod.setContent(info.getDescription().getContent());
+        if (!info.getThumbnails().isEmpty()) vod.setPic(info.getThumbnails().get(info.getThumbnails().size() - 1).getUrl());
+        return vod;
     }
 
     private boolean isLive(StreamInfo info) {
@@ -196,7 +193,7 @@ public class YouTube implements Source.Extractor {
     private String getSubtitleUrl(SubtitlesStream subtitle) {
         MediaFormat format = subtitle.getFormat();
         if (format == null || subtitle.getContent().isEmpty()) return null;
-        if (subtitle.isUrl() && MimeTypes.APPLICATION_TTML.equals(format.getMimeType())) return getVttSubtitleUrl(UrlUtil.uri(subtitle.getContent()));
+        if (subtitle.isUrl() && MimeTypes.APPLICATION_TTML.equals(format.getMimeType())) return getVttSubtitleUrl(UriUtil.uri(subtitle.getContent()));
         if (!MimeTypes.TEXT_VTT.equals(format.getMimeType())) return null;
         if (subtitle.isUrl()) return subtitle.getContent();
         return toDataUri(MimeTypes.TEXT_VTT, subtitle.getContent());
@@ -264,20 +261,12 @@ public class YouTube implements Source.Extractor {
         if (value > 0) attr(element, name, String.valueOf(value));
     }
 
-    @Override
-    public void stop() {
-    }
-
-    @Override
-    public void exit() {
-    }
-
     public record Parser(String url) implements Callable<List<Episode>> {
 
-        private static final Pattern PATTERN = Pattern.compile("(youtube\\.com|youtu\\.be).*list=");
-
         public static boolean match(String url) {
-            return PATTERN.matcher(url).find();
+            Uri uri = UriUtil.uri(url);
+            String scheme = UriUtil.scheme(uri);
+            return ("http".equals(scheme) || "https".equals(scheme)) && isYouTube(uri) && !TextUtils.isEmpty(uri.getQueryParameter("list"));
         }
 
         public static Parser get(String url) {
@@ -285,31 +274,36 @@ public class YouTube implements Source.Extractor {
         }
 
         @Override
-        public List<Episode> call() {
-            try {
-                ListLinkHandler handler = YoutubePlaylistLinkHandlerFactory.getInstance().fromUrl(url);
-                YoutubePlaylistExtractor extractor = new YoutubePlaylistExtractor(ServiceList.YouTube, handler);
-                extractor.forceLocalization(NewPipe.getPreferredLocalization());
-                extractor.fetchPage();
-                List<Episode> episodes = new ArrayList<>();
-                add(extractor, episodes, extractor.getInitialPage());
-                return episodes;
-            } catch (Exception e) {
-                return Collections.emptyList();
+        public List<Episode> call() throws Exception {
+            if (Thread.currentThread().isInterrupted()) throw new CancellationException();
+            List<Episode> episodes = readEpisodes(loadPlaylist());
+            if (episodes.isEmpty()) throw new ExtractException(ResUtil.getString(R.string.error_play_url));
+            return episodes;
+        }
+
+        private YoutubePlaylistExtractor loadPlaylist() throws Exception {
+            ListLinkHandler handler = YoutubePlaylistLinkHandlerFactory.getInstance().fromUrl(url);
+            YoutubePlaylistExtractor extractor = new YoutubePlaylistExtractor(ServiceList.YouTube, handler);
+            extractor.forceLocalization(NewPipe.getPreferredLocalization());
+            extractor.fetchPage();
+            return extractor;
+        }
+
+        private List<Episode> readEpisodes(YoutubePlaylistExtractor extractor) throws Exception {
+            List<Episode> episodes = new ArrayList<>();
+            ListExtractor.InfoItemsPage<StreamInfoItem> page = extractor.getInitialPage();
+            while (true) {
+                if (Thread.currentThread().isInterrupted()) throw new CancellationException();
+                addEpisodes(episodes, page);
+                if (!page.hasNextPage()) return episodes;
+                page = extractor.getPage(page.getNextPage());
             }
         }
 
-        private void add(YoutubePlaylistExtractor extractor, List<Episode> episodes, ListExtractor.InfoItemsPage<StreamInfoItem> page) {
+        private void addEpisodes(List<Episode> episodes, ListExtractor.InfoItemsPage<StreamInfoItem> page) {
             for (StreamInfoItem item : page.getItems()) {
                 if (item.getDuration() == -1) continue;
                 episodes.add(Episode.create(item.getName(), item.getUrl()));
-            }
-            if (page.hasNextPage()) {
-                try {
-                    add(extractor, episodes, extractor.getPage(page.getNextPage()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         }
     }

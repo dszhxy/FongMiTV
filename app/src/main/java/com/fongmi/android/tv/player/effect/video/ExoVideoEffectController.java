@@ -1,6 +1,10 @@
 package com.fongmi.android.tv.player.effect.video;
 
 import androidx.media3.common.Effect;
+import androidx.media3.common.VideoFrameProcessor;
+import androidx.media3.effect.ColorToneAdjustEffect;
+import androidx.media3.effect.DetailAdjustEffect;
+import androidx.media3.effect.VideoAdjustment;
 import androidx.media3.exoplayer.ExoPlayer;
 
 import java.util.List;
@@ -19,11 +23,19 @@ public final class ExoVideoEffectController {
     }
 
     public void apply(ExoPlayer player, VideoEffectProfile profile) {
-        if (!configured && profile.isNoOp()) return;
-        colorTone.setProfile(profile);
-        detail.setProfile(profile);
-        player.setVideoEffects(effects);
-        configured = true;
+        if (profile.isNoOp()) {
+            clear(player);
+            return;
+        }
+        VideoAdjustment adjustment = profile.toAdjustment();
+        colorTone.setAdjustment(adjustment);
+        detail.setAdjustment(adjustment);
+        if (!configured) {
+            player.setVideoEffects(effects);
+            configured = true;
+        } else if (!player.getPlayWhenReady()) {
+            player.setVideoEffects(VideoFrameProcessor.REDRAW);
+        }
     }
 
     public void clear(ExoPlayer player) {

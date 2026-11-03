@@ -2,11 +2,16 @@ package com.fongmi.android.tv.player.extractor;
 
 import android.net.Uri;
 
+import com.fongmi.android.tv.api.loader.BaseLoader;
 import com.fongmi.android.tv.bean.Episode;
 import com.fongmi.android.tv.bean.Flag;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Vod;
-import com.fongmi.android.tv.utils.Task;
+import com.fongmi.android.tv.utils.SourceUrl;
+import com.fongmi.android.tv.utils.TorrentUrl;
+import com.fongmi.android.tv.utils.UrlUtil;
+import com.github.catvod.utils.Task;
+import com.github.catvod.utils.UriUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,29 +26,61 @@ import java.util.concurrent.TimeUnit;
 public class Source {
 
     private final List<Extractor> extractors;
+    private long sequence;
+    private int active;
 
     public Source() {
-        extractors = new ArrayList<>();
-        extractors.add(new Force());
-        extractors.add(new Push());
-        extractors.add(new Strm());
-        extractors.add(new Thunder());
-        extractors.add(new TVBus());
-        extractors.add(new Video());
-        extractors.add(new YouTube());
+        extractors = List.of(new Push(), new Video(), new WebView(), new Strm(), new Thunder(), new TVBus(), new YouTube());
     }
 
     public static Source get() {
         return Loader.INSTANCE;
     }
 
+    public static boolean isBuiltin(String url) {
+        if (url == null) return false;
+        url = url.trim();
+        for (int i = 0; i < url.length(); i++) if (Character.isWhitespace(url.charAt(i))) return false;
+        Uri uri = UriUtil.uri(url);
+        return switch (UriUtil.scheme(uri)) {
+            case "video" -> url.regionMatches(true, 0, "video://", 0, 8);
+            case "webview" -> UrlUtil.isWebView(url);
+            case "magnet", "thunder", "ed2k", "ftp" -> true;
+            case "http", "https" -> YouTube.isYouTube(uri) || Thunder.Parser.match(url);
+            case "file" -> Thunder.Parser.match(url);
+            default -> false;
+        };
+    }
+
+    public static boolean isPush(String url) {
+        return url != null && url.regionMatches(true, 0, "push://", 0, 7);
+    }
+
     private Extractor getExtractor(Uri uri) {
         return extractors.stream().filter(extractor -> extractor.match(uri)).findFirst().orElse(null);
     }
 
+    public boolean canPreload(Uri uri) {
+        return !SourceUrl.isResolved(uri.toString()) && getExtractor(uri) == null;
+    }
+
+    private synchronized void begin() {
+        if (Thread.currentThread().isInterrupted()) throw new CancellationException();
+        sequence++;
+        active++;
+        notifyAll();
+    }
+
+    private synchronized void end() {
+        active--;
+        notifyAll();
+    }
+
     private void addCallable(Iterator<Episode> iterator, List<Callable<List<Episode>>> items) {
         String url = iterator.next().getUrl();
-        if (Thunder.Parser.match(url)) {
+        String scheme = UriUtil.scheme(url);
+        if ("push".equals(scheme) || "video".equals(scheme) || "webview".equals(scheme)) return;
+        if (Thunder.Parser.match(url) && !Thunder.Parser.isDeferred(url)) {
             items.add(Thunder.Parser.get(url));
             iterator.remove();
         } else if (YouTube.Parser.match(url)) {
@@ -53,41 +90,83 @@ public class Source {
     }
 
     public void parse(Vod vod) throws Exception {
+        begin();
         try (ExecutorService executor = Executors.newCachedThreadPool()) {
-            for (Flag flag : vod.getFlags()) {
-                List<Callable<List<Episode>>> items = new ArrayList<>();
-                Iterator<Episode> iterator = flag.getEpisodes().iterator();
-                while (iterator.hasNext()) addCallable(iterator, items);
-                for (Future<List<Episode>> future : executor.invokeAll(items, 30, TimeUnit.SECONDS)) {
-                    try {
-                        flag.getEpisodes().addAll(future.get());
-                    } catch (CancellationException ignored) {
-                    }
-                }
-            }
+            for (Flag flag : vod.getFlags()) parseEpisodes(flag, executor);
+        } finally {
+            end();
         }
     }
 
-    public String fetch(Result result) throws Exception {
-        Uri uri = result.getUrl().uri();
-        String url = result.getUrl().v();
-        Extractor extractor = getExtractor(uri);
-        if (extractor != null) result.setParse(0);
-        if (extractor instanceof Video) result.setParse(1);
-        return extractor == null ? url : extractor.fetch(result);
+    private void parseEpisodes(Flag flag, ExecutorService executor) throws Exception {
+        List<Callable<List<Episode>>> items = new ArrayList<>();
+        Iterator<Episode> iterator = flag.getEpisodes().iterator();
+        while (iterator.hasNext()) addCallable(iterator, items);
+        for (Future<List<Episode>> future : executor.invokeAll(items, 30, TimeUnit.SECONDS)) flag.getEpisodes().addAll(future.get());
     }
 
-    public void stop() {
-        if (extractors == null) return;
+    public String fetch(Result result) throws Exception {
+        String url = fetch(result, result.getUrl().v());
+        if (result.getResolvedEpisodes().isEmpty()) return url;
+        result.setUrl(url);
+        Episode selected = result.getResolvedEpisodes().stream().filter(Episode::isSelected).findFirst().orElseThrow();
+        return fetch(result, selected.getUrl());
+    }
+
+    public String fetch(Result result, String id) throws Exception {
+        begin();
+        try {
+            id = resolveEpisode(result, id);
+            Uri uri = TorrentUrl.match(id) ? UriUtil.uri(id) : result.getUrl().uri();
+            String url = result.getUrl().v();
+            Extractor extractor = getExtractor(uri);
+            if (extractor != null) result.setParse(extractor instanceof Video ? 1 : 0);
+            url = extractor == null ? url : extractor.fetch(result, id);
+            validateEpisode(result, id);
+            BaseLoader.get().requireProxy(url);
+            return url;
+        } finally {
+            end();
+        }
+    }
+
+    private String resolveEpisode(Result result, String id) {
+        if (!SourceUrl.match(id) || result.getResolvedEpisodes().isEmpty()) return id;
+        Episode selected = result.getResolvedEpisodes().stream().filter(episode -> SourceUrl.same(episode.getUrl(), id)).findFirst().orElseThrow(() -> new IllegalArgumentException("Source episode is no longer available"));
+        String target = SourceUrl.from(selected.getUrl()).target();
+        result.setResolvedEpisodes(List.of());
+        result.setUrl(target);
+        return target;
+    }
+
+    private void validateEpisode(Result result, String id) {
+        if (SourceUrl.match(id) && result.getResolvedEpisodes().stream().noneMatch(episode -> SourceUrl.same(episode.getUrl(), id))) throw new IllegalArgumentException("Source episode is no longer available");
+    }
+
+    public synchronized void stop() {
         extractors.forEach(Extractor::stop);
     }
 
-    public void exit() {
-        if (extractors == null) return;
-        Task.execute(() -> extractors.forEach(Extractor::exit));
+    public synchronized void exit() {
+        long current = sequence;
+        Task.execute(() -> exit(current));
+    }
+
+    private synchronized void exit(long current) {
+        try {
+            while (current == sequence && active > 0) wait();
+            if (current == sequence) extractors.forEach(Extractor::exit);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     public interface Extractor {
+
+        default String fetch(Result result, String id) throws Exception {
+            return fetch(result);
+        }
 
         default String fetch(Result result) throws Exception {
             return fetch(result.getUrl().v());
@@ -97,9 +176,9 @@ public class Source {
 
         boolean match(Uri uri);
 
-        void stop();
+        default void stop() {}
 
-        void exit();
+        default void exit() {}
     }
 
     private static class Loader {

@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.player.mpv;
 
 import androidx.media3.common.Format;
+import androidx.media3.common.audio.AudioEffectParameters;
 import androidx.media3.mpvplayer.MpvPlayer;
 import androidx.media3.mpvplayer.audio.MpvAudioFilter;
 
@@ -25,6 +26,7 @@ public final class MpvPlayerEffect implements PlayerEffect {
     public MpvPlayerEffect(MpvPlayer player) {
         this.videoEffectController = new MpvVideoEffectController();
         this.player = player;
+        player.setAudioFilterListener(this::onAudioFilterApplied);
     }
 
     @Override
@@ -86,7 +88,7 @@ public final class MpvPlayerEffect implements PlayerEffect {
     }
 
     public void clearAudioEffect() {
-        audioEffectFailed = !player.setAudioFilter(MpvAudioFilter.EMPTY);
+        if (!player.setAudioFilter(MpvAudioFilter.EMPTY)) audioEffectFailed = true;
     }
 
     @Override
@@ -100,13 +102,17 @@ public final class MpvPlayerEffect implements PlayerEffect {
         return previewVideoEffect ? VideoEffectProfile.off() : VideoSetting.getAppliedProfile();
     }
 
-    private AudioEffectConfig getAudioConfig(int channelCount) {
-        return previewAudioEffect ? AudioEffectConfig.disabled() : AudioEffectConfig.from(getAudioEffectBands(), channelCount);
+    private AudioEffectParameters getAudioConfig(int channelCount) {
+        return previewAudioEffect ? AudioEffectParameters.DEFAULT : AudioEffectConfig.from(getAudioEffectBands(), channelCount);
     }
 
     private void applyAudioConfig(int channelCount) {
         if (channelCount == Format.NO_VALUE) return;
-        AudioEffectConfig config = getAudioConfig(channelCount);
-        audioEffectFailed = !player.setAudioFilter(MpvAudioEffectFilter.create(config, channelCount));
+        AudioEffectParameters config = getAudioConfig(channelCount);
+        if (!player.setAudioFilter(MpvAudioEffectFilter.create(config, channelCount))) audioEffectFailed = true;
+    }
+
+    private void onAudioFilterApplied(boolean success) {
+        audioEffectFailed = !success;
     }
 }
