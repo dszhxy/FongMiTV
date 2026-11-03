@@ -13,7 +13,7 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.DialogAudioSettingBinding;
 import com.fongmi.android.tv.databinding.ViewSettingSliderBinding;
 import com.fongmi.android.tv.player.PlayerManager;
-import androidx.media3.common.audio.AudioChannelMode;
+import com.fongmi.android.tv.player.effect.audio.AudioChannelMode;
 import com.fongmi.android.tv.player.effect.audio.AudioEffectBands;
 import com.fongmi.android.tv.player.effect.audio.AudioEffectConfig;
 import com.fongmi.android.tv.player.effect.audio.AudioEffectPreset;

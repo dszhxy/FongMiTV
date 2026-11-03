@@ -261,7 +261,9 @@ public class LivePlaybackController {
     private MediaMetadata buildPlaybackMetadata(Channel channel, EpgData data) {
         String title = channel == null ? "" : channel.getShow();
         String logo = channel == null ? "" : channel.getLogo();
-        return MediaItemFactory.buildLiveMetadata(title, data, logo);
+        String artist = data == null ? "" : data.format();
+        String name = data == null ? "" : data.getTitle();
+        return MediaItemFactory.buildMetadata(title, artist, logo, name);
     }
 
     private boolean cannotApply(PlaybackResult<LivePlayRequest> playback) {

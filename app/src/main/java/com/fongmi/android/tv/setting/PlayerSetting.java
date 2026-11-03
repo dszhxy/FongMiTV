@@ -1,9 +1,5 @@
 package com.fongmi.android.tv.setting;
 
-import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL;
-import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
-import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
-
 import com.github.catvod.utils.Prefers;
 
 public class PlayerSetting {
@@ -12,7 +8,7 @@ public class PlayerSetting {
     public static final int ENGINE_MPV = 1;
     public static final int ENGINE_IJK = 2;
     public static final int ENGINE_SYSTEM = 3;
-    // Compatibility aliases for legacy engine selectors.
+    // Compatibility aliases used by the bundled FongMi MPV player.
     public static final int EXO = ENGINE_EXO;
     public static final int MPV = ENGINE_MPV;
     public static final int IJK = ENGINE_IJK;
@@ -38,14 +34,6 @@ public class PlayerSetting {
     public static void putEngine(int engine) {
         Prefers.put("player_engine", ENGINE_EXO);
         if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
-    }
-
-    public static int getEngineCount() {
-        return ENGINE_EXO + 1;
-    }
-
-    public static int getScaleMode(int index) {
-        return index == 1 ? RESIZE_MODE_FILL : index == 2 ? RESIZE_MODE_ZOOM : RESIZE_MODE_FIT;
     }
 
     public static boolean isExo() {

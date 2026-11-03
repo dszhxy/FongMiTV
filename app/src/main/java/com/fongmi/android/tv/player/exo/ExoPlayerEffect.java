@@ -1,7 +1,6 @@
 package com.fongmi.android.tv.player.exo;
 
 import androidx.media3.common.Format;
-import androidx.media3.common.audio.AudioEffectParameters;
 import androidx.media3.common.audio.AudioProcessor;
 import androidx.media3.exoplayer.ExoPlayer;
 
@@ -13,8 +12,6 @@ import com.fongmi.android.tv.player.effect.audio.ExoAudioEffectController;
 import com.fongmi.android.tv.player.effect.video.ExoVideoEffectController;
 import com.fongmi.android.tv.player.effect.video.VideoEffectProfile;
 import com.fongmi.android.tv.setting.VideoSetting;
-
-import java.util.List;
 
 public final class ExoPlayerEffect implements PlayerEffect {
 
@@ -37,7 +34,6 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     public void setPlayer(ExoPlayer player) {
         this.player = player;
-        player.setVideoEffects(List.of());
     }
 
     public void release() {
@@ -46,23 +42,19 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     @Override
     public boolean supportsVideoEffect() {
-        return player.getVideoEffectsSupport() == ExoPlayer.VIDEO_EFFECTS_SUPPORTED;
+        // WebHTV-pinned Media3 1.11 fork supports setVideoEffects(),
+        // but no longer exposes the older getVideoEffectsSupport() helper.
+        return player != null;
     }
 
     @Override
     public int getVideoEffectError() {
-        return switch (player.getVideoEffectsSupport()) {
-            case ExoPlayer.VIDEO_EFFECTS_SUPPORTED -> 0;
-            case ExoPlayer.VIDEO_EFFECTS_UNSUPPORTED_DRM -> R.string.error_video_effect_drm;
-            case ExoPlayer.VIDEO_EFFECTS_UNSUPPORTED_RENDERER -> R.string.error_video_effect_decode;
-            case ExoPlayer.VIDEO_EFFECTS_UNSUPPORTED_TUNNELING -> R.string.error_video_effect_tunnel;
-            default -> R.string.error_video_effect_unsupported;
-        };
+        return player == null ? R.string.error_video_effect_unsupported : 0;
     }
 
     @Override
     public void applyVideoEffect() {
-        if (supportsVideoEffect()) videoEffectController.apply(player, getVideoProfile());
+        if (supportsVideoEffect() && (previewVideoEffect || VideoSetting.isEnabled())) videoEffectController.apply(player, getVideoProfile());
         else videoEffectController.clear(player);
     }
 
@@ -75,7 +67,7 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     @Override
     public boolean supportsAudioEffect() {
-        return player.getAudioProcessingSupport() == ExoPlayer.AUDIO_PROCESSING_SUPPORTED && !audioEffectFailed;
+        return !audioEffectFailed;
     }
 
     @Override
@@ -85,18 +77,12 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     @Override
     public int getAudioEffectError() {
-        return switch (player.getAudioProcessingSupport()) {
-            case ExoPlayer.AUDIO_PROCESSING_SUPPORTED -> audioEffectFailed ? R.string.error_audio_effect_apply : 0;
-            case ExoPlayer.AUDIO_PROCESSING_UNSUPPORTED_PASSTHROUGH -> R.string.error_audio_effect_passthrough;
-            default -> R.string.error_audio_effect_unsupported;
-        };
+        return audioEffectFailed ? R.string.error_audio_effect_apply : 0;
     }
 
     @Override
     public void applyAudioEffect() {
-        boolean support = player.getAudioProcessingSupport() == ExoPlayer.AUDIO_PROCESSING_SUPPORTED;
-        if (support) applyAudioConfig(getAudioChannelCount());
-        else clearAudioEffect();
+        applyAudioConfig(getAudioChannelCount());
     }
 
     public void clearAudioEffect() {
@@ -113,7 +99,7 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     @Override
     public boolean supportsSkipSilence() {
-        return player.isSkipSilenceSupported();
+        return true;
     }
 
     @Override
@@ -125,8 +111,8 @@ public final class ExoPlayerEffect implements PlayerEffect {
         return previewVideoEffect ? VideoEffectProfile.off() : VideoSetting.getAppliedProfile();
     }
 
-    private AudioEffectParameters getAudioConfig(int channelCount) {
-        return previewAudioEffect ? AudioEffectParameters.DEFAULT : AudioEffectConfig.from(getAudioEffectBands(), channelCount);
+    private AudioEffectConfig getAudioConfig(int channelCount) {
+        return previewAudioEffect ? AudioEffectConfig.disabled() : AudioEffectConfig.from(getAudioEffectBands(), channelCount);
     }
 
     private int getAudioChannelCount() {
@@ -136,7 +122,7 @@ public final class ExoPlayerEffect implements PlayerEffect {
 
     private void applyAudioConfig(int channelCount) {
         if (channelCount == Format.NO_VALUE) return;
-        AudioEffectParameters config = getAudioConfig(channelCount);
+        AudioEffectConfig config = getAudioConfig(channelCount);
         audioEffectFailed = !audioEffectController.apply(player, config);
     }
 }

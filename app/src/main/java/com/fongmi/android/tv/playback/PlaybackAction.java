@@ -84,9 +84,7 @@ public final class PlaybackAction {
     }
 
     private static String getDecodeText(PlayerManager player) {
-        if (player == null) return "";
-        androidx.media3.common.DecoderMode mode = player.getDecoderMode(androidx.media3.common.C.TRACK_TYPE_VIDEO);
-        return mode == null ? "" : mode.name();
+        return player == null ? "" : player.getDecodeText();
     }
 
     private static boolean hasTextTrack(PlayerManager player) {

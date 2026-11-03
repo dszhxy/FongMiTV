@@ -1,76 +1,80 @@
 package com.fongmi.android.tv.player.exo;
 
-import androidx.annotation.Nullable;
-import androidx.media3.common.Player;
+import androidx.media3.common.C;
 import androidx.media3.common.TrackSelectionOverride;
-import androidx.media3.common.text.SubtitleSelectionState;
-import androidx.media3.exoplayer.libass.LibassPlaybackSession;
-import androidx.media3.exoplayer.libass.LibassSubtitleController;
-import androidx.media3.ui.PlayerView;
-import androidx.media3.ui.SubtitleView;
-import androidx.media3.ui.libass.LibassPlayerViewController;
+import androidx.media3.common.Tracks;
+import androidx.media3.common.text.CueGroup;
 
+import com.fongmi.android.tv.player.engine.PlayerEngine.SecondarySubtitleState;
 import com.fongmi.android.tv.setting.SubtitleSetting;
 
+import java.util.ArrayList;
+import java.util.function.Consumer;
+
+/** Secondary text output belongs to this session and is cleared on media transitions. */
 final class ExoSubtitleController {
+    private final ExoPlayerSession session;
+    private TrackSelectionOverride explicit;
+    private Consumer<CueGroup> output;
+    private CueGroup cues = CueGroup.EMPTY_TIME_ZERO;
 
-    private final LibassSubtitleController libassSubtitleController;
-    private final LibassPlaybackSession libassPlaybackSession;
-    private final LibassPlayerViewController playerViewController;
+    ExoSubtitleController(ExoPlayerSession session) {
+        this.session = session;
+    }
 
-    ExoSubtitleController(ExoPlayerSession session, Player player) {
-        libassPlaybackSession = session.libassPlaybackSession();
-        libassSubtitleController = session.libassSubtitleController();
-        playerViewController = new LibassPlayerViewController(player, libassPlaybackSession, libassSubtitleController);
-        applySubtitleStyle();
-        applySecondarySubtitleMode();
+    void onCues(CueGroup value) {
+        cues = value;
+        if (output != null) output.accept(value);
+    }
+
+    void setOutput(Consumer<CueGroup> value) {
+        output = value;
+        if (value != null) value.accept(cues);
+    }
+
+    void clear() {
+        explicit = null;
+        session.selectSecondary(null, false);
+        onCues(CueGroup.EMPTY_TIME_ZERO);
     }
 
     void release() {
-        playerViewController.close();
+        output = null;
+        cues = CueGroup.EMPTY_TIME_ZERO;
     }
 
-    void bindPlayerView(PlayerView playerView) {
-        playerViewController.bind(playerView);
+    void onTracksChanged() {
+        if (explicit != null && !getSecondarySubtitleState().secondaryCandidates().contains(explicit)) {
+            explicit = null;
+            onCues(CueGroup.EMPTY_TIME_ZERO);
+            applySubtitleStyle();
+        }
     }
 
     void applySubtitleStyle() {
-        libassPlaybackSession.setBottomPositionFraction(SubtitleSetting.getPosition() / 100.0f);
-        libassPlaybackSession.setSecondaryBottomPositionFraction(getSecondaryBottomPositionFraction());
-        libassPlaybackSession.setFontScale(SubtitleSetting.isScaleApplied() ? SubtitleSetting.getAppliedScale() : 1.0f, true);
-        playerViewController.setStyleOverride(SubtitleSetting.isStyleForced() ? SubtitleSetting.getStyle() : null, SubtitleSetting.getFontFamily());
-        playerViewController.setSecondarySubtitleViewConfigurator(this::applySecondarySubtitleStyle);
+        session.selectSecondary(explicit, SubtitleSetting.getSecondaryTrackId() == SubtitleSetting.SECONDARY_SUBTITLE_AUTO);
+        if (output != null) output.accept(cues);
     }
 
-    SubtitleSelectionState getSubtitleSelectionState() {
-        return libassSubtitleController.getSubtitleSelectionState();
+    void setSecondarySubtitleSelection(TrackSelectionOverride value) {
+        if (value != null && !getSecondarySubtitleState().secondaryCandidates().contains(value)) return;
+        explicit = value;
+        onCues(CueGroup.EMPTY_TIME_ZERO);
+        applySubtitleStyle();
     }
 
-    void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
-        applySecondarySubtitleMode();
-        libassSubtitleController.setSecondaryTextTrackSelectionOverride(selection);
-    }
-
-    void restoreSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
-        libassSubtitleController.setSecondaryTextTrackAutoSelectionEnabled(false);
-        libassSubtitleController.setSecondaryTextTrackSelectionOverride(selection);
-    }
-
-    void prepareForNewMedia() {
-        applySecondarySubtitleMode();
-    }
-
-    private void applySecondarySubtitleMode() {
-        libassSubtitleController.setSecondaryTextTrackAutoSelectionEnabled(SubtitleSetting.getSecondaryMode() == SubtitleSetting.SECONDARY_MODE_AUTO);
-    }
-
-    private void applySecondarySubtitleStyle(SubtitleView subtitleView) {
-        SubtitleSetting.applyStyle(subtitleView);
-        subtitleView.setBottomPaddingFraction(0.0f);
-        subtitleView.setBottomPosition(getSecondaryBottomPositionFraction());
-    }
-
-    private static float getSecondaryBottomPositionFraction() {
-        return (100.0f - SubtitleSetting.getSecondaryPosition()) / 100.0f;
+    SecondarySubtitleState getSecondarySubtitleState() {
+        TrackSelectionOverride primary = null;
+        var candidates = new ArrayList<TrackSelectionOverride>();
+        for (Tracks.Group group : session.player().getCurrentTracks().getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_TEXT) continue;
+            for (int i = 0; i < group.length; i++) {
+                if (!group.isTrackSupported(i)) continue;
+                var selection = new TrackSelectionOverride(group.getMediaTrackGroup(), i);
+                if (group.isTrackSelected(i)) primary = selection;
+                else candidates.add(selection);
+            }
+        }
+        return new SecondarySubtitleState(primary, candidates.contains(explicit) ? explicit : null, candidates, false);
     }
 }

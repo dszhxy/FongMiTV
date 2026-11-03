@@ -78,7 +78,6 @@
 -keep class com.google.zxing.qrcode.QRCodeWriter { *; }
 -keep class com.google.zxing.qrcode.decoder.ErrorCorrectionLevel { *; }
 
-# Keep the bundled ISO callback surface.
 # libplayer.so resolves these ISO callbacks by literal JNI names.
 -keep class com.fongmi.android.tv.player.iso.IsoSessionManager {
     public static long length(long);

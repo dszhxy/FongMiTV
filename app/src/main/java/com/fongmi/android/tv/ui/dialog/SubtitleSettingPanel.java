@@ -488,7 +488,7 @@ final class SubtitleSettingPanel {
     private void applySubtitleStyle() {
         Context context = binding.getRoot().getContext();
         SubtitleSetting.applyStyle(context, subtitleView);
-        if (player != null && !player.isReleased()) player.applySubtitleStyle();
+        if (player != null && !player.isReleased()) player.setSubtitleSettingStyle();
     }
 
     private boolean isMpvEngine() {

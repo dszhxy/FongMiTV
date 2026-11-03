@@ -19,7 +19,7 @@ public final class VodPlaybackMedia {
         String title = history.getVodName();
         String name = episode.getName();
         if (name.equals(title)) name = "";
-        return MediaItemFactory.buildMetadata(title, name, history.getVodPic());
+        return MediaItemFactory.buildMetadata(title, name, history.getVodPic(), name);
     }
 
     public static void searchDanmaku(Result result, History history, Episode episode, Consumer<Danmaku> set, Consumer<Danmaku> add) {

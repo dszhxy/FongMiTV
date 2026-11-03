@@ -1,13 +1,18 @@
 package com.fongmi.android.tv.player.subtitle;
 
+import android.util.Xml;
+
 import androidx.annotation.Nullable;
-import androidx.media3.exoplayer.libass.LibassFontConfig;
 
 import com.github.catvod.utils.Path;
 
+import org.xmlpull.v1.XmlSerializer;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.UUID;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public final class AndroidFontConfig {
 
@@ -15,16 +20,45 @@ public final class AndroidFontConfig {
 
     @Nullable
     public static synchronized File prepare() {
-        File output = Path.mpv(FONTS_CONF);
-        File temporary = new File(output.getParentFile(), UUID.randomUUID().toString());
-        try {
-            LibassFontConfig.write(temporary, Path.mpvCache(), ExternalFont.getDirectories(ExternalFont.getMpvDirectory()));
-            Path.move(temporary, output);
+        File output = Path.cache(FONTS_CONF);
+        if (Path.exists(output)) return output;
+        try (FileOutputStream stream = new FileOutputStream(output, false)) {
+            writeConfig(stream, Path.mpvCache());
             return output;
-        } catch (IOException | SecurityException e) {
+        } catch (IOException ignored) {
+            Path.clear(output);
             return null;
-        } finally {
-            Path.clear(temporary);
         }
+    }
+
+    private static void writeConfig(OutputStream stream, File cacheDirectory) throws IOException {
+        XmlSerializer serializer = Xml.newSerializer();
+        serializer.setOutput(stream, StandardCharsets.UTF_8.name());
+        serializer.startDocument(StandardCharsets.UTF_8.name(), true);
+        serializer.startTag(null, "fontconfig");
+        writeTextTag(serializer, "dir", "/system/fonts/");
+        writeTextTag(serializer, "dir", "/product/fonts/");
+        writeTextTag(serializer, "cachedir", cacheDirectory.getAbsolutePath());
+        writeFontAlias(serializer, "serif", "Noto Serif");
+        writeFontAlias(serializer, "sans-serif", "Roboto", "Noto Sans");
+        writeFontAlias(serializer, "monospace", "Droid Sans Mono");
+        serializer.endTag(null, "fontconfig");
+        serializer.endDocument();
+        serializer.flush();
+    }
+
+    private static void writeFontAlias(XmlSerializer serializer, String family, String... preferredFamilies) throws IOException {
+        serializer.startTag(null, "alias");
+        writeTextTag(serializer, "family", family);
+        serializer.startTag(null, "prefer");
+        for (String preferredFamily : preferredFamilies) writeTextTag(serializer, "family", preferredFamily);
+        serializer.endTag(null, "prefer");
+        serializer.endTag(null, "alias");
+    }
+
+    private static void writeTextTag(XmlSerializer serializer, String name, String value) throws IOException {
+        serializer.startTag(null, name);
+        serializer.text(value);
+        serializer.endTag(null, name);
     }
 }

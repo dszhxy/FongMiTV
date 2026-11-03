@@ -6,8 +6,8 @@ import android.text.TextUtils;
 import android.util.LruCache;
 
 import androidx.annotation.Nullable;
-import androidx.media3.exoplayer.libass.LibassFontFile;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.github.catvod.utils.Crypto;
 import com.github.catvod.utils.Path;
@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 public final class ExternalFont {
 
-    private static final String MPV_FONT_PREFIX = "mpv://";
     private static final String TEMP_FILE_PREFIX = ".external-font-";
     private static final String TEMP_FILE_SUFFIX = ".tmp";
     private static final int COPY_BUFFER_SIZE = 64 * 1024;
@@ -47,65 +46,21 @@ public final class ExternalFont {
         return Path.font();
     }
 
-    public static File getMpvDirectory() {
-        return Path.mpv("fonts");
-    }
-
     public static List<Entry> getAll() {
-        return getAll(null);
-    }
-
-    public static List<Entry> getAll(@Nullable File additionalDirectory) {
-        List<File> directories = getDirectories(additionalDirectory);
-        List<File[]> filesByDirectory = new ArrayList<>();
-        List<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < directories.size(); i++) {
-            File[] files = listSupportedFiles(directories.get(i));
-            if (files != null) filesByDirectory.add(files);
-            addEntries(entries, files, i != 0);
-        }
-        pruneCache(filesByDirectory);
-        return entries;
-    }
-
-    static List<File> getDirectories(@Nullable File additionalDirectory) {
-        List<File> directories = new ArrayList<>();
-        directories.add(getDirectory());
-        addDirectory(directories, getMpvDirectory());
-        if (additionalDirectory != null) addDirectory(directories, additionalDirectory);
-        return directories;
-    }
-
-    private static void addDirectory(List<File> directories, File directory) {
-        for (File existing : directories) if (sameDirectory(existing, directory)) return;
-        directories.add(directory);
-    }
-
-    private static void addEntries(List<Entry> entries, @Nullable File[] files, boolean additional) {
-        if (files == null) return;
-        Arrays.stream(files)
+        File[] files = listSupportedFiles(getDirectory());
+        if (files == null) return List.of();
+        pruneCache(files);
+        return Arrays.stream(files)
                 .sorted((first, second) -> first.getName().compareToIgnoreCase(second.getName()))
-                .map(file -> getEntry(file, additional))
+                .map(ExternalFont::getEntry)
                 .filter(Objects::nonNull)
-                .forEach(entries::add);
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Nullable
     public static Item find(String fileName) {
         File file = getFile(fileName);
         return file == null ? null : getItem(file);
-    }
-
-    @Nullable
-    public static Item find(String key, @Nullable File additionalDirectory) {
-        if (!key.startsWith(MPV_FONT_PREFIX)) return find(key);
-        File file = new File(key.substring(MPV_FONT_PREFIX.length()));
-        if (!file.isAbsolute() || !isSupportedFile(file)) return null;
-        File directory = file.getParentFile();
-        if (sameDirectory(directory, getDirectory())) return find(file.getName());
-        if (sameDirectory(directory, getMpvDirectory())) return getItem(file, true);
-        if (additionalDirectory == null || !sameDirectory(directory, additionalDirectory)) return null;
-        return getItem(file, true);
     }
 
     @Nullable
@@ -135,26 +90,17 @@ public final class ExternalFont {
 
     @Nullable
     private static Typeface loadTypeface(Item item, String cacheKey) {
-        File file = item.source() == null ? getFile(item.fileName()) : item.source();
-        if (!isSupportedFile(file)) return null;
-        Typeface typeface = createTypeface(file);
+        File file = getFile(item.fileName());
+        Typeface typeface = file == null ? null : createTypeface(file);
         if (typeface != null) TYPEFACE_CACHE.put(cacheKey, typeface);
         return typeface;
     }
 
     @Nullable
-    private static Entry getEntry(File file, boolean additional) {
+    private static Entry getEntry(File file) {
         synchronized (CACHE_LOCK) {
-            Item item = getItemLocked(file, additional);
+            Item item = getItemLocked(file);
             return item == null ? null : new Entry(item, getTypefaceLocked(item));
-        }
-    }
-
-    private static boolean sameDirectory(File first, File second) {
-        try {
-            return first.getCanonicalFile().equals(second.getCanonicalFile());
-        } catch (IOException | SecurityException e) {
-            return first.getAbsoluteFile().equals(second.getAbsoluteFile());
         }
     }
 
@@ -166,24 +112,26 @@ public final class ExternalFont {
 
     private static byte[] copyWithSha256(Uri uri, File target) throws IOException {
         MessageDigest digest = Crypto.newDigest("SHA-256");
-        try (InputStream input = Path.open(uri, "Unable to open source file"); FileOutputStream fileOutput = new FileOutputStream(target); DigestOutputStream output = new DigestOutputStream(fileOutput, digest)) {
-            copyBytes(input, output);
+        try (InputStream input = openInputStream(uri); FileOutputStream fileOutput = new FileOutputStream(target); DigestOutputStream output = new DigestOutputStream(fileOutput, digest)) {
+            byte[] buffer = new byte[COPY_BUFFER_SIZE];
+            long totalBytes = 0L;
+            int count;
+            while ((count = input.read(buffer)) != -1) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedIOException("Canceled");
+                totalBytes += count;
+                if (totalBytes > MAX_FILE_BYTES) throw new IOException("File is too large");
+                output.write(buffer, 0, count);
+            }
             output.flush();
             fileOutput.getFD().sync();
         }
         return digest.digest();
     }
 
-    private static void copyBytes(InputStream input, DigestOutputStream output) throws IOException {
-        byte[] buffer = new byte[COPY_BUFFER_SIZE];
-        long totalBytes = 0L;
-        int count;
-        while ((count = input.read(buffer)) != -1) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedIOException("Canceled");
-            totalBytes += count;
-            if (totalBytes > MAX_FILE_BYTES) throw new IOException("File is too large");
-            output.write(buffer, 0, count);
-        }
+    private static InputStream openInputStream(Uri uri) throws IOException {
+        InputStream input = App.get().getContentResolver().openInputStream(uri);
+        if (input == null) throw new IOException("Unable to open source file");
+        return input;
     }
 
     private static Item installFont(Uri uri, File directory, File temporary, PreparedFont font) throws IOException {
@@ -197,13 +145,13 @@ public final class ExternalFont {
         String displayName = FileUtil.getDisplayName(uri, "font.ttf");
         File target = nextAvailableFile(directory, sanitizeFileName(displayName));
         Path.move(temporary, target);
-        Item item = createItem(target, font.familyName(), false);
+        Item item = createItem(target, font.familyName());
         cacheItem(target, item, font.typeface());
         return item;
     }
 
     private static String requireFamilyName(File file) throws IOException {
-        String familyName = LibassFontFile.getFamilyName(file);
+        String familyName = fallbackFamilyName(file);
         if (TextUtils.isEmpty(familyName)) throw new IOException("Font family name is missing");
         return familyName;
     }
@@ -217,31 +165,26 @@ public final class ExternalFont {
 
     @Nullable
     private static Item getItem(File file) {
-        return getItem(file, false);
-    }
-
-    @Nullable
-    private static Item getItem(File file, boolean additional) {
         synchronized (CACHE_LOCK) {
-            return getItemLocked(file, additional);
+            return getItemLocked(file);
         }
     }
 
     @Nullable
-    private static Item getItemLocked(File file, boolean additional) {
+    private static Item getItemLocked(File file) {
         String path = file.getAbsolutePath();
         long length = file.length();
         long modified = file.lastModified();
         CachedItem cached = ITEM_CACHE.get(path);
-        if (cached == null || !cached.matches(length, modified)) cached = refreshItem(file, cached, length, modified, additional);
+        if (cached == null || !cached.matches(length, modified)) cached = refreshItem(file, cached, length, modified);
         return cached.item();
     }
 
-    private static CachedItem refreshItem(File file, @Nullable CachedItem cached, long length, long modified, boolean additional) {
+    private static CachedItem refreshItem(File file, @Nullable CachedItem cached, long length, long modified) {
         removeTypeface(cached);
         Typeface typeface = createTypeface(file);
         String familyName = typeface == null ? null : readFamilyName(file);
-        Item item = TextUtils.isEmpty(familyName) ? null : createItem(file, familyName, additional);
+        Item item = TextUtils.isEmpty(familyName) ? null : createItem(file, familyName);
         CachedItem current = new CachedItem(item, length, modified);
         ITEM_CACHE.put(file.getAbsolutePath(), current);
         if (item != null) TYPEFACE_CACHE.put(item.cacheKey(), typeface);
@@ -252,13 +195,12 @@ public final class ExternalFont {
         if (cached != null && cached.item() != null) TYPEFACE_CACHE.remove(cached.item().cacheKey());
     }
 
-    private static Item createItem(File file, String familyName, boolean additional) {
-        return new Item(file.getName(), familyName, getRevision(file), additional ? file.getAbsoluteFile() : null);
+    private static Item createItem(File file, String familyName) {
+        return new Item(file.getName(), familyName, getRevision(file));
     }
 
-    private static void pruneCache(List<File[]> filesByDirectory) {
-        if (filesByDirectory.isEmpty()) return;
-        Set<String> paths = filesByDirectory.stream().flatMap(Arrays::stream).map(File::getAbsolutePath).collect(Collectors.toSet());
+    private static void pruneCache(File[] files) {
+        Set<String> paths = Arrays.stream(files).map(File::getAbsolutePath).collect(Collectors.toSet());
         synchronized (CACHE_LOCK) {
             ITEM_CACHE.entrySet().removeIf(entry -> removeMissingEntry(paths, entry));
         }
@@ -277,11 +219,7 @@ public final class ExternalFont {
 
     @Nullable
     private static File[] listSupportedFiles(File directory) {
-        try {
-            return directory.listFiles(ExternalFont::isSupportedFile);
-        } catch (SecurityException e) {
-            return null;
-        }
+        return directory.listFiles(ExternalFont::isSupportedFile);
     }
 
     @Nullable
@@ -306,13 +244,21 @@ public final class ExternalFont {
 
     private static File nextAvailableFile(File directory, String fileName) {
         File target = new File(directory, fileName);
-        if (!target.exists()) return target;
+        return target.exists() ? findAvailableFile(directory, fileName) : target;
+    }
+
+    private static File findAvailableFile(File directory, String fileName) {
         int extensionStart = fileName.lastIndexOf('.');
         String baseName = fileName.substring(0, extensionStart);
         String extension = fileName.substring(extensionStart);
         int suffix = 2;
-        while (target.exists()) target = new File(directory, baseName + " (" + suffix++ + ")" + extension);
+        File target = getSuffixedFile(directory, baseName, extension, suffix);
+        while (target.exists()) target = getSuffixedFile(directory, baseName, extension, ++suffix);
         return target;
+    }
+
+    private static File getSuffixedFile(File directory, String baseName, String extension, int suffix) {
+        return new File(directory, baseName + " (" + suffix + ")" + extension);
     }
 
     private static String sanitizeFileName(String displayName) {
@@ -375,10 +321,20 @@ public final class ExternalFont {
     @Nullable
     private static String readFamilyName(File file) {
         try {
-            return LibassFontFile.getFamilyName(file);
-        } catch (IOException | RuntimeException e) {
-            return null;
+            String familyName = FontFamily.read(file);
+            return TextUtils.isEmpty(familyName) ? fallbackFamilyName(file) : familyName;
+        } catch (IOException | RuntimeException ignored) {
+            return fallbackFamilyName(file);
         }
+    }
+
+    @Nullable
+    private static String fallbackFamilyName(File file) {
+        if (file == null) return null;
+        String name = file.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) name = name.substring(0, dot);
+        return TextUtils.isEmpty(name) ? null : name;
     }
 
     @Nullable
@@ -390,26 +346,14 @@ public final class ExternalFont {
         }
     }
 
-    public record Item(String fileName, String familyName, long revision, @Nullable File source) {
-
-        public Item(String fileName, String familyName, long revision) {
-            this(fileName, familyName, revision, null);
-        }
+    public record Item(String fileName, String familyName, long revision) {
 
         public String displayName() {
             return fileName;
         }
 
-        public String storageKey() {
-            return source == null ? fileName : MPV_FONT_PREFIX + source.getAbsolutePath();
-        }
-
-        public File directory() {
-            return source == null ? getDirectory() : source.getParentFile();
-        }
-
         private String cacheKey() {
-            return directory().getAbsolutePath() + File.separator + fileName + ':' + revision;
+            return fileName + ':' + revision;
         }
     }
 

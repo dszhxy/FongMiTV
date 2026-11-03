@@ -165,7 +165,7 @@ public final class TrackDialog extends BaseBottomSheetDialog implements TrackAda
 
     @Override
     public void onItemClick(Track item) {
-        player.setTrack(item.key(player.getKey()).save());
+        player.setTrack(Arrays.asList(item.key(player.getKey()).save()));
         dismiss();
     }
 

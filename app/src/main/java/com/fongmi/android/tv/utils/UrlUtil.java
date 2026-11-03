@@ -15,12 +15,6 @@ import java.io.File;
 
 public class UrlUtil {
 
-    private static final String WEBVIEW_PREFIX = "webview://";
-
-    public static boolean isWebView(String url) {
-        return url != null && url.regionMatches(true, 0, WEBVIEW_PREFIX, 0, WEBVIEW_PREFIX.length());
-    }
-
     public static Uri uri(String url) {
         url = url.trim().replace("\\", "");
         return url.startsWith("/") ? Uri.fromFile(new File(url)) : Uri.parse(url);
