@@ -56,9 +56,16 @@ public final class MpvUtil {
 
     public static void setSubtitleStyle(MpvPlayer player) {
         if (player == null) return;
+        int secondary = SubtitleSetting.getSecondaryTrackId();
+        setSubtitleStyle(player, secondary >= 0 ? secondary : null);
+    }
+
+    public static void setSubtitleStyle(MpvPlayer player, Integer secondaryTrackId) {
+        if (player == null) return;
         float textSize = SubtitleSetting.getScale(App.get());
         float position = SubtitleSetting.getPosition();
         player.setSubtitleStyle(textSize, position);
+        player.setSecondarySubtitleTrackSelection(secondaryTrackId == null ? "no" : String.valueOf(secondaryTrackId));
     }
 
     public static void setDecode(int decode) {

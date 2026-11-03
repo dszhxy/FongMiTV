@@ -10,6 +10,7 @@ import androidx.media3.ui.CaptionStyleCompat;
 import androidx.media3.ui.SubtitleView;
 
 import com.fongmi.android.tv.api.config.VodConfig;
+import com.fongmi.android.tv.player.subtitle.ExternalFont;
 import com.github.catvod.utils.Prefers;
 
 public class SubtitleSetting {
@@ -226,6 +227,21 @@ public class SubtitleSetting {
         return Math.max(trackId, SECONDARY_SUBTITLE_OFF);
     }
 
+    @Nullable
+    public static ExternalFont.Item getFont() {
+        return ExternalFont.find(Prefers.getString("subtitle_font", ""));
+    }
+
+    public static void putFont(@Nullable ExternalFont.Item font) {
+        Prefers.put("subtitle_font", font == null ? "" : font.fileName());
+    }
+
+    @Nullable
+    public static String getFontFamily() {
+        ExternalFont.Item font = getFont();
+        return font == null ? null : font.familyName();
+    }
+
     private static float getOpacity(String key, float defaultValue) {
         return clampOpacity(Prefers.getFloat(key, defaultValue));
     }
@@ -288,6 +304,7 @@ public class SubtitleSetting {
         Prefers.put("subtitle_edge_opacity", DEFAULT_EDGE_OPACITY);
         Prefers.put("subtitle_edge_width", DEFAULT_EDGE_WIDTH);
         Prefers.put("subtitle_shadow", DEFAULT_SHADOW);
+        putFont(null);
     }
 
     public static void resetAdvanced() {

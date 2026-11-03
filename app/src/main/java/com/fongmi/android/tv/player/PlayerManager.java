@@ -14,8 +14,11 @@ import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.VideoSize;
+import androidx.media3.common.text.CueGroup;
+import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.danmaku.DanmakuConfig;
 
 import com.fongmi.android.tv.App;
@@ -29,6 +32,7 @@ import com.fongmi.android.tv.impl.ParseCallback;
 import com.fongmi.android.tv.player.effect.PlayerEffectManager;
 import com.fongmi.android.tv.player.effect.audio.AudioEffectBands;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
+import com.fongmi.android.tv.player.engine.PlayerEngine.SecondarySubtitleState;
 import com.fongmi.android.tv.player.engine.PlayerEngineFactory;
 import com.fongmi.android.tv.player.media.PlaySpec;
 import com.fongmi.android.tv.player.parse.ParseJob;
@@ -374,7 +378,27 @@ public class PlayerManager implements ParseCallback {
     }
 
     public void setSubtitleSettingStyle() {
-        if (engine != null) engine.setSubtitleStyle();
+        applySubtitleStyle();
+    }
+
+    public void applySubtitleStyle() {
+        if (engine != null) engine.applySubtitleStyle();
+    }
+
+    public void setSecondarySubtitleOutput(java.util.function.Consumer<CueGroup> output) {
+        if (engine != null) engine.setSecondarySubtitleOutput(output);
+    }
+
+    public SecondarySubtitleState getSecondarySubtitleState() {
+        return engine == null ? SecondarySubtitleState.EMPTY : engine.getSecondarySubtitleState();
+    }
+
+    public void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
+        if (engine != null) engine.setSecondarySubtitleSelection(selection);
+    }
+
+    public void bindPlayerView(PlayerView playerView) {
+        if (engine != null) engine.bindPlayerView(playerView);
     }
 
     public void sendDanmaku(String text) {

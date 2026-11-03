@@ -1,13 +1,17 @@
 package com.fongmi.android.tv.player.exo;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.MimeTypes;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.Tracks;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.analytics.AnalyticsListener;
@@ -55,6 +59,7 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
     @Override
     public void onTracksChanged(@NonNull EventTime eventTime, @NonNull Tracks tracks) {
         effect.applyVideoEffect();
+        session.subtitles().onTracksChanged();
     }
 
     @Override
@@ -166,14 +171,46 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
     }
 
     @Override
+    public void setSubtitleStyle() {
+        applySubtitleStyle();
+    }
+
+    @Override
+    public void applySubtitleStyle() {
+        session.subtitles().applySubtitleStyle();
+    }
+
+    @Override
+    public SecondarySubtitleState getSecondarySubtitleState() {
+        return session.subtitles().getSecondarySubtitleState();
+    }
+
+    @Override
+    public void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
+        session.subtitles().setSecondarySubtitleSelection(selection);
+    }
+
+    @Override
+    public void setSecondarySubtitleOutput(java.util.function.Consumer<androidx.media3.common.text.CueGroup> output) {
+        session.subtitles().setOutput(output);
+    }
+
+    @Override
     public void start(PlaySpec spec, long startPositionMs) {
+        session.subtitles().clear();
+        session.subtitles().applySubtitleStyle();
         this.spec = spec;
         startInternal(startPositionMs);
     }
 
     @Override
     public void preload(PlaySpec spec, long startPositionMs) {
-        session.preload(MediaItemFactory.from(spec), startPositionMs);
+        MediaItem item = MediaItemFactory.from(spec);
+        Bundle extras = new Bundle();
+        if (item.mediaMetadata.extras != null) extras.putAll(item.mediaMetadata.extras);
+        extras.putBoolean(ExoMediaSourceFactory.PRELOAD_CACHE_KEY, true);
+        MediaMetadata metadata = item.mediaMetadata.buildUpon().setExtras(extras).build();
+        session.preload(item.buildUpon().setMediaMetadata(metadata).build(), startPositionMs);
     }
 
     @Override

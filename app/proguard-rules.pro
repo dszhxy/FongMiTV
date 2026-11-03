@@ -94,3 +94,6 @@
 -keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer { *; }
 -keep,allowobfuscation class androidx.media3.mpvplayer.MpvPlayer$* { *; }
 -keep,allowobfuscation class com.fongmi.android.tv.player.mpv.MpvPlayerEngine { *; }
+
+# JNI entry points are resolved by name at runtime.
+-keepclasseswithmembernames class com.fongmi.android.tv.player.subtitle.AssNative { native <methods>; }

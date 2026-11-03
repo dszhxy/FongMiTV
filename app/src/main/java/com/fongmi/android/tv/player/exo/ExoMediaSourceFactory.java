@@ -33,14 +33,15 @@ import java.util.Map;
 public class ExoMediaSourceFactory implements MediaSource.Factory {
 
     private static final int CACHE_SPACE_PERCENT = 80;
+    public static final String PRELOAD_CACHE_KEY = "tvbox.preload.cache";
 
     private static StandaloneDatabaseProvider databaseProvider;
     private static Cache cache;
 
     private final DefaultMediaSourceFactory defaultMediaSourceFactory;
-    private HttpDataSource.Factory httpDataSourceFactory;
-    private DataSource.Factory dataSourceFactory;
     private ExtractorsFactory extractorsFactory;
+    private DrmSessionManagerProvider drmSessionManagerProvider;
+    private LoadErrorHandlingPolicy loadErrorHandlingPolicy;
 
     public ExoMediaSourceFactory() {
         defaultMediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(), getExtractorsFactory());
@@ -94,12 +95,14 @@ public class ExoMediaSourceFactory implements MediaSource.Factory {
     @NonNull
     @Override
     public MediaSource.Factory setDrmSessionManagerProvider(@NonNull DrmSessionManagerProvider drmSessionManagerProvider) {
+        this.drmSessionManagerProvider = drmSessionManagerProvider;
         return this;
     }
 
     @NonNull
     @Override
     public MediaSource.Factory setLoadErrorHandlingPolicy(@NonNull LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
+        this.loadErrorHandlingPolicy = loadErrorHandlingPolicy;
         return this;
     }
 
@@ -112,8 +115,13 @@ public class ExoMediaSourceFactory implements MediaSource.Factory {
     @NonNull
     @Override
     public MediaSource createMediaSource(@NonNull MediaItem mediaItem) {
-        getHttpDataSourceFactory().setDefaultRequestProperties(ExoUtil.extractHeaders(mediaItem));
-        return defaultMediaSourceFactory.createMediaSource(mediaItem);
+        boolean writes = mediaItem.mediaMetadata.extras != null && mediaItem.mediaMetadata.extras.getBoolean(PRELOAD_CACHE_KEY);
+        // One factory per item: a next episode's authorization headers must never replace the current one's.
+        DefaultMediaSourceFactory factory = new DefaultMediaSourceFactory(getDataSourceFactory(ExoUtil.extractHeaders(mediaItem), writes), getExtractorsFactory());
+        factory.experimentalParseSubtitlesDuringExtraction(false);
+        if (drmSessionManagerProvider != null) factory.setDrmSessionManagerProvider(drmSessionManagerProvider);
+        if (loadErrorHandlingPolicy != null) factory.setLoadErrorHandlingPolicy(loadErrorHandlingPolicy);
+        return factory.createMediaSource(mediaItem);
     }
 
     private ExtractorsFactory getExtractorsFactory() {
@@ -122,16 +130,17 @@ public class ExoMediaSourceFactory implements MediaSource.Factory {
     }
 
     private DataSource.Factory getDataSourceFactory() {
-        if (dataSourceFactory == null) dataSourceFactory = () -> getCacheDataSource(new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory())).createDataSource();
-        return dataSourceFactory;
+        return getDataSourceFactory(Map.of(), false);
     }
 
-    private CacheDataSource.Factory getCacheDataSource(DataSource.Factory upstreamFactory) {
-        return new CacheDataSource.Factory().setCache(getCache()).setUpstreamDataSourceFactory(upstreamFactory).setCacheWriteDataSinkFactory(null).setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
-    }
-
-    private HttpDataSource.Factory getHttpDataSourceFactory() {
-        if (httpDataSourceFactory == null) httpDataSourceFactory = new OkHttpDataSource.Factory(OkHttp.player());
-        return httpDataSourceFactory;
+    private DataSource.Factory getDataSourceFactory(Map<String, String> headers, boolean writes) {
+        HttpDataSource.Factory http = new OkHttpDataSource.Factory(OkHttp.player()).setDefaultRequestProperties(new java.util.HashMap<>(headers));
+        DataSource.Factory upstream = new DefaultDataSource.Factory(App.get(), http);
+        return () -> {
+            CacheDataSource.Factory factory = new CacheDataSource.Factory().setCache(getCache())
+                    .setUpstreamDataSourceFactory(upstream).setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
+            if (!writes) factory.setCacheWriteDataSinkFactory(null);
+            return factory.createDataSource();
+        };
     }
 }

@@ -5,10 +5,16 @@ import androidx.media3.common.C;
 import androidx.media3.common.ColorInfo;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionOverride;
+import androidx.media3.common.text.CueGroup;
+import androidx.media3.ui.PlayerView;
 
 import com.fongmi.android.tv.bean.Sub;
 import com.fongmi.android.tv.player.effect.PlayerEffect;
 import com.fongmi.android.tv.player.media.PlaySpec;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public interface PlayerEngine {
 
@@ -37,9 +43,26 @@ public interface PlayerEngine {
     default void clearPreload() {
     }
 
+    default void bindPlayerView(PlayerView playerView) {
+    }
+
     void stop();
 
     default void setSubtitleStyle() {
+    }
+
+    default void applySubtitleStyle() {
+        setSubtitleStyle();
+    }
+
+    default void setSecondarySubtitleOutput(Consumer<CueGroup> output) {
+    }
+
+    default SecondarySubtitleState getSecondarySubtitleState() {
+        return SecondarySubtitleState.EMPTY;
+    }
+
+    default void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
     }
 
     default boolean addSubtitle(Sub sub) {
@@ -105,5 +128,17 @@ public interface PlayerEngine {
     enum Type {
         EXO,
         MPV
+    }
+
+    record SecondarySubtitleState(@Nullable TrackSelectionOverride primarySelection,
+                                  @Nullable TrackSelectionOverride explicitSelection,
+                                  List<TrackSelectionOverride> secondaryCandidates,
+                                  boolean secondaryPromotedToPrimary) {
+
+        public static final SecondarySubtitleState EMPTY = new SecondarySubtitleState(null, null, List.of(), false);
+
+        public SecondarySubtitleState {
+            secondaryCandidates = List.copyOf(secondaryCandidates);
+        }
     }
 }

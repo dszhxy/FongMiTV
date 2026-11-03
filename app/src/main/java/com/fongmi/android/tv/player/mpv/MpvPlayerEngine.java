@@ -1,29 +1,41 @@
 package com.fongmi.android.tv.player.mpv;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.media3.common.C;
 import androidx.media3.common.Format;
 import androidx.media3.common.MimeTypes;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionOverride;
+import androidx.media3.common.Tracks;
 import androidx.media3.mpvplayer.MpvPlayer;
 
 import com.fongmi.android.tv.bean.Sub;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.media.MediaItemFactory;
 import com.fongmi.android.tv.player.media.PlaySpec;
+import com.fongmi.android.tv.setting.SubtitleSetting;
 
-public class MpvPlayerEngine implements PlayerEngine {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
 
     private final MpvErrorMessageProvider provider;
     private final Player.Listener externalListener;
     private final MpvPlayer player;
     private PlaySpec spec;
     private int decode;
+    @Nullable
+    private TrackSelectionOverride secondarySelection;
 
     public MpvPlayerEngine(int decode, Player.Listener listener) {
         this.decode = decode;
         this.externalListener = listener;
         this.provider = new MpvErrorMessageProvider();
         this.player = MpvUtil.buildPlayer(decode, listener);
+        this.player.addListener(this);
     }
 
     public static boolean isAvailable() {
@@ -48,6 +60,7 @@ public class MpvPlayerEngine implements PlayerEngine {
     @Override
     public void release() {
         try {
+            player.removeListener(this);
             if (externalListener != null) player.removeListener(externalListener);
         } catch (Throwable ignored) {
         }
@@ -56,7 +69,73 @@ public class MpvPlayerEngine implements PlayerEngine {
 
     @Override
     public void setSubtitleStyle() {
-        MpvUtil.setSubtitleStyle(player);
+        applySubtitleStyle();
+    }
+
+    @Override
+    public void applySubtitleStyle() {
+        Integer id = null;
+        if (secondarySelection != null) {
+            try {
+                id = parseMpvTrackId(secondarySelection.mediaTrackGroup.getFormat(secondarySelection.trackIndices.get(0)).id);
+            } catch (RuntimeException invalid) {
+                secondarySelection = null;
+            }
+        }
+        if (id == null) {
+            int selected = SubtitleSetting.getSecondaryTrackId();
+            if (selected >= 0) id = selected;
+        }
+        MpvUtil.setSubtitleStyle(player, id);
+    }
+
+    @Override
+    public SecondarySubtitleState getSecondarySubtitleState() {
+        TrackSelectionOverride primary = null;
+        List<TrackSelectionOverride> candidates = new ArrayList<>();
+        for (Tracks.Group group : player.getCurrentTracks().getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_TEXT) continue;
+            for (int i = 0; i < group.length; i++) {
+                if (!group.isTrackSupported(i)) continue;
+                var selection = new TrackSelectionOverride(group.getMediaTrackGroup(), i);
+                if (group.isTrackSelected(i)) primary = selection;
+                else candidates.add(selection);
+            }
+        }
+        var selected = candidates.contains(secondarySelection) ? secondarySelection : null;
+        return new SecondarySubtitleState(primary, selected, candidates, false);
+    }
+
+    @Override
+    public void setSecondarySubtitleSelection(@Nullable TrackSelectionOverride selection) {
+        if (selection != null && !getSecondarySubtitleState().secondaryCandidates().contains(selection)) return;
+        secondarySelection = selection;
+        applySubtitleStyle();
+    }
+
+    @Override
+    public void onTracksChanged(@NonNull Tracks tracks) {
+        if (secondarySelection != null && getSecondarySubtitleState().explicitSelection() == null) {
+            secondarySelection = null;
+            applySubtitleStyle();
+            return;
+        }
+        int selected = SubtitleSetting.getSecondaryTrackId();
+        if (secondarySelection == null && selected >= 0 && !player.isSecondarySubtitleSelected(String.valueOf(selected))) {
+            MpvUtil.setSubtitleStyle(player, selected);
+        }
+    }
+
+    @Nullable
+    private static Integer parseMpvTrackId(@Nullable String id) {
+        if (id == null) return null;
+        int colon = id.indexOf(':');
+        String value = colon >= 0 ? id.substring(colon + 1) : id;
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     @Override
@@ -75,6 +154,8 @@ public class MpvPlayerEngine implements PlayerEngine {
     @Override
     public void start(PlaySpec spec, long startPositionMs) {
         this.spec = spec;
+        secondarySelection = null;
+        applySubtitleStyle();
         startInternal(startPositionMs);
     }
 

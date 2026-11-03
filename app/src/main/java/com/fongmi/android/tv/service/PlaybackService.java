@@ -104,7 +104,7 @@ public class PlaybackService extends MediaLibraryService implements MediaLibrary
         player = new PlayerManager(this);
         sessionPlayer = player.getPlayer();
         sessionPlayer.addListener(listener);
-        session = new MediaLibrarySession.Builder(this, wrap(sessionPlayer), this).build();
+        session = new MediaLibrarySession.Builder(this, wrap(sessionPlayer), this).setBitmapLoader(new com.fongmi.android.tv.player.media.ArtworkBitmapLoader(this)).build();
         session.setSessionActivity(buildDefaultIntent());
         EventBus.getDefault().register(this);
         Server.get().setService(this);

@@ -27,6 +27,8 @@ android {
 
     compileSdk libs.versions.compileSdk.get().toInteger()
 
+    ndkVersion '29.0.14206865'
+
     defaultConfig {
         applicationId "com.fongmi.android.ys"
         minSdk libs.versions.minSdk.get().toInteger()
@@ -121,6 +123,12 @@ android {
     lint {
         disable 'UnsafeOptInUsageError'
         disable 'ExpiredTargetSdkVersion'
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file('src/main/cpp/Android.mk')
+        }
     }
 
     compileOptions {

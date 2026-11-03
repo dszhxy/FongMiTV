@@ -320,7 +320,12 @@ public final class ExternalFont {
 
     @Nullable
     private static String readFamilyName(File file) {
-        return fallbackFamilyName(file);
+        try {
+            String familyName = FontFamily.read(file);
+            return TextUtils.isEmpty(familyName) ? fallbackFamilyName(file) : familyName;
+        } catch (IOException | RuntimeException ignored) {
+            return fallbackFamilyName(file);
+        }
     }
 
     @Nullable
