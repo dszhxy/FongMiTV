@@ -18,9 +18,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 public final class MPVLib {
 
@@ -36,6 +40,7 @@ public final class MPVLib {
 
     private static final List<EventObserver> OBSERVERS = new ArrayList<>();
     private static final List<LogObserver> LOG_OBSERVERS = new ArrayList<>();
+    private static final Map<String, Supplier<Stream>> STREAMS = new ConcurrentHashMap<>();
     private static boolean loaded;
     private static Throwable loadError;
     private static String loadedAbi;
@@ -402,8 +407,12 @@ public final class MPVLib {
     }
 
     public static void eventCommandReply(long requestId, int error) {
+        eventCommandReply(requestId, error, 0);
+    }
+
+    public static void eventCommandReply(long requestId, int error, long result) {
         synchronized (OBSERVERS) {
-            for (EventObserver observer : OBSERVERS) observer.eventCommandReply(requestId, error);
+            for (EventObserver observer : OBSERVERS) observer.eventCommandReply(requestId, error, result);
         }
     }
 
@@ -415,6 +424,19 @@ public final class MPVLib {
         synchronized (OBSERVERS) {
             for (EventObserver observer : OBSERVERS) observer.endFile(reason, error, errorText);
         }
+    }
+
+    public static void registerStream(String uri, Supplier<Stream> factory) {
+        if (uri != null && factory != null) STREAMS.put(uri, factory);
+    }
+
+    public static void unregisterStream(String uri) {
+        if (uri != null) STREAMS.remove(uri);
+    }
+
+    public static Stream openStream(String uri) {
+        Supplier<Stream> factory = uri == null ? null : STREAMS.get(uri);
+        return factory == null ? null : factory.get();
     }
 
     public static void addLogObserver(LogObserver observer) {
@@ -451,9 +473,25 @@ public final class MPVLib {
         default void eventCommandReply(long requestId, int error) {
         }
 
+        default void eventCommandReply(long requestId, int error, long result) {
+            eventCommandReply(requestId, error);
+        }
+
         default void endFile(int reason, int error, String errorText) {
             event(MpvEvent.MPV_EVENT_END_FILE);
         }
+    }
+
+    public interface Stream {
+        int read(ByteBuffer buffer);
+
+        long seek(long position);
+
+        long size();
+
+        void cancel();
+
+        void close();
     }
 
     public interface LogObserver {

@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.github.catvod.crawler.SpiderDebug;
 
+import is.xyz.mpv.MPVLib;
+
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +17,8 @@ import java.util.function.Consumer;
 public final class IsoSessionManager {
 
     private static final String TAG = "TV-iso-native";
+    private static final String URI_PREFIX = "media3iso://";
+    private static final String URI_SUFFIX = "/longest";
 
     private static final AtomicLong NEXT_ID = new AtomicLong(1000);
     private static final Map<Long, IsoPlaybackSession> SESSIONS = new ConcurrentHashMap<>();
@@ -36,8 +40,9 @@ public final class IsoSessionManager {
         long id = NEXT_ID.incrementAndGet();
         IsoPlaybackSession session = new IsoPlaybackSession(id, url, headers);
         SESSIONS.put(id, session);
+        registerStream(id);
         SpiderDebug.log("iso-native", "session create id=%d", id);
-        return "webhtv-dvdiso://" + id + "/longest";
+        return uriFor(id);
     }
 
     /** Probe opaque local pan-proxy URLs without relying on filename or MIME. */
@@ -51,8 +56,9 @@ public final class IsoSessionManager {
                 return null;
             }
             SESSIONS.put(id, session);
+            registerStream(id);
             Log.i(TAG, "opaque source probe: ISO signature found, session=" + id);
-            return "webhtv-dvdiso://" + id + "/longest";
+            return uriFor(id);
         } catch (Throwable e) {
             session.close();
             Log.w(TAG, "opaque source probe failed: " + e.getClass().getSimpleName());
@@ -65,6 +71,7 @@ public final class IsoSessionManager {
     }
 
     public static void close(long id) {
+        MPVLib.unregisterStream(uriFor(id));
         IsoPlaybackSession session = SESSIONS.remove(id);
         if (session != null) {
             session.close();
@@ -129,6 +136,52 @@ public final class IsoSessionManager {
             return Long.parseLong(uri.substring(start, end));
         } catch (Throwable ignored) {
             return -1;
+        }
+    }
+
+    private static String uriFor(long id) {
+        return URI_PREFIX + id + URI_SUFFIX;
+    }
+
+    private static void registerStream(long id) {
+        String uri = uriFor(id);
+        MPVLib.registerStream(uri, () -> new IsoStream(id));
+    }
+
+    private static final class IsoStream implements MPVLib.Stream {
+
+        private final long id;
+        private long position;
+
+        private IsoStream(long id) {
+            this.id = id;
+        }
+
+        @Override
+        public int read(ByteBuffer buffer) {
+            if (buffer == null) return -1;
+            int read = IsoSessionManager.readAt(id, position, buffer, buffer.remaining());
+            if (read > 0) position += read;
+            return read;
+        }
+
+        @Override
+        public long seek(long target) {
+            position = Math.max(0, target);
+            return position;
+        }
+
+        @Override
+        public long size() {
+            return IsoSessionManager.length(id);
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void close() {
         }
     }
 }
