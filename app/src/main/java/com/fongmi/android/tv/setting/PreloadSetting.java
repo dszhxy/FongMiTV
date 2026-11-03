@@ -22,11 +22,7 @@ public class PreloadSetting {
     public static final int DEFAULT_PAUSE_PRELOAD = PAUSE_PRELOAD_ALWAYS;
 
     public static boolean isEnabled() {
-        if (!Prefers.getBoolean("preload_default_on_v1")) {
-            Prefers.put("preload", true);
-            Prefers.put("preload_default_on_v1", true);
-        }
-        return Prefers.getBoolean("preload", true);
+        return Prefers.getBoolean("preload");
     }
 
     public static void putEnabled(boolean preload) {

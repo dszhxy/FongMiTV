@@ -32,12 +32,12 @@ public final class PlayerEngineFactory {
 
     private static PlayerEngine.Type resolve(PlaySpec spec) {
         if (requiresExo(spec)) return EXO;
-        return resolve();
+        if (!PlayerSetting.isMpv() || !isMpvReady()) return EXO;
+        return MPV;
     }
 
     private static PlayerEngine.Type resolve() {
-        if (PlayerSetting.isMpv()) return isMpvReady() ? MPV : EXO;
-        return EXO;
+        return PlayerSetting.isMpv() && isMpvReady() ? MPV : EXO;
     }
 
     private static boolean requiresExo(PlaySpec spec) {
