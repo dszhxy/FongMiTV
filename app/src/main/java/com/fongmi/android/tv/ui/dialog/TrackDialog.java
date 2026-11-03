@@ -156,7 +156,7 @@ public final class TrackDialog extends BaseBottomSheetDialog implements TrackAda
             for (int j = 0; j < trackGroup.length; j++) {
                 Format format = trackGroup.getTrackFormat(j);
                 String name = provider.getTrackName(format);
-                Track item = new Track(type, name, TrackUtil.describeFormat(format));
+                Track item = TrackUtil.createTrack(type, name, format, j);
                 item.setSelected(trackGroup.isTrackSelected(j));
                 items.add(item);
             }
