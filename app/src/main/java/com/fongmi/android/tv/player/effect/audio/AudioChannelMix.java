@@ -1,4 +1,4 @@
-package androidx.media3.mpvplayer.audio;
+package com.fongmi.android.tv.player.effect.audio;
 
 /** Compatibility math helper retained by FM's software audio processor. */
 public final class AudioChannelMix {

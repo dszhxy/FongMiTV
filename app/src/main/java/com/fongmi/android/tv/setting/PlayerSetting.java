@@ -24,12 +24,12 @@ public class PlayerSetting {
     private static final int MAX_BACKGROUND = 2;
 
     public static int getEngine() {
-        return Math.clamp(Prefers.getInt("player_engine", ENGINE_EXO), ENGINE_EXO, ENGINE_MPV);
+        return ENGINE_EXO;
     }
 
     public static void putEngine(int engine) {
-        Prefers.put("player_engine", Math.clamp(engine, ENGINE_EXO, ENGINE_MPV));
-        if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
+        Prefers.put("player_engine", ENGINE_EXO);
+        if (DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
     }
 
     public static boolean isExo() {
