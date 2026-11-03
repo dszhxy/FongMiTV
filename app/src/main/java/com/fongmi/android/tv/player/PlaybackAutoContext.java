@@ -1045,8 +1045,6 @@ public record PlaybackAutoContext(
 
     public enum RenderPath {
         EXO_TUNNELING("exo-tunneling"),
-        MPV_SURFACE_DIRECT("mpv-surface-direct"),
-        MPV_GPU("mpv-gpu"),
         IJK_NATIVE("ijk-native"),
         UNKNOWN("unknown");
 

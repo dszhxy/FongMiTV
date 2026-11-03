@@ -160,12 +160,9 @@ public final class KernelPerformanceSetting {
     public static void applyPreset(int kernel, int profile) {
         if (profile == PlaybackPerformanceSetting.PROFILE_LIGHTWEIGHT
                 || profile == PlaybackPerformanceSetting.PROFILE_COMPATIBLE) {
-            putBuffer(kernel, kernel == PlayerSetting.EXO ? exoBufferForPreset(profile)
-                    : kernel == PlayerSetting.MPV ? mpvBufferForPreset(profile) : 5);
-            putBufferBytesOption(kernel, kernel == PlayerSetting.EXO ? exoBufferBytesOptionForPreset(profile)
-                    : kernel == PlayerSetting.MPV ? mpvBufferBytesOptionForPreset(profile) : 1);
-            putBackBufferOption(kernel, kernel == PlayerSetting.MPV
-                    ? mpvBackBufferOptionForPreset(profile) : 0);
+            putBuffer(kernel, kernel == PlayerSetting.EXO ? exoBufferForPreset(profile) : 5);
+            putBufferBytesOption(kernel, kernel == PlayerSetting.EXO ? exoBufferBytesOptionForPreset(profile) : 1);
+            putBackBufferOption(kernel, 0);
             putPlayCacheOption(kernel, 0);
             putPreload(kernel, false);
             putPreloadThreads(kernel, preloadThreadsForPreset(profile));
@@ -178,12 +175,9 @@ public final class KernelPerformanceSetting {
             putAudioPrefer(kernel, false);
             putVideoPrefer(kernel, false);
         } else {
-            putBuffer(kernel, kernel == PlayerSetting.EXO ? exoBufferForPreset(profile)
-                    : kernel == PlayerSetting.MPV ? mpvBufferForPreset(profile) : 10);
-            putBufferBytesOption(kernel, kernel == PlayerSetting.EXO ? exoBufferBytesOptionForPreset(profile)
-                    : kernel == PlayerSetting.MPV ? mpvBufferBytesOptionForPreset(profile) : 3);
-            putBackBufferOption(kernel, kernel == PlayerSetting.EXO ? exoBackBufferOptionForPreset(profile)
-                    : kernel == PlayerSetting.MPV ? mpvBackBufferOptionForPreset(profile) : 2);
+            putBuffer(kernel, kernel == PlayerSetting.EXO ? exoBufferForPreset(profile) : 10);
+            putBufferBytesOption(kernel, kernel == PlayerSetting.EXO ? exoBufferBytesOptionForPreset(profile) : 3);
+            putBackBufferOption(kernel, kernel == PlayerSetting.EXO ? exoBackBufferOptionForPreset(profile) : 2);
             putPlayCacheOption(kernel, 2);
             putPreload(kernel, true);
             putPreloadThreads(kernel, preloadThreadsForPreset(profile));
@@ -229,14 +223,6 @@ public final class KernelPerformanceSetting {
         putBackBufferOption(PlayerSetting.EXO, exoBackBufferOptionForPreset(profile));
     }
 
-    static void applyMpvAutoBaselinePreset() {
-        putBuffer(PlayerSetting.MPV, mpvBufferForPreset(PlaybackPerformanceSetting.PROFILE_AUTO));
-        putBufferBytesOption(PlayerSetting.MPV,
-                mpvBufferBytesOptionForPreset(PlaybackPerformanceSetting.PROFILE_AUTO));
-        putBackBufferOption(PlayerSetting.MPV,
-                mpvBackBufferOptionForPreset(PlaybackPerformanceSetting.PROFILE_AUTO));
-    }
-
     static int exoBufferForPreset(int profile) {
         return switch (profile) {
             case PlaybackPerformanceSetting.PROFILE_COMPATIBLE,
@@ -257,36 +243,13 @@ public final class KernelPerformanceSetting {
         return 0;
     }
 
-    static int mpvBufferForPreset(int profile) {
-        return profile == PlaybackPerformanceSetting.PROFILE_LIGHTWEIGHT
-                || profile == PlaybackPerformanceSetting.PROFILE_COMPATIBLE ? 5 : 10;
-    }
-
-    static int mpvBufferBytesOptionForPreset(int profile) {
-        return switch (profile) {
-            case PlaybackPerformanceSetting.PROFILE_AUTO -> 0;
-            case PlaybackPerformanceSetting.PROFILE_LIGHTWEIGHT,
-                 PlaybackPerformanceSetting.PROFILE_COMPATIBLE -> 1;
-            default -> 3;
-        };
-    }
-
-    static int mpvBackBufferOptionForPreset(int profile) {
-        return switch (profile) {
-            case PlaybackPerformanceSetting.PROFILE_AUTO,
-                 PlaybackPerformanceSetting.PROFILE_LIGHTWEIGHT,
-                 PlaybackPerformanceSetting.PROFILE_COMPATIBLE -> 0;
-            default -> 2;
-        };
-    }
-
     static boolean audioPassthroughForPreset(int kernel) {
         return PlayerSetting.sanitizePlayer(kernel) != PlayerSetting.IJK;
     }
 
     private static synchronized void ensurePreloadDefaultOn() {
         if (Prefers.getBoolean(KEY_PRELOAD_DEFAULT_ON)) return;
-        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.MPV, PlayerSetting.IJK}) {
+        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.IJK}) {
             Prefers.put(key(kernel, "preload"), true);
         }
         Prefers.put(KEY_PRELOAD_DEFAULT_ON, true);
@@ -306,7 +269,7 @@ public final class KernelPerformanceSetting {
         boolean preferAac = Prefers.getBoolean("prefer_aac");
         boolean audioPrefer = Prefers.getBoolean("audio_prefer");
         boolean videoPrefer = Prefers.getBoolean("video_prefer");
-        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.MPV, PlayerSetting.IJK}) {
+        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.IJK}) {
             Prefers.put(key(kernel, "buffer"), buffer);
             Prefers.put(key(kernel, "buffer_bytes"), bufferBytes);
             Prefers.put(key(kernel, "back_buffer"), backBuffer);
@@ -325,7 +288,7 @@ public final class KernelPerformanceSetting {
 
     private static synchronized void ensurePausePreloadMigrated() {
         if (Prefers.getBoolean(KEY_PAUSE_PRELOAD_MIGRATED)) return;
-        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.MPV, PlayerSetting.IJK}) {
+        for (int kernel : new int[]{PlayerSetting.EXO, PlayerSetting.IJK}) {
             String preferenceKey = key(kernel, "preload_pause");
             int legacy = Prefers.getPrefers().contains(preferenceKey)
                     ? Prefers.getInt(preferenceKey, PreloadSetting.DEFAULT_PAUSE_PRELOAD)
@@ -341,7 +304,7 @@ public final class KernelPerformanceSetting {
     }
 
     private static String key(int kernel, String suffix) {
-        String prefix = kernel == PlayerSetting.MPV ? "perf_mpv_" : kernel == PlayerSetting.IJK ? "perf_ijk_" : "perf_exo_";
+        String prefix = kernel == PlayerSetting.IJK ? "perf_ijk_" : "perf_exo_";
         return prefix + suffix;
     }
 

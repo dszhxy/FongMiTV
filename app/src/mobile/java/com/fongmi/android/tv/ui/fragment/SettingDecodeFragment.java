@@ -64,7 +64,6 @@ public class SettingDecodeFragment extends BaseFragment {
     }
 
     private void setTunnel(View view) {
-        if (PlayerSetting.isMpv()) return;
         DecodeSetting.putTunnel(!DecodeSetting.isTunnel());
         mBinding.tunnelText.setText(Setting.getSwitch(DecodeSetting.isTunnel()));
     }

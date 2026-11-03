@@ -108,14 +108,6 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            java {
-                // MPV 已切换到 TVboxOSC 的 lib-mpvplayer AAR，旧版私有 API 的排除规则不再需要。
-            }
-        }
-    }
-
     lint {
         disable 'UnsafeOptInUsageError'
         disable 'ExpiredTargetSdkVersion'

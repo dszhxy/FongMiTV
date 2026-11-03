@@ -5,16 +5,11 @@ import com.github.catvod.utils.Prefers;
 public class PlayerSetting {
 
     public static final int ENGINE_EXO = 0;
-    public static final int ENGINE_MPV = 1;
     public static final int ENGINE_IJK = 2;
     public static final int ENGINE_SYSTEM = 3;
-    // Compatibility aliases used by the bundled FongMi MPV player.
     public static final int EXO = ENGINE_EXO;
-    public static final int MPV = ENGINE_MPV;
     public static final int IJK = ENGINE_IJK;
     public static final int SYSTEM = ENGINE_SYSTEM;
-    public static final int MPV_RENDER_OPENGL = 0;
-    public static final int MPV_RENDER_VULKAN = 1;
     public static final int RENDER_SURFACE = 0;
     public static final int RENDER_TEXTURE = 1;
     public static final int MIN_SCALE = 0;
@@ -40,10 +35,6 @@ public class PlayerSetting {
         return getEngine() == ENGINE_EXO;
     }
 
-    public static boolean isMpv() {
-        return false;
-    }
-
     public static boolean isDebug() {
         return Prefers.getBoolean("player_debug");
     }
@@ -58,22 +49,6 @@ public class PlayerSetting {
 
     public static void putLibass(boolean libass) {
         Prefers.put("player_libass", libass);
-    }
-
-    public static boolean isMpvGpuNext() {
-        return Prefers.getBoolean("mpv_gpu_next");
-    }
-
-    public static void putMpvGpuNext(boolean gpuNext) {
-        Prefers.put("mpv_gpu_next", gpuNext);
-    }
-
-    public static boolean isMpvVulkan() {
-        return Prefers.getBoolean("mpv_vulkan");
-    }
-
-    public static void putMpvVulkan(boolean vulkan) {
-        Prefers.put("mpv_vulkan", vulkan);
     }
 
     public static int getRender() {
@@ -128,21 +103,13 @@ public class PlayerSetting {
     public static void putBuffer(int buffer) {
         Prefers.put("buffer", Math.clamp(buffer, MIN_BUFFER, MAX_BUFFER));
     }
-    // ---- FongMi MPV compatibility API ----
+
     public static int getPlayer() {
         return getEngine();
     }
 
     public static int sanitizePlayer(int player) {
-        return player == MPV ? MPV : EXO;
-    }
-
-    public static int getMpvRender() {
-        return isMpvVulkan() ? MPV_RENDER_VULKAN : MPV_RENDER_OPENGL;
-    }
-
-    public static void putMpvRender(int render) {
-        putMpvVulkan(render == MPV_RENDER_VULKAN);
+        return EXO;
     }
 
     public static int getBufferBytesOption() {
