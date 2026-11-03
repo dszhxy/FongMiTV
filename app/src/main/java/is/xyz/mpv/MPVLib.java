@@ -29,6 +29,12 @@ public final class MPVLib {
     private static final String BUNDLE_MARKER = ".bundle-last-update";
     private static final String[] LOAD_ORDER = {
             "c++_shared",
+            "ffmpeg",
+            "mpv",
+            "player"
+    };
+    private static final String[] LEGACY_LOAD_ORDER = {
+            "c++_shared",
             "mvutil",
             "mwresample",
             "mwscale",
@@ -70,8 +76,9 @@ public final class MPVLib {
             File marker = new File(root, BUNDLE_MARKER);
             String bundleId = getBundleId(app, abi);
             boolean refreshBundle = !bundleId.equals(readMarker(marker));
-            for (String lib : LOAD_ORDER) copyLibrary(app.getAssets(), abi, lib, dir, refreshBundle);
-            for (String lib : LOAD_ORDER) System.load(new File(dir, System.mapLibraryName(lib)).getAbsolutePath());
+            String[] order = loadOrder(app.getAssets(), abi);
+            for (String lib : order) copyLibrary(app.getAssets(), abi, lib, dir, refreshBundle);
+            for (String lib : order) System.load(new File(dir, System.mapLibraryName(lib)).getAbsolutePath());
             loadedAbi = abi;
             loaded = true;
             try {
@@ -203,6 +210,15 @@ public final class MPVLib {
         return ASSET_ROOT + "/" + abi + "/" + System.mapLibraryName(lib);
     }
 
+    private static String[] loadOrder(AssetManager assets, String abi) throws IOException {
+        String[] files = assets.list(ASSET_ROOT + "/" + abi);
+        if (files != null) {
+            String ffmpeg = System.mapLibraryName("ffmpeg");
+            for (String file : files) if (ffmpeg.equals(file)) return LOAD_ORDER;
+        }
+        return LEGACY_LOAD_ORDER;
+    }
+
     private static boolean hasBundledFeature(AssetManager assets, String abi, String feature) throws IOException {
         try (InputStream in = assets.open(assetPath(abi, "mpv"), AssetManager.ACCESS_STREAMING)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -293,7 +309,17 @@ public final class MPVLib {
 
     public static native void detachOsdSurface();
 
-    public static native int enqueueOsdSurface(long requestId, Surface surface);
+    public static int enqueueOsdSurface(long requestId, Surface surface) {
+        try {
+            if (surface == null) detachOsdSurface();
+            else attachOsdSurface(surface);
+            eventCommandReply(requestId, 0);
+            return 0;
+        } catch (Throwable e) {
+            eventCommandReply(requestId, -1);
+            return -1;
+        }
+    }
 
     public static native int command(String[] cmd);
 
@@ -321,7 +347,22 @@ public final class MPVLib {
 
     public static native byte[] getPropertyByteArray(String property);
 
-    public static native void dumpTrackList();
+    public static void dumpTrackList() {
+        try {
+            Integer count = getPropertyInt("track-list/count");
+            if (count == null) return;
+            Log.i(TAG, "track-list count=" + count);
+            for (int i = 0; i < count; i++) {
+                Log.i(TAG, "track[" + i + "] type=" + getPropertyString("track-list/" + i + "/type")
+                        + " codec=" + getPropertyString("track-list/" + i + "/codec")
+                        + " lang=" + getPropertyString("track-list/" + i + "/lang")
+                        + " title=" + getPropertyString("track-list/" + i + "/title")
+                        + " selected=" + getPropertyBoolean("track-list/" + i + "/selected"));
+            }
+        } catch (Throwable e) {
+            Log.w(TAG, "Unable to dump track list", e);
+        }
+    }
 
     public static native int observeProperty(String property, int format);
 
