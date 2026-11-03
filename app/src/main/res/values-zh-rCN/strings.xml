@@ -32,8 +32,6 @@
     <string name="play_ed">片尾</string>
     <string name="play_exo">EXO</string>
     <string name="play_mpv">MPV</string>
-    <string name="play_ijk">IJK</string>
-    <string name="play_system">系统</string>
     <string name="play_other">其它</string>
     <string name="play_next">下集</string>
     <string name="play_prev">上集</string>
@@ -410,8 +408,6 @@
     <string-array name="select_engine">
         <item>EXO</item>
         <item>MPV</item>
-        <item>IJK</item>
-        <item>系统</item>
     </string-array>
 
     <string-array name="select_dolby_vision_output">

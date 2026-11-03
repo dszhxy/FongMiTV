@@ -27,11 +27,16 @@ public class PlayerSetting {
     private static final int MAX_BACKGROUND = 2;
 
     public static int getEngine() {
-        return Math.clamp(Prefers.getInt("player_engine", ENGINE_EXO), ENGINE_EXO, ENGINE_SYSTEM);
+        int engine = Prefers.getInt("player_engine", ENGINE_EXO);
+        if (engine != ENGINE_EXO && engine != ENGINE_MPV) {
+            engine = ENGINE_EXO;
+            Prefers.put("player_engine", ENGINE_EXO);
+        }
+        return engine;
     }
 
     public static void putEngine(int engine) {
-        Prefers.put("player_engine", Math.clamp(engine, ENGINE_EXO, ENGINE_SYSTEM));
+        Prefers.put("player_engine", engine == ENGINE_MPV ? ENGINE_MPV : ENGINE_EXO);
         if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
     }
 
@@ -41,14 +46,6 @@ public class PlayerSetting {
 
     public static boolean isMpv() {
         return getEngine() == ENGINE_MPV;
-    }
-
-    public static boolean isIjk() {
-        return getEngine() == ENGINE_IJK;
-    }
-
-    public static boolean isSystem() {
-        return getEngine() == ENGINE_SYSTEM;
     }
 
     public static boolean isDebug() {
@@ -141,7 +138,7 @@ public class PlayerSetting {
     }
 
     public static int sanitizePlayer(int player) {
-        return player == MPV ? MPV : player == IJK ? IJK : player == SYSTEM ? SYSTEM : EXO;
+        return player == MPV ? MPV : EXO;
     }
 
     public static int getMpvRender() {

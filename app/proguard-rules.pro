@@ -70,11 +70,6 @@
 # XunLei
 -keep class com.xunlei.downloadlib.** { *; }
 
-# IJK
--keep class tv.danmaku.ijk.media.player.** { *; }
--keepclassmembers class tv.danmaku.ijk.media.player.** { native <methods>; }
--dontwarn tv.danmaku.ijk.media.player.**
-
 # Zxing QRCode ABI
 -keep class com.google.zxing.* { *; }
 -keep class com.google.zxing.common.BitMatrix { *; }

@@ -104,8 +104,6 @@ public interface PlayerEngine {
 
     enum Type {
         EXO,
-        MPV,
-        IJK,
-        SYSTEM
+        MPV
     }
 }
