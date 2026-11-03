@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -415,6 +416,8 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     private void configurePlayerView() {
         PlayerView playerView = getPlayerView();
         playerView.setRender(PlayerSetting.getRender());
+        // MPV 不会回传 onRenderedFirstFrame，PlayerView 的黑色遮罩会一直盖在画面上。
+        playerView.setShutterBackgroundColor(PlayerSetting.isMpv() ? Color.TRANSPARENT : Color.BLACK);
         playerView.setDanmakuOkHttpClient(OkHttp.player());
         playerView.setDanmakuEnabled(DanmakuSetting.isShow());
         playerView.setDanmakuConfig(DanmakuSetting.getConfig());
