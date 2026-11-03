@@ -461,4 +461,5 @@
     </string-array>
 
     <string name="vod_home">首頁</string>
+    <string name="search_column">搜尋佈局</string>
 </resources>

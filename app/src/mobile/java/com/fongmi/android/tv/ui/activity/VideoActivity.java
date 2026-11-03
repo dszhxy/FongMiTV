@@ -166,6 +166,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         start(activity, key, id, name, pic, null, true);
     }
 
+    public static void collect(Activity activity, String key, String id, String name, String pic, String wallPic) {
+        start(activity, key, id, name, pic, null, true);
+    }
+
     public static void start(Activity activity, String url) {
         start(activity, SiteApi.PUSH, url, url);
     }

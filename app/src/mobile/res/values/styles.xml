@@ -17,8 +17,6 @@
         <item name="colorSurfaceContainerHigh">@color/white</item>
         <item name="colorSurface">@color/white</item>
         <item name="android:windowBackground">@color/transparent</item>
-        <item name="shapeAppearanceCornerSmall">8dp</item>
-        <item name="shapeAppearanceCornerLarge">8dp</item>
     </style>
 
     <style name="Theme.Crash" parent="Theme.Base">
