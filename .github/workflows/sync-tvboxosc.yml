@@ -1,0 +1,42 @@
+name: Sync upstream TVboxOSC
+
+on:
+  schedule:
+    # 每 6 小时同步一次（UTC 时间）
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-tvboxosc
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 将 kukuqi666/TVboxOSC 的 main 同步到 TVboxOSC 分支
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git init --quiet mirror
+          cd mirror
+          git remote add upstream https://github.com/kukuqi666/TVboxOSC
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git fetch --no-tags upstream main:refs/remotes/upstream/main
+
+          UPSTREAM_SHA=$(git rev-parse refs/remotes/upstream/main)
+          MIRROR_SHA=$(git ls-remote origin refs/heads/TVboxOSC | cut -f1)
+
+          if [ "$UPSTREAM_SHA" = "$MIRROR_SHA" ]; then
+            echo "TVboxOSC 分支已是最新：${UPSTREAM_SHA}"
+            exit 0
+          fi
+
+          git push --force origin refs/remotes/upstream/main:refs/heads/TVboxOSC
+          echo "TVboxOSC 分支已更新：${MIRROR_SHA:-<empty>} -> ${UPSTREAM_SHA}"
