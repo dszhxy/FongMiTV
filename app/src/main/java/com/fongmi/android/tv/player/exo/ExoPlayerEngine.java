@@ -9,7 +9,7 @@ import androidx.media3.common.Tracks;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.analytics.AnalyticsListener;
 import androidx.media3.exoplayer.audio.AudioSink;
-import androidx.media3.exoplayer.source.MediaSource;
+import androidx.media3.exoplayer.trackselection.DecodeTrackSelector;
 
 import com.fongmi.android.tv.player.effect.PlayerEffect;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
@@ -19,18 +19,16 @@ import com.fongmi.android.tv.player.media.PlaySpec;
 public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
 
     private final ExoErrorMessageProvider provider;
-    private final ExoPlayerSession session;
     private final ExoPlayerEffect effect;
-    private final ExoDiskPreload preload;
+    private final DecodeTrackSelector trackSelector;
     private final ExoPlayer player;
     private PlaySpec spec;
 
     public ExoPlayerEngine(int decode, Player.Listener listener) {
         this.effect = new ExoPlayerEffect();
-        this.preload = new ExoDiskPreload();
         this.provider = new ExoErrorMessageProvider();
-        this.session = new ExoPlayerSession(decode, listener, effect.getAudioProcessor());
-        this.player = this.session.player();
+        this.player = ExoUtil.buildPlayer(decode, listener, effect.getAudioProcessor());
+        this.trackSelector = (DecodeTrackSelector) this.player.getTrackSelector();
         this.player.addAnalyticsListener(this);
         this.effect.setPlayer(player);
     }
@@ -74,14 +72,13 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
     @Override
     public void release() {
         player.removeAnalyticsListener(this);
-        preload.release();
         effect.release();
-        session.release();
+        player.release();
     }
 
     @Override
     public void setDecode(int decode) {
-        session.setDecode(decode);
+        ExoUtil.setDecodePreferences(trackSelector, decode);
     }
 
     @Override
@@ -91,18 +88,7 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
     }
 
     @Override
-    public void preload(PlaySpec spec, long startPositionMs) {
-        session.preload(MediaItemFactory.from(spec), startPositionMs);
-    }
-
-    @Override
-    public void clearPreload() {
-        session.clearPreload();
-    }
-
-    @Override
     public void stop() {
-        preload.stop();
         player.stop();
     }
 
@@ -123,15 +109,8 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
 
     private void startInternal(long position) {
         MediaItem item = MediaItemFactory.from(spec);
-        MediaSource source = session.usePreloadedMediaSource(item);
         effect.clearAudioEffect();
-        if (source == null) player.setMediaItem(item, position);
-        else player.setMediaSource(source, position);
-        preload.start(player, item);
-        prepareAndPlay();
-    }
-
-    private void prepareAndPlay() {
+        player.setMediaItem(item, position);
         player.prepare();
         player.play();
     }

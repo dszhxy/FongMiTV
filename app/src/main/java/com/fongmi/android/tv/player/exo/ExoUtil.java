@@ -15,13 +15,10 @@ import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.LoadControl;
 import androidx.media3.exoplayer.RenderersFactory;
-import androidx.media3.exoplayer.analytics.PlayerId;
 import androidx.media3.exoplayer.audio.AudioSink;
 import androidx.media3.exoplayer.audio.AudioTrackAudioOutputProvider;
 import androidx.media3.exoplayer.audio.DefaultAudioSink;
-import androidx.media3.exoplayer.source.preload.DefaultPreloadManager;
 import androidx.media3.exoplayer.trackselection.DecodeTrackSelector;
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.exoplayer.util.EventLogger;
 
 import com.fongmi.android.tv.App;
@@ -36,11 +33,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Ported from FusionTV-KitKat's player.exo.ExoUtil, adapted to the media3 1.11 APIs used here.
+ */
 public class ExoUtil {
 
-    public static ExoPlayer buildPlayer(Player.Listener listener, DefaultPreloadManager.Builder preloadManagerBuilder) {
-        ExoPlayer.Builder playerBuilder = new ExoPlayer.Builder(App.get()).setSkipSilenceEnabled(SpeedSetting.isSkipSilence());
-        ExoPlayer player = preloadManagerBuilder.buildExoPlayer(playerBuilder);
+    public static ExoPlayer buildPlayer(int decode, Player.Listener listener) {
+        return buildPlayer(decode, listener, null);
+    }
+
+    public static ExoPlayer buildPlayer(int decode, Player.Listener listener, AudioProcessor audioProcessor) {
+        ExoPlayer.Builder playerBuilder = new ExoPlayer.Builder(App.get()).setTrackSelector(buildTrackSelector(decode)).setLoadControl(buildLoadControl()).setRenderersFactory(buildRenderersFactory(audioProcessor)).setMediaSourceFactory(new MediaSourceFactory()).setSkipSilenceEnabled(SpeedSetting.isSkipSilence());
+        ExoPlayer player = playerBuilder.build();
         if (BuildConfig.DEBUG) player.addAnalyticsListener(new EventLogger());
         player.setAudioAttributes(AudioAttributes.DEFAULT, true);
         player.setHandleAudioBecomingNoisy(true);
@@ -49,31 +53,16 @@ public class ExoUtil {
         return player;
     }
 
-    public static String getMimeType(int errorCode) {
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED || errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) return MimeTypes.APPLICATION_M3U8;
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED) return MimeTypes.APPLICATION_OCTET_STREAM;
-        return null;
-    }
-
-    static LoadControl buildLoadControl(int maxPreloadBufferBytes) {
-        int buffer = PlayerSetting.getBuffer();
-        return new DefaultLoadControl.Builder().setBufferDurationsMs(DefaultLoadControl.DEFAULT_MIN_BUFFER_MS * buffer, DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * buffer, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS).setPlayerTargetBufferBytes(PlayerId.PRELOAD.name, maxPreloadBufferBytes).build();
-    }
-
-    public static Map<String, String> extractHeaders(MediaItem item) {
-        Bundle extras = item.requestMetadata.extras;
-        if (extras == null) return new HashMap<>();
-        return extras.keySet().stream().filter(key -> extras.getString(key) != null).collect(Collectors.toMap(key -> key, extras::getString));
+    public static LoadControl buildLoadControl() {
+        int min = Math.max(PlayerSetting.getBuffer(), 1) * 1000;
+        int playback = Math.min(1000, min);
+        int rebuffer = Math.min(2000, min);
+        return new DefaultLoadControl.Builder().setBufferDurationsMs(min, min * 2, playback, rebuffer).build();
     }
 
     static DecodeTrackSelector buildTrackSelector(int decode) {
         DecodeTrackSelector trackSelector = new DecodeTrackSelector(App.get());
-        DefaultTrackSelector.Parameters.Builder builder = trackSelector.buildUponParameters();
-        if (DecodeSetting.isPreferAAC()) builder.setPreferredAudioMimeType(MimeTypes.AUDIO_AAC);
-        builder.setPreferredTextLanguages(LangUtil.getPreferredTextLanguages());
-        builder.setTunnelingEnabled(DecodeSetting.isTunnelingEnabled());
-        builder.setForceHighestSupportedBitrate(true);
-        trackSelector.setParameters(builder.build());
+        trackSelector.setParameters(trackSelector.buildUponParameters().setPreferredTextLanguages(LangUtil.getPreferredTextLanguages()).setForceHighestSupportedBitrate(true).setTunnelingEnabled(DecodeSetting.isTunnelingEnabled()).build());
         setDecodePreferences(trackSelector, decode);
         return trackSelector;
     }
@@ -92,10 +81,6 @@ public class ExoUtil {
         return decode == PlayerEngine.SOFT && DecodeSetting.isVideoPrefer();
     }
 
-    static RenderersFactory buildRenderersFactory() {
-        return buildRenderersFactory(null);
-    }
-
     static RenderersFactory buildRenderersFactory(AudioProcessor audioProcessor) {
         DefaultRenderersFactory factory = new DefaultRenderersFactory(App.get()) {
             @Override
@@ -111,5 +96,25 @@ public class ExoUtil {
         if (!DecodeSetting.isAudioPassThrough()) builder.setAudioOutputProvider(new AudioTrackAudioOutputProvider.Builder(null).build());
         if (audioProcessor != null) builder.setAudioProcessors(new AudioProcessor[]{audioProcessor});
         return builder.build();
+    }
+
+    public static Map<String, String> extractHeaders(MediaItem item) {
+        Bundle extras = item.requestMetadata.extras;
+        if (extras == null) return new HashMap<>();
+        return extras.keySet().stream().filter(key -> extras.getString(key) != null).collect(Collectors.toMap(key -> key, extras::getString));
+    }
+
+    public static String getMimeType(int errorCode) {
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED || errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) return MimeTypes.APPLICATION_M3U8;
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED) return MimeTypes.APPLICATION_OCTET_STREAM;
+        return null;
+    }
+
+    public static int getRetry(int errorCode) {
+        if (errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) return 2;
+        if (errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) return 2;
+        if (errorCode >= PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED && errorCode <= PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED) return 2;
+        if (errorCode >= PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED && errorCode <= PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED) return 2;
+        return 1;
     }
 }
