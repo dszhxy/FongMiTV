@@ -271,6 +271,7 @@
     <string name="setting_incognito">Incognito mode</string>
     <string name="setting_proxy_none">Not set</string>
     <string name="setting_aggregated_search">Aggregated search</string>
+    <string name="setting_drpy_builtin">Built-in drpy</string>
     <string name="setting_reset">Reset app</string>
     <string name="setting_about">About</string>
     <string name="setting_theme_color">Theme color</string>

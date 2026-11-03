@@ -270,6 +270,7 @@
     <string name="setting_incognito">无痕模式</string>
     <string name="setting_proxy_none">未设置</string>
     <string name="setting_aggregated_search">聚合搜索</string>
+    <string name="setting_drpy_builtin">内置 drpy</string>
     <string name="setting_reset">重置App</string>
     <string name="setting_about">关于</string>
     <string name="setting_theme_color">主题色彩</string>

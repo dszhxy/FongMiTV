@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.api.loader.BaseLoader;
 import com.fongmi.android.tv.databinding.FragmentSettingPersonalBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.PlayerSetting;
@@ -35,6 +36,7 @@ public class SettingPersonalFragment extends BaseFragment {
     @Override
     protected void initView() {
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
+        mBinding.drpyText.setText(Setting.getSwitch(Setting.isDrpyBuiltin()));
         mBinding.adblockText.setText(Setting.getSwitch(Setting.isAdblock()));
         mBinding.aggregatedSearchText.setText(Setting.getSwitch(Setting.isAggregatedSearch()));
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
@@ -43,6 +45,7 @@ public class SettingPersonalFragment extends BaseFragment {
     @Override
     protected void initEvent() {
         mBinding.incognito.setOnClickListener(this::setIncognito);
+        mBinding.drpy.setOnClickListener(this::setDrpy);
         mBinding.adblock.setOnClickListener(this::setAdblock);
         mBinding.aggregatedSearch.setOnClickListener(this::setAggregatedSearch);
         mBinding.reset.setOnClickListener(this::onReset);
@@ -57,6 +60,12 @@ public class SettingPersonalFragment extends BaseFragment {
     private void setIncognito(View view) {
         Setting.putIncognito(!Setting.isIncognito());
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
+    }
+
+    private void setDrpy(View view) {
+        Setting.putDrpyBuiltin(!Setting.isDrpyBuiltin());
+        mBinding.drpyText.setText(Setting.getSwitch(Setting.isDrpyBuiltin()));
+        BaseLoader.get().clear();
     }
 
     private void setAdblock(View view) {

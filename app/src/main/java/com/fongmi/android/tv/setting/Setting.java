@@ -225,6 +225,14 @@ public class Setting {
         Prefers.put("incognito", incognito);
     }
 
+    public static boolean isDrpyBuiltin() {
+        return Prefers.getBoolean("drpy_builtin", true);
+    }
+
+    public static void putDrpyBuiltin(boolean builtin) {
+        Prefers.put("drpy_builtin", builtin);
+    }
+
     public static boolean getUpdate() {
         return Prefers.getBoolean("update", true);
     }
