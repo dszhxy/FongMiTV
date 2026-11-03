@@ -31,7 +31,7 @@ public final class MpvUtil {
         long demuxerBytes = 64L * 1024L * 1024L;
 
         MpvPlayerConfig.Builder builder = MpvPlayerConfig.builder(App.get())
-                .hwdec(hard ? "mediacodec,mediacodec-copy" : "no")
+                .hwdec(hwdec(hard, vulkan))
                 .cache(true)
                 .demuxerMaxBytes(demuxerBytes)
                 .demuxerMaxBackBytes(demuxerBytes)
@@ -63,8 +63,14 @@ public final class MpvUtil {
 
     public static void setDecode(int decode) {
         try {
-            MPVLib.setPropertyString("hwdec", decode == PlayerEngine.HARD ? "mediacodec,mediacodec-copy" : "no");
+            boolean vulkan = PlayerSetting.isMpvVulkan() && MPVLib.isVulkanRendererAvailable(App.get());
+            MPVLib.setPropertyString("hwdec", hwdec(decode == PlayerEngine.HARD, vulkan));
         } catch (Throwable ignored) {
         }
+    }
+
+    private static String hwdec(boolean hard, boolean vulkan) {
+        if (!hard) return "no";
+        return vulkan ? "mediacodec" : "mediacodec-copy";
     }
 }
