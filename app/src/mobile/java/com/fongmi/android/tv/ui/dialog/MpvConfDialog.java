@@ -63,7 +63,7 @@ public class MpvConfDialog extends BaseAlertDialog {
 
     private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) return;
-        MpvConfigFile.importFrom(requireContext(), result.getData().getData());
+        MpvConfigFile.importFrom(result.getData().getData());
         Notify.show(R.string.player_mpv_conf_import_success);
         setText(MpvConfigFile.read());
     });
