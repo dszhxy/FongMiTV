@@ -75,6 +75,30 @@ public class Setting {
         Prefers.put("hot", hot);
     }
 
+    public static String getHotTv() {
+        return Prefers.getString("hot_tv");
+    }
+
+    public static void putHotTv(String hot) {
+        Prefers.put("hot_tv", hot);
+    }
+
+    public static String getHotMovie() {
+        return Prefers.getString("hot_movie");
+    }
+
+    public static void putHotMovie(String hot) {
+        Prefers.put("hot_movie", hot);
+    }
+
+    public static String getHotVariety() {
+        return Prefers.getString("hot_variety");
+    }
+
+    public static void putHotVariety(String hot) {
+        Prefers.put("hot_variety", hot);
+    }
+
     public static int getWall() {
         return Math.clamp(Prefers.getInt("wall", 1), MIN_WALL, MAX_WALL);
     }
@@ -135,6 +159,38 @@ public class Setting {
 
     public static void putSiteMode(int mode) {
         Prefers.put("site_mode", Math.clamp(mode, MIN_SITE_MODE, MAX_SITE_MODE));
+    }
+
+    public static int getSiteColumn() {
+        return Prefers.getInt("site_column", 1);
+    }
+
+    public static void putSiteColumn(int column) {
+        Prefers.put("site_column", column);
+    }
+
+    public static int getSearchColumn() {
+        return Math.min(Math.max(Prefers.getInt("search_column", 1), 1), 2);
+    }
+
+    public static void putSearchColumn(int column) {
+        Prefers.put("search_column", column == 2 ? 2 : 1);
+    }
+
+    public static boolean isSiteHealthSort() {
+        return Prefers.getBoolean("site_health_sort", true);
+    }
+
+    public static void putSiteHealthSort(boolean sort) {
+        Prefers.put("site_health_sort", sort);
+    }
+
+    public static boolean isSiteHealthDialogSort() {
+        return Prefers.getBoolean("site_health_dialog_sort");
+    }
+
+    public static void putSiteHealthDialogSort(boolean sort) {
+        Prefers.put("site_health_dialog_sort", sort);
     }
 
     public static int getSyncMode() {

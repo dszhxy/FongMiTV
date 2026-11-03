@@ -10,27 +10,41 @@ import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.exception.ExtractException;
-import com.github.catvod.utils.Trans;
+import com.fongmi.android.tv.setting.SiteHealthStore;
+import com.fongmi.android.tv.utils.Task;
+import com.google.common.util.concurrent.FluentFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class SiteViewModel extends ViewModel {
 
     private final MutableLiveData<Result> result;
     private final MutableLiveData<Result> search;
+    private final MutableLiveData<SearchProgress> searchProgress;
     private final MutableLiveData<Result> action;
 
     private final ViewModelTaskRunner<TaskType> tasks;
-    private final ViewModelSearchRunner searches;
+    private final List<Future<?>> searchFuture;
+    private final AtomicInteger searchEpoch;
 
     public SiteViewModel() {
         result = new MutableLiveData<>();
         search = new MutableLiveData<>();
+        searchProgress = new MutableLiveData<>();
         action = new MutableLiveData<>();
         tasks = new ViewModelTaskRunner<>(TaskType.class);
-        searches = new ViewModelSearchRunner();
+        searchFuture = new CopyOnWriteArrayList<>();
+        searchEpoch = new AtomicInteger(0);
     }
 
     public LiveData<Result> getResult() {
@@ -41,12 +55,17 @@ public class SiteViewModel extends ViewModel {
         return search;
     }
 
+    public LiveData<SearchProgress> getSearchProgress() {
+        return searchProgress;
+    }
+
     public LiveData<Result> getAction() {
         return action;
     }
 
     public SiteViewModel init() {
         search.setValue(null);
+        searchProgress.setValue(null);
         result.setValue(null);
         action.setValue(null);
         return this;
@@ -73,7 +92,40 @@ public class SiteViewModel extends ViewModel {
     }
 
     public void searchContent(List<Site> sites, String keyword, boolean quick) {
-        searches.start(sites, site -> SearchTask.create(site, keyword, quick), search::postValue);
+        int epoch = stopSearch();
+        List<Site> tasks = new ArrayList<>();
+        for (Site site : sites) {
+            if (quick && !site.isQuickSearch()) continue;
+            tasks.add(site);
+        }
+        int total = tasks.size();
+        AtomicInteger completed = new AtomicInteger();
+        searchProgress.postValue(SearchProgress.start(total));
+        for (Site site : tasks) {
+            long start = System.currentTimeMillis();
+            FluentFuture<Result> future = FluentFuture.from(Task.largeExecutor().submit(SearchTask.create(site, keyword, quick))).withTimeout(Constant.TIMEOUT_SEARCH, TimeUnit.MILLISECONDS, Task.scheduler());
+            searchFuture.add(future);
+            future.addCallback(Task.callback(
+                    result -> {
+                        if (searchEpoch.get() != epoch) return;
+                        SiteHealthStore.recordSearch(site, true, result.getList().size(), System.currentTimeMillis() - start, "");
+                        search.postValue(result);
+                        postSearchProgress(epoch, completed, total);
+                    },
+                    error -> {
+                        if (searchEpoch.get() != epoch) return;
+                        if (error instanceof CancellationException) return;
+                        SiteHealthStore.recordSearch(site, false, 0, System.currentTimeMillis() - start, error.getMessage());
+                        postSearchProgress(epoch, completed, total);
+                        error.printStackTrace();
+                    }
+            ), MoreExecutors.directExecutor());
+        }
+    }
+
+    private void postSearchProgress(int epoch, AtomicInteger completed, int total) {
+        if (searchEpoch.get() != epoch) return;
+        searchProgress.postValue(SearchProgress.of(completed.incrementAndGet(), total));
     }
 
     private void execute(TaskType type, MutableLiveData<Result> liveData, Callable<Result> callable) {
@@ -84,37 +136,17 @@ public class SiteViewModel extends ViewModel {
         });
     }
 
-    public void stopSearch() {
-        searches.stop();
+    public int stopSearch() {
+        int epoch = searchEpoch.incrementAndGet();
+        searchFuture.forEach(future -> future.cancel(true));
+        searchFuture.clear();
+        return epoch;
     }
 
     @Override
     protected void onCleared() {
         stopSearch();
         tasks.cancelAll();
-    }
-
-    private record SearchTask(Site site, String keyword, boolean quick, String page) implements Callable<Result> {
-
-        private static final String FIRST_PAGE = "1";
-
-        SearchTask {
-            keyword = Trans.t2s(keyword);
-        }
-
-        private static SearchTask create(Site site, String keyword, boolean quick) {
-            return create(site, keyword, quick, FIRST_PAGE);
-        }
-
-        private static SearchTask create(Site site, String keyword, boolean quick, String page) {
-            return new SearchTask(site, keyword, quick, page);
-        }
-
-        @Override
-        public Result call() throws Exception {
-            if (quick && !site.isQuickSearch()) return Result.empty();
-            return SiteApi.searchContent(site, keyword, quick, page);
-        }
     }
 
     private enum TaskType {RESULT, ACTION}
