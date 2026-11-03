@@ -1,0 +1,42 @@
+name: Sync upstream FongMi/TV
+
+on:
+  schedule:
+    # 每 6 小时同步一次（UTC 时间）
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 将 FongMi/TV 的 fongmi 分支同步到 upstream-sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git init --quiet mirror
+          cd mirror
+          git remote add upstream https://github.com/FongMi/TV
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git fetch --no-tags upstream fongmi:refs/remotes/upstream/fongmi
+
+          UPSTREAM_SHA=$(git rev-parse refs/remotes/upstream/fongmi)
+          MIRROR_SHA=$(git ls-remote origin refs/heads/upstream-sync | cut -f1)
+
+          if [ "$UPSTREAM_SHA" = "$MIRROR_SHA" ]; then
+            echo "upstream-sync 已是最新：${UPSTREAM_SHA}"
+            exit 0
+          fi
+
+          git push --force origin refs/remotes/upstream/fongmi:refs/heads/upstream-sync
+          echo "upstream-sync 已更新：${MIRROR_SHA:-<empty>} -> ${UPSTREAM_SHA}"
