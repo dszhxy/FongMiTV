@@ -12,6 +12,7 @@ import androidx.media3.common.Tracks;
 import androidx.media3.mpvplayer.MpvPlayer;
 
 import com.fongmi.android.tv.bean.Sub;
+import com.fongmi.android.tv.player.effect.PlayerEffect;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.media.MediaItemFactory;
 import com.fongmi.android.tv.player.media.PlaySpec;
@@ -23,18 +24,21 @@ import java.util.List;
 public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
 
     private final MpvErrorMessageProvider provider;
+    private final MpvPlayerEffect effect;
     private final Player.Listener externalListener;
     private final MpvPlayer player;
     private PlaySpec spec;
-    private int decode;
+    private int generation;
+    private boolean released;
     @Nullable
     private TrackSelectionOverride secondarySelection;
 
     public MpvPlayerEngine(int decode, Player.Listener listener) {
-        this.decode = decode;
         this.externalListener = listener;
         this.provider = new MpvErrorMessageProvider();
         this.player = MpvUtil.buildPlayer(decode, listener);
+        this.effect = new MpvPlayerEffect(player);
+        this.player.setAudioOutputListener(effect::applyAudioEffect);
         this.player.addListener(this);
     }
 
@@ -54,14 +58,22 @@ public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
 
     @Override
     public int getAudioChannelCount() {
-        return Format.NO_VALUE;
+        return player.getAudioChannelCount();
+    }
+
+    @Override
+    public PlayerEffect getEffect() {
+        return effect;
     }
 
     @Override
     public void release() {
+        released = true;
+        generation++;
         try {
             player.removeListener(this);
             if (externalListener != null) player.removeListener(externalListener);
+            player.setAudioOutputListener(null);
         } catch (Throwable ignored) {
         }
         player.release();
@@ -81,10 +93,6 @@ public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
             } catch (RuntimeException invalid) {
                 secondarySelection = null;
             }
-        }
-        if (id == null) {
-            int selected = SubtitleSetting.getSecondaryTrackId();
-            if (selected >= 0) id = selected;
         }
         MpvUtil.setSubtitleStyle(player, id);
     }
@@ -114,15 +122,24 @@ public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
     }
 
     @Override
+    public boolean addSubtitle(Sub sub) {
+        if (sub == null || sub.isEmpty() || player.getCurrentMediaItem() == null) return false;
+        if (player.getPlaybackState() == Player.STATE_IDLE || player.getPlaybackState() == Player.STATE_ENDED) return false;
+        player.addSubtitle(MediaItemFactory.buildSubConfig(sub));
+        return true;
+    }
+
+    @Override
+    public void setDecode(int decode) {
+        player.setDecode(decode);
+    }
+
+    @Override
     public void onTracksChanged(@NonNull Tracks tracks) {
+        effect.applyVideoEffect();
         if (secondarySelection != null && getSecondarySubtitleState().explicitSelection() == null) {
             secondarySelection = null;
             applySubtitleStyle();
-            return;
-        }
-        int selected = SubtitleSetting.getSecondaryTrackId();
-        if (secondarySelection == null && selected >= 0 && !player.isSecondarySubtitleSelected(String.valueOf(selected))) {
-            MpvUtil.setSubtitleStyle(player, selected);
         }
     }
 
@@ -139,27 +156,18 @@ public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
     }
 
     @Override
-    public boolean addSubtitle(Sub sub) {
-        // The bundled MPV implementation reads subtitle configurations from the MediaItem.
-        // Returning false asks PlayerManager to rebuild the current item with the new subtitle.
-        return false;
-    }
-
-    @Override
-    public void setDecode(int decode) {
-        this.decode = decode;
-        MpvUtil.setDecode(decode);
-    }
-
-    @Override
     public void start(PlaySpec spec, long startPositionMs) {
         this.spec = spec;
-        secondarySelection = null;
+        this.secondarySelection = null;
         applySubtitleStyle();
+        int request = ++generation;
+        if (released || request != generation) return;
         startInternal(startPositionMs);
     }
 
     private void startInternal(long startPositionMs) {
+        effect.applyVideoEffect();
+        effect.clearAudioEffect();
         player.setMediaItem(MediaItemFactory.from(spec), Math.max(0L, startPositionMs));
         player.prepare();
         player.play();
@@ -167,6 +175,7 @@ public class MpvPlayerEngine implements PlayerEngine, Player.Listener {
 
     @Override
     public void stop() {
+        generation++;
         player.stop();
     }
 
