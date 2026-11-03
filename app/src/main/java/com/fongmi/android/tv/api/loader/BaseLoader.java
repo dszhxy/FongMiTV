@@ -1,5 +1,6 @@
 package com.fongmi.android.tv.api.loader;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.fongmi.android.tv.api.config.LiveConfig;
@@ -7,9 +8,11 @@ import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.utils.Task;
+import com.github.catvod.Proxy;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderNull;
 import com.github.catvod.utils.Crypto;
+import com.github.catvod.utils.RuntimeModule;
 
 import org.json.JSONObject;
 
@@ -76,6 +79,18 @@ public class BaseLoader {
         if (isJs(api)) jsLoader.setRecent(key);
         else if (isPy(api)) pyLoader.setRecent(key);
         else if (isCsp(api)) jarLoader.setRecent(Crypto.md5(jar));
+    }
+
+    public void requireProxy(String url) {
+        if (TextUtils.isEmpty(url)) return;
+        String prefix = Proxy.getUrl(true) + "?";
+        if (url.startsWith("proxy://")) url = prefix + url.substring(8);
+        if (!url.startsWith(prefix)) return;
+        Uri uri = Uri.parse(url);
+        String key = uri.getQueryParameter("siteKey");
+        if (key != null) getSpider(key);
+        else if ("py".equals(uri.getQueryParameter("do"))) RuntimeModule.PYTHON.require();
+        else if ("js".equals(uri.getQueryParameter("do"))) RuntimeModule.QUICKJS.require();
     }
 
     public Object[] proxy(Map<String, String> params) throws Exception {

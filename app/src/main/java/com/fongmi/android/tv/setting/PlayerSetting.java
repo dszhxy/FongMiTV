@@ -1,6 +1,11 @@
 package com.fongmi.android.tv.setting;
 
+import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL;
+import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
+import static androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+
 import com.github.catvod.utils.Prefers;
+import com.github.catvod.utils.RuntimeModule;
 
 public class PlayerSetting {
 
@@ -38,6 +43,14 @@ public class PlayerSetting {
     public static void putEngine(int engine) {
         Prefers.put("player_engine", engine == ENGINE_MPV ? ENGINE_MPV : ENGINE_EXO);
         if (isExo() && DecodeSetting.isTunnel()) putRender(RENDER_SURFACE);
+    }
+
+    public static int getEngineCount() {
+        return RuntimeModule.MPV.isInstalled() ? ENGINE_MPV + 1 : ENGINE_EXO + 1;
+    }
+
+    public static int getScaleMode(int index) {
+        return index == 1 ? RESIZE_MODE_FILL : index == 2 ? RESIZE_MODE_ZOOM : RESIZE_MODE_FIT;
     }
 
     public static boolean isExo() {

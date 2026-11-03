@@ -15,6 +15,8 @@ import com.fongmi.android.tv.gson.MsgAdapter;
 import com.fongmi.android.tv.gson.UrlAdapter;
 import com.fongmi.android.tv.setting.DanmakuSetting;
 import com.fongmi.android.tv.utils.Util;
+import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Auth;
 import com.github.catvod.utils.Trans;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 
 @Root(name = "rss", strict = false)
 public class Result implements Parcelable {
@@ -96,6 +99,11 @@ public class Result implements Parcelable {
     private Integer jx;
     @SerializedName("drm")
     private Drm drm;
+    private transient Auth.Context auth;
+    private transient Timeshift timeshift;
+    private transient File torrentFile;
+    private List<Episode> resolvedEpisodes = Collections.emptyList();
+    private boolean direct;
 
     public Result() {
     }
@@ -314,6 +322,46 @@ public class Result implements Parcelable {
 
     public void setDrm(Drm drm) {
         this.drm = drm;
+    }
+
+    public Auth.Context getAuth() {
+        return auth;
+    }
+
+    public void setAuth(Auth.Context auth) {
+        this.auth = auth;
+    }
+
+    public Timeshift getTimeshift() {
+        return timeshift;
+    }
+
+    public void setTimeshift(Timeshift timeshift) {
+        this.timeshift = timeshift;
+    }
+
+    public File getTorrentFile() {
+        return torrentFile;
+    }
+
+    public void setTorrentFile(File torrentFile) {
+        this.torrentFile = torrentFile;
+    }
+
+    public List<Episode> getResolvedEpisodes() {
+        return resolvedEpisodes == null ? Collections.emptyList() : resolvedEpisodes;
+    }
+
+    public void setResolvedEpisodes(List<Episode> resolvedEpisodes) {
+        this.resolvedEpisodes = resolvedEpisodes == null ? Collections.emptyList() : resolvedEpisodes;
+    }
+
+    public boolean isDirect() {
+        return direct;
+    }
+
+    public void setDirect() {
+        this.direct = true;
     }
 
     public boolean hasMsg() {

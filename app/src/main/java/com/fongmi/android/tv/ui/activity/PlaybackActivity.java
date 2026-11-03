@@ -418,7 +418,7 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         playerView.setDanmakuOkHttpClient(OkHttp.player());
         playerView.setDanmakuEnabled(DanmakuSetting.isShow());
         playerView.setDanmakuConfig(DanmakuSetting.getConfig());
-        SubtitleSetting.applyStyle(this, playerView.getSubtitleView());
+        SubtitleSetting.applyStyle(playerView.getSubtitleView());
     }
 
     private void syncDanmakuSource() {

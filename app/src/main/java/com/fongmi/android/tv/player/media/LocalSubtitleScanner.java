@@ -33,7 +33,7 @@ public final class LocalSubtitleScanner {
         File[] files = parent == null ? null : parent.listFiles();
         if (files == null) return List.of();
         String videoName = removeExtension(video.getName());
-        List<File> subtitles = Arrays.stream(files).filter(File::isFile).filter(file -> SubtitleArchive.isSubtitle(file.getName())).toList();
+        List<File> subtitles = Arrays.stream(files).filter(File::isFile).filter(SubtitleArchive::isSubtitle).toList();
         List<File> matching = subtitles.stream().filter(file -> matches(videoName, file.getName())).toList();
         List<File> selected = matching.isEmpty() ? subtitles : matching;
         return selected.stream().sorted(Comparator.comparingInt((File file) -> removeExtension(file.getName()).equalsIgnoreCase(videoName) ? 0 : 1).thenComparing(File::getName, String.CASE_INSENSITIVE_ORDER)).toList();
