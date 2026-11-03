@@ -23,16 +23,6 @@ import java.util.List;
 
 public final class MpvUtil {
 
-    private static final String ASSET_CA_FILE = "cacert.pem";
-    private static final int VULKAN_1_2 = 0x00402000;
-    private static final double DEFAULT_SUB_POS = 100.0;
-    private static final double DEFAULT_SUB_SCALE = 1.0;
-    private static final double MIN_SUB_POS = 0.0;
-    private static final double MAX_SUB_POS = 150.0;
-
-    private MpvUtil() {
-    }
-
     static List<String> getManagedOptionNames() {
         List<String> options = new ArrayList<>(List.of("vo", "gpu-api", "gpu-context", "hwdec", "audio-spdif", "android-dolby-vision-output", "demuxer-dovi-profile7"));
         if (PreloadSetting.isEnabled()) options.addAll(List.of("cache", "cache-on-disk", "demuxer-cache-dir", "cache-secs"));
@@ -43,6 +33,13 @@ public final class MpvUtil {
         return options;
     }
 
+    private static final String ASSET_CA_FILE = "cacert.pem";
+    private static final int VULKAN_1_2 = 0x00402000;
+    private static final double DEFAULT_SUB_POS = 100.0;
+    private static final double DEFAULT_SUB_SCALE = 1.0;
+    private static final double MIN_SUB_POS = 0.0;
+    private static final double MAX_SUB_POS = 150.0;
+
     public static boolean isAvailable() {
         try {
             return MpvPlayer.isAvailable();
@@ -52,49 +49,36 @@ public final class MpvUtil {
     }
 
     public static boolean isVulkanSupported() {
-        try {
-            return App.get().getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, VULKAN_1_2);
-        } catch (Throwable e) {
-            return false;
-        }
+        return App.get().getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, VULKAN_1_2);
     }
 
     public static MpvPlayer buildPlayer(int decode, Player.Listener listener) {
         MpvPlayer player = new MpvPlayer.Builder(App.get()).setDecode(decode).setConfig(buildConfig()).build();
         setPreferredTextLanguages(player);
-        if (listener != null) player.addListener(listener);
+        player.addListener(listener);
         return player;
     }
 
     public static void setSubtitleStyle(MpvPlayer player) {
-        if (player == null) return;
         player.setSubtitleOptions(buildSubtitleOptions());
     }
 
     static void setSubtitleStyle(MpvPlayer player, Integer explicitTrack) {
-        if (player == null) return;
-        int secondary = explicitTrack == null ? SubtitleSetting.getSecondaryTrackId() : explicitTrack;
-        player.setSubtitleOptions(buildSubtitleOptions(secondary));
+        int mode = player.getTrackSelectionParameters().disabledTrackTypes.contains(androidx.media3.common.C.TRACK_TYPE_TEXT)
+                ? SubtitleSetting.SECONDARY_SUBTITLE_OFF : explicitTrack == null ? SubtitleSetting.getSecondaryTrackId() : explicitTrack;
+        player.setSubtitleOptions(buildSubtitleOptions(mode));
     }
 
     private static MpvPlayerConfig buildConfig() {
         File configDir = Path.mpv();
         File cacheDir = Path.mpvCache();
-        MpvPlayerConfig.Builder builder = new MpvPlayerConfig.Builder()
-                .addConfigDirectory(configDir)
-                .addAndroidFontConfig(configDir, cacheDir)
-                .addAndroidDefaults(buildAndroidOptions(cacheDir))
-                .addTlsCaFileFromAsset(App.get(), ASSET_CA_FILE, Path.files(ASSET_CA_FILE))
-                .addAndroidSubtitleOptions(App.get(), buildSubtitleOptions());
+        MpvPlayerConfig.Builder builder = new MpvPlayerConfig.Builder().addConfigDirectory(configDir).addAndroidFontConfig(configDir, cacheDir).addAndroidDefaults(buildAndroidOptions(cacheDir)).addTlsCaFileFromAsset(App.get(), ASSET_CA_FILE, Path.files(ASSET_CA_FILE)).addAndroidSubtitleOptions(App.get(), buildSubtitleOptions());
         addPreloadOptions(builder);
         return builder.build();
     }
 
     private static MpvAndroidOptions buildAndroidOptions(File shaderCacheDirectory) {
-        MpvAndroidOptions.Builder builder = new MpvAndroidOptions.Builder()
-                .setShaderCacheDirectory(shaderCacheDirectory)
-                .setAudioPassthroughEnabled(DecodeSetting.isAudioPassThrough())
-                .setDolbyVisionOutputPolicy(DecodeSetting.getDolbyVisionOutputPolicy());
+        MpvAndroidOptions.Builder builder = new MpvAndroidOptions.Builder().setShaderCacheDirectory(shaderCacheDirectory).setAudioPassthroughEnabled(DecodeSetting.isAudioPassThrough()).setDolbyVisionOutputPolicy(DecodeSetting.getDolbyVisionOutputPolicy());
         builder.setVulkanEnabled(isVulkanSupported() && PlayerSetting.isMpvVulkan());
         builder.setGpuNextEnabled(PlayerSetting.isMpvGpuNext());
         return builder.build();
@@ -113,19 +97,17 @@ public final class MpvUtil {
         return buildSubtitleOptions(SubtitleSetting.getSecondaryTrackId());
     }
 
-    private static MpvSubtitleOptions buildSubtitleOptions(int secondaryTrack) {
-        MpvSubtitleOptions.Builder builder = new MpvSubtitleOptions.Builder()
-                .setPosition(getSubtitlePosition())
-                .setScale(getSubtitleScale())
-                .setSecondarySubtitle(secondaryTrack, SubtitleSetting.getSecondaryPosition(), SubtitleSetting.isStyleForced());
+    private static MpvSubtitleOptions buildSubtitleOptions(int secondary) {
+        MpvSubtitleOptions.Builder builder = new MpvSubtitleOptions.Builder().setPosition(getSubtitlePosition()).setScale(getSubtitleScale()).setSecondarySubtitle(secondary, SubtitleSetting.getSecondaryPosition(), SubtitleSetting.isStyleForced());
         if (SubtitleSetting.isCustomStyle()) builder.setCustomStyle(SubtitleSetting.getTextColor(), SubtitleSetting.getBackgroundColor(), SubtitleSetting.getEdgeType(), SubtitleSetting.getEdgeColor(), SubtitleSetting.getEdgeWidth(), SubtitleSetting.getShadow());
         else if (SubtitleSetting.isSystemStyle()) builder.setSystemCaptionStyle();
         return builder.build();
     }
 
     private static double getSubtitlePosition() {
+        float position = SubtitleSetting.getPosition();
         if (!SubtitleSetting.isPositionSet()) return DEFAULT_SUB_POS;
-        return Util.constrainValue(DEFAULT_SUB_POS - SubtitleSetting.getPosition(), MIN_SUB_POS, MAX_SUB_POS);
+        return Util.constrainValue(DEFAULT_SUB_POS - position, MIN_SUB_POS, MAX_SUB_POS);
     }
 
     private static double getSubtitleScale() {

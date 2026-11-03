@@ -17,7 +17,7 @@ public final class MpvConfigFile {
     private static final String MPV_CONF = "mpv.conf";
     private static final char UTF_8_BOM = '\uFEFF';
 
-    public static File file() {
+    private static File file() {
         return Path.mpv(MPV_CONF);
     }
 
