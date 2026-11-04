@@ -31,6 +31,7 @@ import com.fongmi.android.tv.player.track.LangUtil;
 import com.fongmi.android.tv.setting.DecodeSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.SpeedSetting;
+import com.fongmi.android.tv.setting.SubtitleSetting;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class ExoUtil {
         DecodeTrackSelector trackSelector = new DecodeTrackSelector(App.get());
         DefaultTrackSelector.Parameters.Builder builder = trackSelector.buildUponParameters();
         if (DecodeSetting.isPreferAAC()) builder.setPreferredAudioMimeType(MimeTypes.AUDIO_AAC);
-        builder.setPreferredTextLanguages(LangUtil.getPreferredTextLanguages());
+        if (SubtitleSetting.isAutoMatch()) builder.setPreferredTextLanguages(LangUtil.getPreferredTextLanguages());
         builder.setTunnelingEnabled(DecodeSetting.isTunnelingEnabled());
         builder.setForceHighestSupportedBitrate(true);
         trackSelector.setParameters(builder.build());

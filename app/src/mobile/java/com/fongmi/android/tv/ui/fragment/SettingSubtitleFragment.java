@@ -42,6 +42,9 @@ public class SettingSubtitleFragment extends BaseFragment {
 
     private static final float[] SCALES = {0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f};
     private static final float[] POSITIONS = {0f, 5f, 10f, 15f, 20f, 30f};
+    private static final long[] DELAYS = {-3000, -2000, -1000, -500, 0, 500, 1000, 2000, 3000};
+    private static final String[] LANGUAGE_TAGS = {"", "zh-Hans", "zh-Hant", "en", "ja", "ko"};
+    private static final String[] LANGUAGE_NAMES = {"跟随系统", "简体中文", "繁體中文", "English", "日本語", "한국어"};
 
     private FragmentSettingSubtitleBinding mBinding;
 
@@ -68,6 +71,9 @@ public class SettingSubtitleFragment extends BaseFragment {
         mBinding.subtitleEdgeColor.setOnClickListener(this::setEdgeColor);
         mBinding.subtitleBackground.setOnClickListener(this::setBackground);
         mBinding.subtitleSecondary.setOnClickListener(this::setSecondary);
+        mBinding.subtitleAutoMatch.setOnClickListener(this::setAutoMatch);
+        mBinding.subtitleDelay.setOnClickListener(this::setDelay);
+        mBinding.subtitleLanguage.setOnClickListener(this::setLanguage);
         mBinding.subtitleReset.setOnClickListener(this::onReset);
     }
 
@@ -79,6 +85,9 @@ public class SettingSubtitleFragment extends BaseFragment {
         mBinding.subtitleEdgeColorText.setText(getTextColorName(SubtitleSetting.getEdgeBaseColor()));
         mBinding.subtitleBackgroundText.setText(getBackgroundColorName(SubtitleSetting.getBackgroundBaseColor()));
         mBinding.subtitleSecondaryText.setText(SubtitleSetting.getSecondaryTrackId() == SubtitleSetting.SECONDARY_SUBTITLE_AUTO ? getString(R.string.subtitle_secondary_auto) : getString(R.string.subtitle_secondary_off));
+        mBinding.subtitleAutoMatchText.setText(SubtitleSetting.isAutoMatch() ? R.string.subtitle_auto_match_on : R.string.subtitle_auto_match_off);
+        mBinding.subtitleDelayText.setText(formatDelay(SubtitleSetting.getDelayMs()));
+        mBinding.subtitleLanguageText.setText(getLanguageName(SubtitleSetting.getPreferredLanguage()));
     }
 
     private void setStyle(View view) {
@@ -144,6 +153,43 @@ public class SettingSubtitleFragment extends BaseFragment {
         int next = current == SubtitleSetting.SECONDARY_SUBTITLE_AUTO ? SubtitleSetting.SECONDARY_SUBTITLE_OFF : SubtitleSetting.SECONDARY_SUBTITLE_AUTO;
         SubtitleSetting.putSecondaryTrackId(next);
         mBinding.subtitleSecondaryText.setText(next == SubtitleSetting.SECONDARY_SUBTITLE_AUTO ? getString(R.string.subtitle_secondary_auto) : getString(R.string.subtitle_secondary_off));
+    }
+
+    private void setAutoMatch(View view) {
+        SubtitleSetting.putAutoMatch(!SubtitleSetting.isAutoMatch());
+        mBinding.subtitleAutoMatchText.setText(SubtitleSetting.isAutoMatch() ? R.string.subtitle_auto_match_on : R.string.subtitle_auto_match_off);
+    }
+
+    private void setDelay(View view) {
+        String[] items = new String[DELAYS.length];
+        for (int i = 0; i < DELAYS.length; i++) items[i] = formatDelay(DELAYS[i]);
+        int index = 0;
+        for (int i = 0; i < DELAYS.length; i++) if (DELAYS[i] == SubtitleSetting.getDelayMs()) index = i;
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_delay).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, index, (dialog, which) -> {
+            SubtitleSetting.putDelayMs(DELAYS[which]);
+            mBinding.subtitleDelayText.setText(items[which]);
+            dialog.dismiss();
+        }).show();
+    }
+
+    private void setLanguage(View view) {
+        int index = 0;
+        for (int i = 0; i < LANGUAGE_TAGS.length; i++) if (LANGUAGE_TAGS[i].equals(SubtitleSetting.getPreferredLanguage())) index = i;
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_preferred_language).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(LANGUAGE_NAMES, index, (dialog, which) -> {
+            SubtitleSetting.putPreferredLanguage(LANGUAGE_TAGS[which]);
+            mBinding.subtitleLanguageText.setText(LANGUAGE_NAMES[which]);
+            dialog.dismiss();
+        }).show();
+    }
+
+    private String getLanguageName(String tag) {
+        for (int i = 0; i < LANGUAGE_TAGS.length; i++) if (LANGUAGE_TAGS[i].equals(tag)) return LANGUAGE_NAMES[i];
+        return LANGUAGE_NAMES[0];
+    }
+
+    private String formatDelay(long ms) {
+        if (ms == 0) return "0.0s";
+        return String.format(Locale.US, "%+.1fs", ms / 1000f);
     }
 
     private void onReset(View view) {

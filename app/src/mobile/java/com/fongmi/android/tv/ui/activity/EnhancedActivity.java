@@ -53,6 +53,7 @@ public class EnhancedActivity extends BaseActivity {
         mBinding.plugin.setOnClickListener(view -> PluginActivity.start(this));
         mBinding.download.setOnClickListener(view -> DownloadActivity.start(this));
         mBinding.lab.setOnClickListener(view -> com.fongmi.android.tv.ui.lab.LabHomeActivity.start(this));
+        mBinding.panDriveLogin.setOnClickListener(view -> PanDriveLoginActivity.start(this));
         mBinding.panLogin.setOnClickListener(view -> PanLoginActivity.start(this));
         mBinding.miniApp.setOnClickListener(view -> openMiniApp());
         mBinding.miniAppSwitch.setOnClickListener(view -> toggleMiniApp());
@@ -74,6 +75,7 @@ public class EnhancedActivity extends BaseActivity {
         int tasks = DownloadManager.get().getTasks().size();
         mBinding.downloadText.setText(tasks == 0 ? getString(R.string.setting_download_desc) : getString(R.string.download_count, tasks));
         mBinding.labText.setText(R.string.lab_env_summary);
+        mBinding.panDriveLoginText.setText(R.string.pan_drive_unsupported);
         mBinding.panLoginText.setText(PanLoginActivity.getSummary(this));
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
         mBinding.drpyText.setText(Setting.getSwitch(Setting.isDrpyBuiltin()));

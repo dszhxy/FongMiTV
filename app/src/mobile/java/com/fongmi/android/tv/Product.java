@@ -7,6 +7,10 @@ import android.view.DisplayCutout;
 import com.fongmi.android.tv.bean.Style;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.AbsoluteCornerSize;
+import com.google.android.material.shape.RelativeCornerSize;
+import com.google.android.material.shape.ShapeAppearanceModel;
 
 public class Product {
 
@@ -21,7 +25,24 @@ public class Product {
     }
 
     public static int getColumn(Context context, Style style) {
+        style = getCoverStyle(style);
         return style.isLand() ? getColumn(context) - 1 : getColumn(context);
+    }
+
+    public static Style getCoverStyle(Style style) {
+        if (style == null || style.isList()) return style;
+        if (PlayerSetting.getCoverRadius() == PlayerSetting.RADIUS_CIRCLE) return new Style("oval", 1f);
+        float ratio = PlayerSetting.getCoverRatioValue();
+        return ratio <= 0 ? style : new Style("rect", ratio);
+    }
+
+    public static void applyCoverShape(ShapeableImageView image) {
+        int radius = PlayerSetting.getCoverRadius();
+        if (radius == PlayerSetting.RADIUS_FOLLOW) return;
+        ShapeAppearanceModel.Builder builder = new ShapeAppearanceModel.Builder();
+        if (radius == PlayerSetting.RADIUS_CIRCLE) builder.setAllCornerSizes(new RelativeCornerSize(0.5f));
+        else builder.setAllCornerSizes(new AbsoluteCornerSize(ResUtil.dp2px(PlayerSetting.getCoverRadiusDp())));
+        image.setShapeAppearanceModel(builder.build());
     }
 
     public static int[] getSpec(Context context) {
@@ -29,12 +50,13 @@ public class Product {
     }
 
     public static int[] getSpec(Context context, int column) {
-        Style style = Style.rect();
+        Style style = getCoverStyle(Style.rect());
         int space = ResUtil.dp2px(32) + ResUtil.dp2px(16 * (column - 1)) + getCutout(context);
         return getSpec(context, space, column, style);
     }
 
     public static int[] getSpec(Context context, Style style) {
+        style = getCoverStyle(style);
         int column = getColumn(context, style);
         int space = ResUtil.dp2px(32) + ResUtil.dp2px(16 * (column - 1)) + getCutout(context);
         if (style.isOval()) space += ResUtil.dp2px(column * 16);

@@ -186,6 +186,11 @@
     <string name="subtitle_secondary_track">雙字幕</string>
     <string name="subtitle_secondary_default">預設</string>
     <string name="subtitle_secondary_off">關閉</string>
+    <string name="subtitle_auto_match">自動匹配</string>
+    <string name="subtitle_auto_match_on">開啟</string>
+    <string name="subtitle_auto_match_off">關閉</string>
+    <string name="subtitle_delay">字幕延遲</string>
+    <string name="subtitle_preferred_language">偏好語言</string>
     <string name="subtitle_secondary_auto">自動</string>
     <string name="subtitle_secondary_select">指定</string>
     <string name="subtitle_secondary_track_select">副字幕</string>
@@ -327,6 +332,7 @@
     <string name="danmaku_api">搜尋接口</string>
     <string name="danmaku_auto_load">自動搜尋</string>
     <string name="danmaku_spider_first">爬蟲優先</string>
+    <string name="danmaku_style_layout">外觀與佈局</string>
 
     <!-- Search -->
     <string name="search_keyword">關鍵字…</string>
@@ -500,10 +506,14 @@
     <string name="setting_personal_features">個性功能</string>
     <string name="setting_cloud">雲端服務</string>
     <string name="setting_pan_login">網盤登入</string>
+    <string name="setting_pan_drive_login">網盤登入</string>
+    <string name="setting_server_login">伺服器登入</string>
     <string name="setting_mini_app">小程式</string>
     <string name="setting_mini_app_on">已開啟</string>
     <string name="setting_mini_app_off">已關閉</string>
     <string name="setting_cover">封面大小</string>
+    <string name="setting_cover_ratio">封面比例</string>
+    <string name="setting_cover_radius">封面弧度</string>
     <string name="download_threads">下載執行緒</string>
     <string name="download_dir">下載目錄</string>
     <string name="download_dir_copied">下載目錄已複製</string>
@@ -515,6 +525,11 @@
     <string name="pan_login_test">測試連線</string>
     <string name="pan_login_logout">登出</string>
     <string name="pan_login_none">未登入</string>
+    <string name="pan_drive_desc">支援夸克、百度、UC 等網盤帳號登入。目前版本暫未接入，敬請期待。</string>
+    <string name="pan_drive_unsupported">暫未支援</string>
+    <string name="pan_drive_quark">夸克網盤</string>
+    <string name="pan_drive_baidu">百度網盤</string>
+    <string name="pan_drive_uc">UC 網盤</string>
     <string name="pan_login_saved">已儲存</string>
     <string name="pan_login_testing">正在連線…</string>
     <string name="pan_login_ok">連線成功 · %1$s</string>

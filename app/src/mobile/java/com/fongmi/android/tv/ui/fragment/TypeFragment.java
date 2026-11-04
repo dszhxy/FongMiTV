@@ -116,6 +116,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private void setStyle(Style style) {
+        style = Product.getCoverStyle(style);
         mBinding.recycler.setAdapter(mAdapter = new VodAdapter(this, style, Product.getSpec(requireActivity(), style)));
         mBinding.recycler.setLayoutManager(style.isList() ? new LinearLayoutManager(requireActivity()) : new GridLayoutManager(getContext(), Product.getColumn(requireActivity(), style)));
     }
@@ -153,7 +154,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private void addVideo(Result result) {
-        Style style = result.getVod().getStyle(getStyle());
+        Style style = Product.getCoverStyle(result.getVod().getStyle(getStyle()));
         if (!style.equals(mAdapter.getStyle())) setStyle(style);
         mAdapter.addAll(result.getList(), this::checkMore);
     }

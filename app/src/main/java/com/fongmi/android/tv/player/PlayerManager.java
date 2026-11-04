@@ -41,6 +41,7 @@ import com.fongmi.android.tv.setting.DanmakuSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.PreloadSetting;
 import com.fongmi.android.tv.setting.SpeedSetting;
+import com.fongmi.android.tv.setting.SubtitleSetting;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Util;
@@ -95,7 +96,13 @@ public class PlayerManager implements ParseCallback {
 
     private void setPlayer(Player player) {
         this.player = player;
+        applySubtitleDelay();
         callback.onPlayerRebuild(player);
+    }
+
+    private void applySubtitleDelay() {
+        long delay = SubtitleSetting.getDelayMs();
+        if (player != null && delay != 0 && player.isCommandAvailable(Player.COMMAND_SET_TEXT_OFFSET)) player.setTextOffsetMs(delay);
     }
 
     public Tracks getCurrentTracks() {
@@ -606,6 +613,7 @@ public class PlayerManager implements ParseCallback {
         pendingPreload = null;
         initTrack = false;
         engine.start(spec, startPositionMs);
+        applySubtitleDelay();
         notifyDanmakuSourceChanged();
         App.post(runnable, timeout);
         callback.onPrepare();

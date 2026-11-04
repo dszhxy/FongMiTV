@@ -186,6 +186,11 @@
     <string name="subtitle_secondary_track">Secondary subtitles</string>
     <string name="subtitle_secondary_default">Default</string>
     <string name="subtitle_secondary_off">Off</string>
+    <string name="subtitle_auto_match">Auto match</string>
+    <string name="subtitle_auto_match_on">On</string>
+    <string name="subtitle_auto_match_off">Off</string>
+    <string name="subtitle_delay">Subtitle delay</string>
+    <string name="subtitle_preferred_language">Preferred language</string>
     <string name="subtitle_secondary_auto">Auto</string>
     <string name="subtitle_secondary_select">Select</string>
     <string name="subtitle_secondary_track_select">Secondary subtitle</string>
@@ -328,6 +333,7 @@
     <string name="danmaku_api">Search API</string>
     <string name="danmaku_auto_load">Auto search</string>
     <string name="danmaku_spider_first">Spider first</string>
+    <string name="danmaku_style_layout">Appearance &amp; layout</string>
 
     <!-- Search -->
     <string name="search_keyword">Keywords…</string>
@@ -504,11 +510,15 @@
     <string name="enhanced_summary">%1$d plugins · %2$d downloads</string>
     <string name="setting_personal_features">Personal features</string>
     <string name="setting_cloud">Cloud services</string>
-    <string name="setting_pan_login">Cloud sign-in</string>
+    <string name="setting_pan_login">Cloud drive sign-in</string>
+    <string name="setting_pan_drive_login">Cloud drive sign-in</string>
+    <string name="setting_server_login">Server sign-in</string>
     <string name="setting_mini_app">Mini app</string>
     <string name="setting_mini_app_on">Enabled</string>
     <string name="setting_mini_app_off">Disabled</string>
     <string name="setting_cover">Cover size</string>
+    <string name="setting_cover_ratio">Cover ratio</string>
+    <string name="setting_cover_radius">Cover corner radius</string>
     <string name="download_threads">Download threads</string>
     <string name="download_dir">Download folder</string>
     <string name="download_dir_copied">Folder path copied</string>
@@ -520,6 +530,11 @@
     <string name="pan_login_test">Test</string>
     <string name="pan_login_logout">Sign out</string>
     <string name="pan_login_none">Not signed in</string>
+    <string name="pan_drive_desc">Sign in with Quark, Baidu, UC and other cloud drives. Not available in this build yet.</string>
+    <string name="pan_drive_unsupported">Not supported yet</string>
+    <string name="pan_drive_quark">Quark Drive</string>
+    <string name="pan_drive_baidu">Baidu Drive</string>
+    <string name="pan_drive_uc">UC Drive</string>
     <string name="pan_login_saved">Saved</string>
     <string name="pan_login_testing">Connecting…</string>
     <string name="pan_login_ok">Connected · %1$s</string>

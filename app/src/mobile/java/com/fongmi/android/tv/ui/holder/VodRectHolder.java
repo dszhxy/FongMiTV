@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.holder;
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
+import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.AdapterVodRectBinding;
 import com.fongmi.android.tv.ui.adapter.VodAdapter;
@@ -28,6 +29,7 @@ public class VodRectHolder extends BaseVodHolder {
 
     @Override
     public void initView(Vod item) {
+        Product.applyCoverShape(binding.image);
         binding.name.setText(item.getName());
         binding.year.setText(item.getYear());
         binding.site.setText(item.getSiteName());

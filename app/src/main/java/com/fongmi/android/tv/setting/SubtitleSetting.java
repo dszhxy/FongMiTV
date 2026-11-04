@@ -32,6 +32,9 @@ public class SubtitleSetting {
     public static final float MAX_SHADOW = 8.0f;
     public static final float MIN_SECONDARY_POSITION = 0.0f;
     public static final float MAX_SECONDARY_POSITION = 150.0f;
+    public static final long MIN_DELAY_MS = -30000L;
+    public static final long MAX_DELAY_MS = 30000L;
+    public static final String LANGUAGE_FOLLOW_SYSTEM = "";
     public static final int SUBTITLE_COLOR_WHITE = Color.WHITE;
     public static final int SUBTITLE_COLOR_YELLOW = 0xFFFFFF00;
     public static final int SUBTITLE_COLOR_CYAN = 0xFF00E5FF;
@@ -223,6 +226,30 @@ public class SubtitleSetting {
         Prefers.put("subtitle_secondary_position", Math.clamp(value, MIN_SECONDARY_POSITION, MAX_SECONDARY_POSITION));
     }
 
+    public static boolean isAutoMatch() {
+        return Prefers.getBoolean("subtitle_auto_match", true);
+    }
+
+    public static void putAutoMatch(boolean autoMatch) {
+        Prefers.put("subtitle_auto_match", autoMatch);
+    }
+
+    public static long getDelayMs() {
+        return Math.max(MIN_DELAY_MS, Math.min(MAX_DELAY_MS, Prefers.getLong("subtitle_delay_ms", 0L)));
+    }
+
+    public static void putDelayMs(long delayMs) {
+        Prefers.put("subtitle_delay_ms", Math.max(MIN_DELAY_MS, Math.min(MAX_DELAY_MS, delayMs)));
+    }
+
+    public static String getPreferredLanguage() {
+        return Prefers.getString("subtitle_preferred_language", LANGUAGE_FOLLOW_SYSTEM);
+    }
+
+    public static void putPreferredLanguage(String language) {
+        Prefers.put("subtitle_preferred_language", language == null ? LANGUAGE_FOLLOW_SYSTEM : language);
+    }
+
     private static int clampSecondaryTrackId(int trackId) {
         return Math.max(trackId, SECONDARY_SUBTITLE_OFF);
     }
@@ -310,6 +337,9 @@ public class SubtitleSetting {
     public static void resetAdvanced() {
         Prefers.put("subtitle_secondary_track", DEFAULT_SECONDARY_TRACK);
         Prefers.put("subtitle_secondary_position", DEFAULT_SECONDARY_POSITION);
+        Prefers.put("subtitle_auto_match", true);
+        Prefers.put("subtitle_delay_ms", 0L);
+        Prefers.put("subtitle_preferred_language", LANGUAGE_FOLLOW_SYSTEM);
     }
 
     public static void reset() {

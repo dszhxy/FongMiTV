@@ -20,6 +20,20 @@ public class PlayerSetting {
     private static final int MAX_BUFFER = 10;
     private static final int MIN_BACKGROUND = 0;
     private static final int MAX_BACKGROUND = 2;
+    private static final int MIN_COVER_RATIO = 0;
+    private static final int MAX_COVER_RATIO = 3;
+    private static final int MIN_COVER_RADIUS = 0;
+    private static final int MAX_COVER_RADIUS = 5;
+    public static final int RATIO_FOLLOW = 0;
+    public static final int RATIO_PORTRAIT = 1;
+    public static final int RATIO_LANDSCAPE = 2;
+    public static final int RATIO_SQUARE = 3;
+    public static final int RADIUS_FOLLOW = 0;
+    public static final int RADIUS_0 = 1;
+    public static final int RADIUS_4 = 2;
+    public static final int RADIUS_8 = 3;
+    public static final int RADIUS_12 = 4;
+    public static final int RADIUS_CIRCLE = 5;
 
     public static int getEngine() {
         if (Prefers.getInt("player_engine", ENGINE_EXO) != ENGINE_EXO) Prefers.put("player_engine", ENGINE_EXO);
@@ -66,6 +80,43 @@ public class PlayerSetting {
 
     public static void putSize(int size) {
         Prefers.put("size", Math.clamp(size, MIN_SIZE, MAX_SIZE));
+    }
+
+    public static int getCoverRatio() {
+        return Math.clamp(Prefers.getInt("cover_ratio", RATIO_FOLLOW), MIN_COVER_RATIO, MAX_COVER_RATIO);
+    }
+
+    public static void putCoverRatio(int ratio) {
+        Prefers.put("cover_ratio", Math.clamp(ratio, MIN_COVER_RATIO, MAX_COVER_RATIO));
+    }
+
+    /** 0 表示跟随站点样式，其余返回封面宽高比。 */
+    public static float getCoverRatioValue() {
+        return switch (getCoverRatio()) {
+            case RATIO_PORTRAIT -> 0.75f;
+            case RATIO_LANDSCAPE -> 1.78f;
+            case RATIO_SQUARE -> 1.0f;
+            default -> 0f;
+        };
+    }
+
+    public static int getCoverRadius() {
+        return Math.clamp(Prefers.getInt("cover_radius", RADIUS_FOLLOW), MIN_COVER_RADIUS, MAX_COVER_RADIUS);
+    }
+
+    public static void putCoverRadius(int radius) {
+        Prefers.put("cover_radius", Math.clamp(radius, MIN_COVER_RADIUS, MAX_COVER_RADIUS));
+    }
+
+    /** 返回 dp 值；FOLLOW 返回 -1，CIRCLE 返回 -1（由调用方按圆形处理）。 */
+    public static int getCoverRadiusDp() {
+        return switch (getCoverRadius()) {
+            case RADIUS_0 -> 0;
+            case RADIUS_4 -> 4;
+            case RADIUS_8 -> 8;
+            case RADIUS_12 -> 12;
+            default -> -1;
+        };
     }
 
     public static int getScale() {

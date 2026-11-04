@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:navigationIconTint="@android:color/white"
-        app:title="@string/setting_pan_login"
+        app:title="@string/setting_server_login"
         app:titleTextAppearance="@style/ToolbarTextAppearance" />
 
     <androidx.core.widget.NestedScrollView

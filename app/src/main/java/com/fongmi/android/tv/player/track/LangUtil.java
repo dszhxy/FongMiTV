@@ -1,5 +1,9 @@
 package com.fongmi.android.tv.player.track;
 
+import android.text.TextUtils;
+
+import com.fongmi.android.tv.setting.SubtitleSetting;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +21,7 @@ public final class LangUtil {
     private static final String TAG_HANT = "zh-Hant";
 
     public static String[] getPreferredTextLanguages() {
-        Locale locale = Locale.getDefault();
+        Locale locale = getPreferenceLocale();
         String tag = locale.toLanguageTag();
         String language = locale.getLanguage();
         if (!isChinese(locale)) return tag.equals(language) ? new String[]{language} : unique(tag, language);
@@ -25,13 +29,18 @@ public final class LangUtil {
     }
 
     public static int getPreferredTextLanguageScore(String languageTag) {
-        Locale locale = Locale.getDefault();
+        Locale locale = getPreferenceLocale();
         String preferred = normalize(locale.toLanguageTag());
         String language = normalize(languageTag);
         if (language.isEmpty()) return 0;
         if (language.equals(preferred)) return SCORE_EXACT;
         if (isChinese(locale)) return getChineseScore(locale, language);
         return getLanguageScore(preferred, locale.getLanguage(), language);
+    }
+
+    private static Locale getPreferenceLocale() {
+        String language = SubtitleSetting.getPreferredLanguage();
+        return TextUtils.isEmpty(language) ? Locale.getDefault() : Locale.forLanguageTag(language);
     }
 
     private static boolean isChinese(Locale locale) {

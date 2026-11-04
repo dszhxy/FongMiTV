@@ -16,6 +16,7 @@ import com.fongmi.android.tv.bean.Drm;
 import com.fongmi.android.tv.bean.Sub;
 import com.fongmi.android.tv.player.track.LangUtil;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.setting.SubtitleSetting;
 import com.fongmi.android.tv.utils.ResUtil;
 
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public final class MediaItemFactory {
         static SubtitleFlags create(List<Sub> subs) {
             if (subs.size() == 1) return new SubtitleFlags(false, C.INDEX_UNSET);
             if (hasExplicitFlags(subs)) return new SubtitleFlags(true, C.INDEX_UNSET);
-            int preferredIndex = findPreferredSubtitleIndex(subs);
+            int preferredIndex = SubtitleSetting.isAutoMatch() ? findPreferredSubtitleIndex(subs) : C.INDEX_UNSET;
             return new SubtitleFlags(false, preferredIndex == C.INDEX_UNSET ? 0 : preferredIndex);
         }
 
