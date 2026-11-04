@@ -119,10 +119,70 @@ public class PluginActivity extends BaseActivity {
     }
 
     private void importPlugins() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("导入源脚本")
+                .setItems(new String[]{"导入文件", "导入文件夹（全部 PY/JS）"}, (dialog, which) -> {
+                    if (which == 0) importFiles();
+                    else importTree();
+                })
+                .show();
+    }
+
+    private void importFiles() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         startActivityForResult(intent, 1001);
+    }
+
+    private void importTree() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(intent, 1002);
+    }
+
+    private void walkTree(android.net.Uri treeUri, String docId, List<String> imported) throws Exception {
+        android.net.Uri children = android.provider.DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId);
+        String[] projection = {
+                android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE
+        };
+        try (android.database.Cursor cursor = getContentResolver().query(children, projection, null, null, null)) {
+            if (cursor == null) return;
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                String name = cursor.getString(1);
+                String mime = cursor.getString(2);
+                if (android.provider.DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) {
+                    walkTree(treeUri, id, imported);
+                } else if (name != null) {
+                    String lower = name.toLowerCase();
+                    if (lower.endsWith(".py") || lower.endsWith(".js")) {
+                        String dest = copyPluginFileTo(android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, id), name);
+                        if (dest != null) imported.add(dest);
+                    }
+                }
+            }
+        }
+    }
+
+    private String copyPluginFileTo(android.net.Uri uri, String fileName) throws Exception {
+        fileName = fileName == null ? null : fileName.trim();
+        if (fileName == null) return null;
+        String lower = fileName.toLowerCase();
+        String type = lower.endsWith(".py") ? "py" : lower.endsWith(".js") ? "js" : null;
+        if (type == null) return null;
+        java.io.File dir = new java.io.File(getFilesDir(), "plugins/" + type);
+        if (!dir.exists()) dir.mkdirs();
+        java.io.File dest = new java.io.File(dir, fileName);
+        try (java.io.InputStream in = getContentResolver().openInputStream(uri);
+             java.io.OutputStream out = new java.io.FileOutputStream(dest)) {
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+        }
+        return dest.getAbsolutePath();
     }
 
     private void deleteSelected() {
@@ -257,7 +317,16 @@ public class PluginActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == RESULT_OK && data != null) {
+        if (requestCode == 1002 && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            List<String> imported = new ArrayList<>();
+            try {
+                walkTree(data.getData(), android.provider.DocumentsContract.getTreeDocumentId(data.getData()), imported);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            invalidateFiles(imported);
+            loadPlugins();
+        } else if (requestCode == 1001 && resultCode == RESULT_OK && data != null) {
             List<String> imported = new ArrayList<>();
             try {
                 if (data.getClipData() != null) {

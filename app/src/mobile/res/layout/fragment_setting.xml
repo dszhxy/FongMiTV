@@ -139,6 +139,53 @@
             android:textSize="14sp"
             android:textStyle="bold" />
         <LinearLayout
+            android:id="@+id/card_health"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/xc_setcard_v2"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:minHeight="64dp"
+            android:orientation="horizontal"
+            android:padding="15dp">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="实验室"
+                    android:textColor="#0C0E12"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/text_health_sub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="装服务、跑服务，一点就用"
+                    android:textColor="#1B2431"
+                    android:textSize="13sp" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/text_health_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="刚刚"
+                android:textColor="#1B2431"
+                android:textSize="13sp" />
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_chev_v2" />
+        </LinearLayout>
+        <LinearLayout
             android:id="@+id/card_plugin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -159,7 +206,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="插件"
+                    android:text="源脚本"
                     android:textColor="#0C0E12"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -250,53 +297,6 @@
                     android:textColor="#1B2431"
                     android:textSize="13sp" />
             </LinearLayout>
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:src="@drawable/ic_chev_v2" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/card_health"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/xc_setcard_v2"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:minHeight="64dp"
-            android:orientation="horizontal"
-            android:padding="15dp">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="实验室"
-                    android:textColor="#0C0E12"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:id="@+id/text_health_sub"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="装服务、跑服务，一点就用"
-                    android:textColor="#1B2431"
-                    android:textSize="13sp" />
-            </LinearLayout>
-            <TextView
-                android:id="@+id/text_health_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="刚刚"
-                android:textColor="#1B2431"
-                android:textSize="13sp" />
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
