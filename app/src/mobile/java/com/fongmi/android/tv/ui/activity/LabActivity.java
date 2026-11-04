@@ -10,10 +10,16 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.BuildConfig;
+import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.api.loader.BaseLoader;
 import com.fongmi.android.tv.databinding.ActivityLabBinding;
 import com.fongmi.android.tv.setting.DecodeSetting;
+import com.fongmi.android.tv.setting.DownloadSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
+import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.utils.Notify;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;
 
@@ -44,6 +50,8 @@ public class LabActivity extends BaseActivity {
         mBinding.switchLibass.setChecked(PlayerSetting.isLibass());
         mBinding.switchTunnel.setChecked(DecodeSetting.isTunnel());
         mBinding.switchRender.setChecked(PlayerSetting.getRender() == PlayerSetting.RENDER_TEXTURE);
+        mBinding.pythonText.setText(getString(R.string.lab_python_version));
+        mBinding.serviceText.setText(getString(R.string.lab_service_count, 4));
         mBinding.info.setText(getInfo());
     }
 
@@ -60,6 +68,23 @@ public class LabActivity extends BaseActivity {
             PlayerSetting.putRender(checked ? PlayerSetting.RENDER_TEXTURE : PlayerSetting.RENDER_SURFACE);
             mBinding.switchTunnel.setChecked(DecodeSetting.isTunnel());
         });
+        mBinding.python.setOnClickListener(view -> showPython());
+        mBinding.service.setOnClickListener(view -> showService());
+    }
+
+    private void showPython() {
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.lab_python).setMessage(R.string.lab_python_detail).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.lab_env_reset, (dialog, which) -> {
+            BaseLoader.get().clear();
+            Notify.show(R.string.lab_env_reset_done);
+        }).show();
+    }
+
+    private void showService() {
+        String python = Setting.getSwitch(Setting.isDrpyBuiltin());
+        String js = getString(R.string.setting_on);
+        String local = getString(R.string.setting_on);
+        String message = getString(R.string.lab_service_detail, python, js, DownloadSetting.getThreads(), local);
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.lab_service).setMessage(message).setPositiveButton(R.string.dialog_positive, null).show();
     }
 
     private String getInfo() {

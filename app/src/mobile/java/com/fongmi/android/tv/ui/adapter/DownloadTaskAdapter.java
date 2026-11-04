@@ -49,6 +49,7 @@ public class DownloadTaskAdapter extends RecyclerView.Adapter<DownloadTaskAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DownloadTask item = items.get(position);
         holder.binding.name.setText(item.getName());
+        holder.binding.url.setText(item.getUrl());
         holder.binding.status.setText(statusText(holder, item));
         holder.binding.progress.setProgress(item.getPercent());
         holder.binding.size.setText(sizeText(item));

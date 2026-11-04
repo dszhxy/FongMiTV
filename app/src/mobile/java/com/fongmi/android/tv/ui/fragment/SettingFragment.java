@@ -26,12 +26,9 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.impl.LiveListener;
 import com.fongmi.android.tv.impl.SiteListener;
-import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
-import com.fongmi.android.tv.ui.activity.DownloadActivity;
+import com.fongmi.android.tv.ui.activity.EnhancedActivity;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
-import com.fongmi.android.tv.ui.activity.LabActivity;
-import com.fongmi.android.tv.ui.activity.PluginActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.ConfigDialog;
 import com.fongmi.android.tv.ui.dialog.HistoryDialog;
@@ -41,7 +38,6 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
-import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
@@ -99,12 +95,8 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     private void setEnhancedText() {
         int plugins = countPlugins(true) + countPlugins(false);
-        mBinding.pluginText.setText(plugins == 0 ? getString(R.string.setting_plugin_desc) : getString(R.string.plugin_count, plugins));
         int tasks = DownloadManager.get().getTasks().size();
-        mBinding.downloadText.setText(tasks == 0 ? getString(R.string.setting_download_desc) : getString(R.string.download_count, tasks));
-        mBinding.labText.setText(R.string.setting_lab_desc);
-        String[] sizes = ResUtil.getStringArray(R.array.select_size);
-        mBinding.personalText.setText(sizes[PlayerSetting.getSize()]);
+        mBinding.enhancedText.setText(getString(R.string.enhanced_summary, plugins, tasks));
     }
 
     private int countPlugins(boolean py) {
@@ -155,10 +147,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.danmaku.setOnClickListener(this::onDanmaku);
         mBinding.subtitle.setOnClickListener(this::onSubtitle);
-        mBinding.plugin.setOnClickListener(this::onPlugin);
-        mBinding.download.setOnClickListener(this::onDownload);
-        mBinding.personal.setOnClickListener(this::onPersonal);
-        mBinding.lab.setOnClickListener(this::onLab);
+        mBinding.enhanced.setOnClickListener(this::onEnhanced);
         mBinding.appearance.setOnClickListener(this::onAppearance);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
@@ -284,20 +273,8 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         getRoot().change(6);
     }
 
-    private void onPlugin(View view) {
-        PluginActivity.start(requireActivity());
-    }
-
-    private void onDownload(View view) {
-        DownloadActivity.start(requireActivity());
-    }
-
-    private void onPersonal(View view) {
-        getRoot().change(8);
-    }
-
-    private void onLab(View view) {
-        LabActivity.start(requireActivity());
+    private void onEnhanced(View view) {
+        EnhancedActivity.start(requireActivity());
     }
 
     private void onAppearance(View view) {

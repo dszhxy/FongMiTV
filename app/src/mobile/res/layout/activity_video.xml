@@ -47,6 +47,42 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/osd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="10dp"
+            android:background="@drawable/shape_item"
+            android:clickable="false"
+            android:focusable="false"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                tools:text="慶餘年第二季" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="@color/white_60"
+                android:textSize="11sp"
+                tools:text="1920 × 1080 · 屏显 1080 × 2400\n00:12:34 / 00:45:00 · 28%" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
     </FrameLayout>
 
     <View

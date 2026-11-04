@@ -88,8 +88,8 @@ public class PluginActivity extends BaseActivity implements PluginAdapter.Listen
 
     private void switchTab(boolean py) {
         mPy = py;
-        mBinding.tabPy.setBackgroundResource(py ? R.drawable.shape_item : 0);
-        mBinding.tabJs.setBackgroundResource(py ? 0 : R.drawable.shape_item);
+        mBinding.tabPy.setBackgroundResource(R.drawable.shape_item);
+        mBinding.tabJs.setBackgroundResource(R.drawable.shape_item);
         mBinding.tabPy.setTextColor(py ? 0xFFFFFFFF : 0xFF8A8F98);
         mBinding.tabJs.setTextColor(py ? 0xFF8A8F98 : 0xFFFFFFFF);
         loadPlugins();

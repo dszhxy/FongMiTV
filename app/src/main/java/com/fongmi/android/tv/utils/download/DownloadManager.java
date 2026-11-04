@@ -3,6 +3,7 @@ package com.fongmi.android.tv.utils.download;
 import android.text.TextUtils;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.setting.DownloadSetting;
 import com.github.catvod.net.OkHttp;
 
 import java.io.File;
@@ -32,14 +33,16 @@ public class DownloadManager {
 
     private final ConcurrentHashMap<String, DownloadTask> tasks = new ConcurrentHashMap<>();
     private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    private volatile ExecutorService executor;
+    private volatile int executorThreads;
 
     private DownloadManager() {
         loadFromDisk();
     }
 
     private void loadFromDisk() {
-        File[] files = getDir().listFiles((dir, name) -> !name.endsWith(".part"));
+        File[] files = DownloadSetting.getDir().listFiles((dir, name) -> !name.endsWith(".part"));
         if (files == null) return;
         for (File file : files) {
             DownloadTask task = new DownloadTask(file.getAbsolutePath(), file.getName(), null);
@@ -133,8 +136,18 @@ public class DownloadManager {
         if (changed) notifyChanged();
     }
 
+    private synchronized ExecutorService executor() {
+        int threads = DownloadSetting.getThreads();
+        if (executor == null || executorThreads != threads) {
+            if (executor != null) executor.shutdown();
+            executor = Executors.newFixedThreadPool(threads);
+            executorThreads = threads;
+        }
+        return executor;
+    }
+
     private void start(DownloadTask task) {
-        executor.execute(() -> download(task));
+        executor().execute(() -> download(task));
     }
 
     private void download(DownloadTask task) {
@@ -199,15 +212,8 @@ public class DownloadManager {
         return !TextUtils.isEmpty(url) && !url.contains(".m3u8") && !url.startsWith("magnet:");
     }
 
-    private File getDir() {
-        File dir = App.get().getExternalFilesDir("download");
-        if (dir == null) dir = new File(App.get().getFilesDir(), "download");
-        if (!dir.exists()) dir.mkdirs();
-        return dir;
-    }
-
     private File target(String name, String ext) {
-        File dir = getDir();
+        File dir = DownloadSetting.getDir();
         File file = new File(dir, sanitize(name) + ext);
         int index = 1;
         while (file.exists()) file = new File(dir, sanitize(name) + "_" + index++ + ext);

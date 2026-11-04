@@ -6,7 +6,7 @@ public class PreloadSetting {
 
     public static final int MIN_THREADS = 1;
     public static final int MAX_THREADS = 10;
-    public static final int DEFAULT_THREADS = 1;
+    public static final int DEFAULT_THREADS = 5;
     public static final int MIN_SIZE_MB = 128;
     public static final int MAX_SIZE_MB = 4096;
     public static final int STEP_SIZE_MB = 128;
@@ -34,7 +34,7 @@ public class PreloadSetting {
     }
 
     public static boolean isNextEpisodeEnabled() {
-        return Prefers.getBoolean("preload_next_episode");
+        return Prefers.getBoolean("preload_next_episode", true);
     }
 
     public static void putNextEpisodeEnabled(boolean enabled) {
@@ -42,7 +42,7 @@ public class PreloadSetting {
     }
 
     public static int getThreads() {
-        return Math.clamp(Prefers.getInt("preload_threads", MIN_THREADS), MIN_THREADS, MAX_THREADS);
+        return Math.clamp(Prefers.getInt("preload_threads", DEFAULT_THREADS), MIN_THREADS, MAX_THREADS);
     }
 
     public static void putThreads(int threads) {

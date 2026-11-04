@@ -9,21 +9,31 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.api.config.WallConfig;
+import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.databinding.FragmentSettingAppearanceBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.impl.Callback;
+import com.fongmi.android.tv.impl.ConfigListener;
+import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseFragment;
+import com.fongmi.android.tv.ui.dialog.ConfigDialog;
 import com.fongmi.android.tv.ui.dialog.ThemeDialog;
+import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.PermissionUtil;
+import com.fongmi.android.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;
 
-public class SettingAppearanceFragment extends BaseFragment implements ThemeDialog.Listener {
+public class SettingAppearanceFragment extends BaseFragment implements ThemeDialog.Listener, ConfigListener {
 
     private static final String[] LANGUAGES = {"", "zh-CN", "zh-TW", "en"};
     private static final String[] LANGUAGE_NAMES = {"跟随系统", "简体中文", "繁體中文", "English"};
 
     private FragmentSettingAppearanceBinding mBinding;
+    private String[] sizes;
 
     public static SettingAppearanceFragment newInstance() {
         return new SettingAppearanceFragment();
@@ -38,12 +48,54 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     protected void initView() {
         mBinding.languageText.setText(getLanguageName());
         mBinding.themeColorText.setText(getThemeColorName(Setting.getThemeColor()));
+        mBinding.wallText.setText(WallConfig.getDesc());
+        sizes = ResUtil.getStringArray(R.array.select_size);
+        mBinding.coverText.setText(sizes[PlayerSetting.getSize()]);
     }
 
     @Override
     protected void initEvent() {
         mBinding.language.setOnClickListener(this::setLanguage);
         mBinding.themeColor.setOnClickListener(this::setThemeColor);
+        mBinding.wall.setOnClickListener(view -> ConfigDialog.create().wall().show(this));
+        mBinding.cover.setOnClickListener(this::setCover);
+    }
+
+    private void setCover(View view) {
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.setting_cover).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(sizes, PlayerSetting.getSize(), (dialog, which) -> {
+            mBinding.coverText.setText(sizes[which]);
+            PlayerSetting.putSize(which);
+            RefreshEvent.size();
+            dialog.dismiss();
+        }).show();
+    }
+
+    @Override
+    public void setConfig(Config config) {
+        if (config.getUrl().startsWith("file")) PermissionUtil.requestFile(this, allGranted -> applyWall(config));
+        else applyWall(config);
+    }
+
+    private void applyWall(Config config) {
+        Setting.putWall(0);
+        WallConfig.load(config, new Callback() {
+            @Override
+            public void start() {
+                Notify.progress(requireActivity());
+            }
+
+            @Override
+            public void success() {
+                Notify.dismiss();
+                if (mBinding != null) mBinding.wallText.setText(WallConfig.getDesc());
+            }
+
+            @Override
+            public void error(String msg) {
+                Notify.dismiss();
+                Notify.show(msg);
+            }
+        });
     }
 
     private void setLanguage(View view) {

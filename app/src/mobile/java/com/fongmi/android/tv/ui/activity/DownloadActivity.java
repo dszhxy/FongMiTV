@@ -1,6 +1,8 @@
 package com.fongmi.android.tv.ui.activity;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -12,10 +14,12 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.ActivityDownloadBinding;
+import com.fongmi.android.tv.setting.DownloadSetting;
 import com.fongmi.android.tv.ui.adapter.DownloadTaskAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.fongmi.android.tv.utils.download.DownloadTask;
+import com.fongmi.android.tv.utils.Notify;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class DownloadActivity extends BaseActivity implements DownloadTaskAdapter.Listener, DownloadManager.Listener {
@@ -45,8 +49,28 @@ public class DownloadActivity extends BaseActivity implements DownloadTaskAdapte
         mBinding.recycler.setLayoutManager(new LinearLayoutManager(this));
         mBinding.recycler.setAdapter(mAdapter = new DownloadTaskAdapter(this));
         mBinding.clear.setOnClickListener(view -> onClear());
+        mBinding.threads.setOnClickListener(this::setThreads);
+        mBinding.dir.setOnClickListener(this::copyDir);
+        mBinding.threadsText.setText(String.valueOf(DownloadSetting.getThreads()));
+        mBinding.dirText.setText(DownloadSetting.getDir().getAbsolutePath());
         DownloadManager.get().addListener(this);
         refresh();
+    }
+
+    private void setThreads(View view) {
+        String[] values = new String[DownloadSetting.MAX_THREADS];
+        for (int i = 0; i < values.length; i++) values[i] = String.valueOf(i + 1);
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.download_threads).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(values, DownloadSetting.getThreads() - 1, (dialog, which) -> {
+            DownloadSetting.putThreads(which + 1);
+            mBinding.threadsText.setText(String.valueOf(DownloadSetting.getThreads()));
+            dialog.dismiss();
+        }).show();
+    }
+
+    private void copyDir(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        clipboard.setPrimaryClip(ClipData.newPlainText("download_dir", DownloadSetting.getDir().getAbsolutePath()));
+        Notify.show(R.string.download_dir_copied);
     }
 
     private void onClear() {

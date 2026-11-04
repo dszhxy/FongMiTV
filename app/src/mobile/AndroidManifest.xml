@@ -139,6 +139,18 @@
             android:name=".ui.activity.LabActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout" />
 
+        <activity
+            android:name=".ui.activity.EnhancedActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
+            android:name=".ui.activity.PanLoginActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
+            android:name=".ui.activity.MiniAppActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
         <receiver
             android:name=".receiver.ShortcutReceiver"
             android:exported="false" />

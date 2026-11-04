@@ -1407,6 +1407,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
                 mVod.playbackEnded();
                 updatePlayControl(false);
                 mClock.setCallback(null);
+                mBinding.osd.setVisibility(View.GONE);
                 break;
         }
     }
@@ -1426,6 +1427,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         changeHeight();
         checkOrientation();
         mBinding.control.size.setText(player().getSizeText());
+        updateOsd();
     }
 
     @Override
@@ -1435,6 +1437,28 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         long duration = player().getDuration();
         if (position < 0 || duration <= 0) return;
         mVod.onTimeChanged(time, position, duration);
+        updateOsd();
+    }
+
+    private void updateOsd() {
+        long position = Math.max(0, player().getPosition());
+        long duration = player().getDuration();
+        String title = mBinding.name.getText().toString();
+        if (TextUtils.isEmpty(title) || duration <= 0) {
+            mBinding.osd.setVisibility(View.GONE);
+            return;
+        }
+        int videoWidth = player().getVideoWidth();
+        int videoHeight = player().getVideoHeight();
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        String info = getString(R.string.osd_screen, screenWidth, screenHeight);
+        if (videoWidth > 0 && videoHeight > 0) info = getString(R.string.osd_resolution, videoWidth, videoHeight) + " · " + info;
+        int percent = (int) Math.min(100, position * 100 / duration);
+        info += "\n" + getString(R.string.osd_progress, Util.timeMs(position), Util.timeMs(duration), percent);
+        mBinding.osdTitle.setText(title);
+        mBinding.osdInfo.setText(info);
+        mBinding.osd.setVisibility(View.VISIBLE);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
