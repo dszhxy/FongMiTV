@@ -91,6 +91,7 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
     @Override
     protected void initEvent() {
         binding.timer.setOnClickListener(this::onTimer);
+        binding.osd.setOnClickListener(view -> PlayerOsdDialog.show(requireActivity(), null));
         binding.speed.addOnChangeListener(this::setSpeed);
         for (TextView view : scales) view.setOnClickListener(this::setScale);
         binding.text.setOnClickListener(v -> dismiss(parent.control.action.text));

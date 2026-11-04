@@ -81,6 +81,17 @@
                 android:textSize="11sp"
                 tools:text="1920 × 1080 · 屏显 1080 × 2400\n00:12:34 / 00:45:00 · 28%" />
 
+            <ProgressBar
+                android:id="@+id/osdMini"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="160dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                android:progressTint="@color/white"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </FrameLayout>

@@ -25,11 +25,20 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="24dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/setting_group_content"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -194,6 +203,14 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/setting_group_network"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
+
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/enhanced"
                 android:layout_width="match_parent"
@@ -231,6 +248,14 @@
                     app:tint="@color/white_40" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/setting_group_playback"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/player"
@@ -381,10 +406,18 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/setting_group_data"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
+
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/shape_item"
                 android:orientation="horizontal"
                 android:padding="0dp">

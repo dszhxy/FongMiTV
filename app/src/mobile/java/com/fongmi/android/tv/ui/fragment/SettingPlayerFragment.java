@@ -18,6 +18,7 @@ import com.fongmi.android.tv.setting.SpeedSetting;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.BufferDialog;
+import com.fongmi.android.tv.ui.dialog.PlayerOsdDialog;
 import com.fongmi.android.tv.ui.dialog.UaDialog;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -30,6 +31,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
     private String[] scale;
     private String[] engine;
     private String[] flag;
+    private String[] osd;
 
     public static SettingPlayerFragment newInstance() {
         return new SettingPlayerFragment();
@@ -50,6 +52,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.bufferText.setText(String.valueOf(PlayerSetting.getBuffer()));
         mBinding.scaleText.setText((scale = ResUtil.getStringArray(R.array.select_scale))[PlayerSetting.getScale()]);
         mBinding.backgroundText.setText((background = ResUtil.getStringArray(R.array.select_background))[PlayerSetting.getBackground()]);
+        mBinding.osdText.setText(getOsdText(osd = ResUtil.getStringArray(R.array.select_player_osd)));
     }
 
     @Override
@@ -65,6 +68,7 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.buffer.setOnClickListener(this::onBuffer);
         mBinding.preload.setOnClickListener(this::onPreload);
         mBinding.ua.setOnClickListener(this::onUa);
+        mBinding.osd.setOnClickListener(this::onOsd);
     }
 
     private void setVisible() {
@@ -163,6 +167,21 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
 
     private void onUa(View view) {
         UaDialog.show(this);
+    }
+
+    private void onOsd(View view) {
+        PlayerOsdDialog.show(requireActivity(), () -> mBinding.osdText.setText(getOsdText(osd)));
+    }
+
+    private String getOsdText(String[] items) {
+        boolean[] checked = PlayerOsdDialog.getChecked();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < checked.length && i < items.length; i++) {
+            if (!checked[i]) continue;
+            if (builder.length() > 0) builder.append(" / ");
+            builder.append(items[i]);
+        }
+        return builder.length() == 0 ? getString(R.string.setting_off) : builder.toString();
     }
 
     @Override

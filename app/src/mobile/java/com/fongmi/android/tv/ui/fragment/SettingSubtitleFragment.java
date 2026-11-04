@@ -13,6 +13,7 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.FragmentSettingSubtitleBinding;
 import com.fongmi.android.tv.setting.SubtitleSetting;
 import com.fongmi.android.tv.ui.base.BaseFragment;
+import com.fongmi.android.tv.ui.dialog.ColorPickerDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;
@@ -130,22 +131,14 @@ public class SettingSubtitleFragment extends BaseFragment {
     }
 
     private void setBackground(View view) {
-        String[] names = new String[BACKGROUND_COLORS.length];
-        for (int i = 0; i < BACKGROUND_COLORS.length; i++) names[i] = getString(getBackgroundColorName(BACKGROUND_COLORS[i]));
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.subtitle_background).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor()), (dialog, which) -> {
-            SubtitleSetting.putBackgroundColor(BACKGROUND_COLORS[which]);
-            mBinding.subtitleBackgroundText.setText(names[which]);
-            dialog.dismiss();
-        }).show();
+        ColorPickerDialog.show(requireActivity(), R.string.subtitle_background, BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor(), color -> {
+            SubtitleSetting.putBackgroundColor(color);
+            mBinding.subtitleBackgroundText.setText(getString(getBackgroundColorName(color)));
+        });
     }
 
     private void showColorDialog(int title, int[] colors, int current, IntConsumer apply) {
-        String[] names = new String[colors.length];
-        for (int i = 0; i < colors.length; i++) names[i] = getString(getTextColorName(colors[i]));
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(title).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(colors, current), (dialog, which) -> {
-            apply.accept(colors[which]);
-            dialog.dismiss();
-        }).show();
+        ColorPickerDialog.show(requireActivity(), title, colors, current, apply);
     }
 
     private void setSecondary(View view) {

@@ -1,11 +1,13 @@
 package com.fongmi.android.tv.ui.activity;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -50,7 +52,7 @@ public class DownloadActivity extends BaseActivity implements DownloadTaskAdapte
         mBinding.recycler.setAdapter(mAdapter = new DownloadTaskAdapter(this));
         mBinding.clear.setOnClickListener(view -> onClear());
         mBinding.threads.setOnClickListener(this::setThreads);
-        mBinding.dir.setOnClickListener(this::copyDir);
+        mBinding.dir.setOnClickListener(this::editDir);
         mBinding.threadsText.setText(String.valueOf(DownloadSetting.getThreads()));
         mBinding.dirText.setText(DownloadSetting.getDir().getAbsolutePath());
         DownloadManager.get().addListener(this);
@@ -67,10 +69,28 @@ public class DownloadActivity extends BaseActivity implements DownloadTaskAdapte
         }).show();
     }
 
-    private void copyDir(View view) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        clipboard.setPrimaryClip(ClipData.newPlainText("download_dir", DownloadSetting.getDir().getAbsolutePath()));
-        Notify.show(R.string.download_dir_copied);
+    private void editDir(View view) {
+        EditText edit = new EditText(this);
+        edit.setText(DownloadSetting.getDirPath());
+        edit.setHint(R.string.download_dir_hint);
+        edit.setSingleLine(true);
+        edit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        FrameLayout container = new FrameLayout(this);
+        container.setPadding(padding, padding / 2, padding, 0);
+        container.addView(edit, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.download_dir_edit)
+                .setView(container)
+                .setNegativeButton(R.string.dialog_negative, null)
+                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+                    String path = edit.getText().toString().trim();
+                    DownloadSetting.putDirPath(path);
+                    String actual = DownloadSetting.getDir().getAbsolutePath();
+                    mBinding.dirText.setText(actual);
+                    Notify.show(path.isEmpty() || actual.equals(path) ? R.string.download_dir_saved : R.string.download_dir_invalid);
+                })
+                .show();
     }
 
     private void onClear() {

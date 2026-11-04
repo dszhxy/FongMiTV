@@ -221,6 +221,14 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout" />
 
         <activity
+            android:name=".ui.activity.AiSettingsActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
+            android:name=".ui.activity.TmdbActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
             android:name=".ui.activity.PythonPackagesActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout" />
 

@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.text.format.Formatter;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
@@ -115,6 +118,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -141,6 +146,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private boolean fullscreen;
     private boolean useParse;
     private boolean rotate;
+    private long mOsdRxBytes;
+    private long mOsdRxTime;
+    private String mOsdSpeed = "0 B/s";
 
     public static void push(FragmentActivity activity, String text) {
         Uri uri = UrlUtil.uri(text);
@@ -725,9 +733,11 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     @Override
     public void renderPlaybackMetadata(MediaMetadata metadata) {
         if (service() != null && isOwner()) player().setMetadata(metadata);
-        mBinding.control.title.setText(metadata.displayTitle);
+        CharSequence title = TextUtils.isEmpty(metadata.displayTitle) ? mBinding.name.getText() : metadata.displayTitle;
+        mBinding.control.title.setText(title);
         mBinding.control.title.setSelected(true);
         mBinding.control.size.setText(player().getSizeText());
+        mBinding.control.size.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -1441,10 +1451,14 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void updateOsd() {
+        if (!PlayerSetting.isOsdEnabled()) {
+            mBinding.osd.setVisibility(View.GONE);
+            return;
+        }
         long position = Math.max(0, player().getPosition());
         long duration = player().getDuration();
         String title = mBinding.name.getText().toString();
-        if (TextUtils.isEmpty(title) || duration <= 0) {
+        if (TextUtils.isEmpty(title) && duration <= 0) {
             mBinding.osd.setVisibility(View.GONE);
             return;
         }
@@ -1452,13 +1466,49 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         int videoHeight = player().getVideoHeight();
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         int screenHeight = getResources().getDisplayMetrics().heightPixels;
-        String info = getString(R.string.osd_screen, screenWidth, screenHeight);
-        if (videoWidth > 0 && videoHeight > 0) info = getString(R.string.osd_resolution, videoWidth, videoHeight) + " · " + info;
-        int percent = (int) Math.min(100, position * 100 / duration);
-        info += "\n" + getString(R.string.osd_progress, Util.timeMs(position), Util.timeMs(duration), percent);
+        int percent = duration > 0 ? (int) Math.min(100, position * 100 / duration) : 0;
+        updateTraffic();
+        StringBuilder info = new StringBuilder();
+        if (PlayerSetting.isOsdResolution()) {
+            if (videoWidth > 0 && videoHeight > 0) info.append(getString(R.string.osd_resolution, videoWidth, videoHeight)).append(" · ");
+            info.append(getString(R.string.osd_screen, screenWidth, screenHeight));
+        }
+        if (PlayerSetting.isOsdProgress() && duration > 0) {
+            appendLine(info, getString(R.string.osd_progress, Util.timeMs(position), Util.timeMs(duration), percent));
+        }
+        if (PlayerSetting.isOsdTime()) {
+            appendLine(info, getString(R.string.osd_time, new SimpleDateFormat("HH:mm:ss").format(new Date())));
+        }
+        if (PlayerSetting.isOsdTraffic()) {
+            appendLine(info, getString(R.string.osd_traffic, mOsdSpeed));
+        }
+        if (PlayerSetting.isOsdDiagnostics()) {
+            String engine = PlayerSetting.isExo() ? "EXO" : "IJK";
+            appendLine(info, getString(R.string.osd_diagnostics, engine + " · " + PlayerSetting.getBuffer() + " ms"));
+        }
         mBinding.osdTitle.setText(title);
+        mBinding.osdTitle.setVisibility(PlayerSetting.isOsdTitle() && !TextUtils.isEmpty(title) ? View.VISIBLE : View.GONE);
         mBinding.osdInfo.setText(info);
+        mBinding.osdInfo.setVisibility(info.length() == 0 ? View.GONE : View.VISIBLE);
+        mBinding.osdMini.setVisibility(PlayerSetting.isOsdMini() && duration > 0 ? View.VISIBLE : View.GONE);
+        mBinding.osdMini.setProgress(percent);
         mBinding.osd.setVisibility(View.VISIBLE);
+    }
+
+    private void appendLine(StringBuilder builder, String text) {
+        if (builder.length() > 0) builder.append('\n');
+        builder.append(text);
+    }
+
+    private void updateTraffic() {
+        long now = SystemClock.elapsedRealtime();
+        long rx = TrafficStats.getTotalRxBytes();
+        if (mOsdRxTime > 0 && now > mOsdRxTime && rx >= mOsdRxBytes) {
+            long speed = (rx - mOsdRxBytes) * 1000 / (now - mOsdRxTime);
+            mOsdSpeed = Formatter.formatShortFileSize(this, speed) + "/s";
+        }
+        mOsdRxBytes = rx;
+        mOsdRxTime = now;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

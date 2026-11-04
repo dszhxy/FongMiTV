@@ -26,7 +26,15 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="24dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/danmaku_group_source"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuLoad"
@@ -144,6 +152,14 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/danmaku_group_style"
+                android:textColor="@color/white_60"
+                android:textSize="14sp" />
+
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuStyle"
                 android:layout_width="match_parent"
@@ -167,7 +183,7 @@
                     android:gravity="end"
                     android:textColor="@color/white"
                     android:textSize="16sp"
-                    tools:text="外观 · 密度 · 速度" />
+                    tools:text="外观布局 · 密度 · 速度" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.appcompat.widget.LinearLayoutCompat>

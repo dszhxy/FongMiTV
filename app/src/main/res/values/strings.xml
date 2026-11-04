@@ -333,7 +333,7 @@
     <string name="danmaku_api">Search API</string>
     <string name="danmaku_auto_load">Auto search</string>
     <string name="danmaku_spider_first">Spider first</string>
-    <string name="danmaku_style_layout">Appearance &amp; layout</string>
+    <string name="danmaku_style_layout">Layout</string>
 
     <!-- Search -->
     <string name="search_keyword">Keywords…</string>
@@ -513,7 +513,7 @@
     <string name="setting_pan_login">Cloud drive sign-in</string>
     <string name="setting_pan_drive_login">Cloud drive sign-in</string>
     <string name="setting_server_login">Server sign-in</string>
-    <string name="setting_mini_app">Mini app</string>
+    <string name="setting_mini_app">Haikuo Mini Program</string>
     <string name="setting_mini_app_on">Enabled</string>
     <string name="setting_mini_app_off">Disabled</string>
     <string name="setting_cover">Cover size</string>
@@ -572,4 +572,66 @@
     <string name="python_pkg_reload">Reload environment</string>
     <string name="python_pkg_reloaded">Python environment reloaded</string>
     <string name="python_pkg_name_empty">Enter a package name</string>
+
+    <!-- Grouped settings -->
+    <string name="setting_group_content">Site &amp; content</string>
+    <string name="setting_group_playback">Playback &amp; display</string>
+    <string name="setting_group_network">Network &amp; storage</string>
+    <string name="setting_group_data">Data &amp; version</string>
+    <string name="setting_group_smart">Smart &amp; data</string>
+    <string name="appearance_group_theme">Theme &amp; language</string>
+    <string name="appearance_group_cover">Cover</string>
+    <string name="player_group_kernel">Kernel &amp; decoding</string>
+    <string name="player_group_behavior">Playback behavior</string>
+    <string name="player_group_picture">Picture</string>
+    <string name="player_group_cache">Cache &amp; network</string>
+    <string name="subtitle_group_style">Subtitle style</string>
+    <string name="subtitle_group_match">Matching &amp; sync</string>
+    <string name="danmaku_group_source">Danmaku source</string>
+    <string name="danmaku_group_style">Danmaku style</string>
+
+    <!-- OSD -->
+    <string name="player_osd">On-screen display</string>
+    <string name="player_osd_title">Title</string>
+    <string name="player_osd_resolution">Resolution</string>
+    <string name="player_osd_time">Clock</string>
+    <string name="player_osd_progress">Progress</string>
+    <string name="player_osd_traffic">Network speed</string>
+    <string name="player_osd_mini">Mini</string>
+    <string name="player_osd_diagnostics">Playback params</string>
+    <string name="player_osd_reset">Reset settings</string>
+    <string name="osd_time">Clock %1$s</string>
+    <string name="osd_traffic">Speed %1$s</string>
+    <string name="osd_diagnostics">Params %1$s</string>
+    <string-array name="select_player_osd">
+        <item>Title</item>
+        <item>Resolution</item>
+        <item>Clock</item>
+        <item>Progress</item>
+        <item>Network speed</item>
+        <item>Mini</item>
+        <item>Playback params</item>
+    </string-array>
+
+    <!-- Download directory -->
+    <string name="download_dir_edit">Custom download directory</string>
+    <string name="download_dir_hint">/storage/emulated/0/Download/YsYs</string>
+    <string name="download_dir_saved">Download directory saved</string>
+    <string name="download_dir_invalid">Cannot create this directory. Check the path or permissions.</string>
+
+    <!-- AI / TMDB -->
+    <string name="setting_ai">AI settings</string>
+    <string name="setting_tmdb">TMDB settings</string>
+    <string name="ai_sub">Endpoint, key and model</string>
+    <string name="ai_base_url">Endpoint</string>
+    <string name="ai_api_key">API key</string>
+    <string name="ai_model">Model</string>
+    <string name="ai_saved">AI settings saved</string>
+    <string name="tmdb_sub">API key and language</string>
+    <string name="tmdb_api_key">API key</string>
+    <string name="tmdb_language">Language</string>
+    <string name="tmdb_saved">TMDB settings saved</string>
+    <string name="tmdb_unconfigured">Not configured</string>
+    <string name="tmdb_configured">Configured</string>
+    <string name="lab_version">Version info</string>
 </resources>

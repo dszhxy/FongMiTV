@@ -223,4 +223,74 @@ public class PlayerSetting {
         return isPreferAAC();
     }
 
+    public static boolean isOsdTitle() {
+        return Prefers.getBoolean("player_osd_title", true);
+    }
+
+    public static void putOsdTitle(boolean value) {
+        Prefers.put("player_osd_title", value);
+    }
+
+    public static boolean isOsdResolution() {
+        return Prefers.getBoolean("player_osd_resolution", true);
+    }
+
+    public static void putOsdResolution(boolean value) {
+        Prefers.put("player_osd_resolution", value);
+    }
+
+    public static boolean isOsdTime() {
+        return Prefers.getBoolean("player_osd_time", false);
+    }
+
+    public static void putOsdTime(boolean value) {
+        Prefers.put("player_osd_time", value);
+    }
+
+    public static boolean isOsdProgress() {
+        return Prefers.getBoolean("player_osd_progress", true);
+    }
+
+    public static void putOsdProgress(boolean value) {
+        Prefers.put("player_osd_progress", value);
+    }
+
+    public static boolean isOsdTraffic() {
+        return Prefers.getBoolean("player_osd_traffic", false);
+    }
+
+    public static void putOsdTraffic(boolean value) {
+        Prefers.put("player_osd_traffic", value);
+    }
+
+    public static boolean isOsdMini() {
+        return Prefers.getBoolean("player_osd_mini", false);
+    }
+
+    public static void putOsdMini(boolean value) {
+        Prefers.put("player_osd_mini", value);
+    }
+
+    public static boolean isOsdDiagnostics() {
+        return Prefers.getBoolean("player_osd_diagnostics", false);
+    }
+
+    public static void putOsdDiagnostics(boolean value) {
+        Prefers.put("player_osd_diagnostics", value);
+    }
+
+    public static boolean isOsdEnabled() {
+        return isOsdTitle() || isOsdResolution() || isOsdTime() || isOsdProgress() || isOsdTraffic() || isOsdMini() || isOsdDiagnostics();
+    }
+
+    public static void resetOsd() {
+        Prefers.put("player_osd_title", true);
+        Prefers.put("player_osd_resolution", true);
+        Prefers.put("player_osd_time", false);
+        Prefers.put("player_osd_progress", true);
+        Prefers.put("player_osd_traffic", false);
+        Prefers.put("player_osd_mini", false);
+        Prefers.put("player_osd_diagnostics", false);
+    }
+
 }
