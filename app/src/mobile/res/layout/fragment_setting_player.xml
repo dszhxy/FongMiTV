@@ -32,6 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:tag="group_header"
                 android:text="@string/player_group_kernel"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -111,6 +112,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/player_group_behavior"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -173,6 +175,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/player_group_picture"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -292,6 +295,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/player_group_cache"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />

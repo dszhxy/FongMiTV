@@ -458,17 +458,20 @@
     </string-array>
 
     <string name="vod_home">首頁</string>
+    <string name="type_all">全部分類</string>
     <string name="search_column">搜尋佈局</string>
     <string name="setting_enhanced">增強功能</string>
-    <string name="setting_plugin">外掛</string>
-    <string name="setting_plugin_desc">PY · JS 外掛</string>
+    <string name="setting_plugin">源腳本</string>
+    <string name="setting_plugin_desc">PY · JS 源腳本</string>
     <string name="setting_download">下載清單</string>
     <string name="setting_download_desc">任務與檔案</string>
     <string name="setting_lab">實驗室</string>
     <string name="setting_lab_desc">實驗開關</string>
-    <string name="plugin_py">PY 外掛</string>
-    <string name="plugin_js">JS 外掛</string>
+    <string name="plugin_py">PY 源腳本</string>
+    <string name="plugin_js">JS 源腳本</string>
     <string name="plugin_import">匯入</string>
+    <string name="plugin_import_file">匯入檔案</string>
+    <string name="plugin_import_dir">匯入資料夾（全部 PY/JS）</string>
     <string name="plugin_health">檢測</string>
     <string name="plugin_select_all">全選</string>
     <string name="plugin_delete_selected">刪除所選</string>
@@ -576,6 +579,16 @@
     <string name="setting_group_smart">智慧與資料</string>
     <string name="appearance_group_theme">主題與語言</string>
     <string name="appearance_group_cover">封面</string>
+    <string name="appearance_group_wall">壁紙</string>
+    <string name="wall_default">預設壁紙</string>
+    <string name="wall_local">本地壁紙</string>
+    <string name="wall_url">URL 壁紙</string>
+    <string name="wall_url_hint">輸入壁紙地址</string>
+    <string name="wall_applied">壁紙已套用</string>
+    <string name="wall_failed">壁紙設定失敗</string>
+    <string name="wall_builtin">內建壁紙 %1$d</string>
+    <string name="wall_local_desc">從本地選擇圖片</string>
+    <string name="wall_url_desc">下載網頁圖片</string>
     <string name="player_group_kernel">核心與解碼</string>
     <string name="player_group_behavior">播放行為</string>
     <string name="player_group_picture">畫面顯示</string>
@@ -586,7 +599,7 @@
     <string name="danmaku_group_style">彈幕樣式</string>
 
     <!-- OSD -->
-    <string name="player_osd">螢幕顯示設定</string>
+    <string name="player_osd">螢幕顯示</string>
     <string name="player_osd_title">標題</string>
     <string name="player_osd_resolution">解析度</string>
     <string name="player_osd_time">時間</string>

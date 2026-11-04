@@ -20,16 +20,16 @@ public final class PlayerOsdDialog {
         boolean[] checked = getChecked();
         new MaterialAlertDialogBuilder(activity)
                 .setTitle(R.string.player_osd)
-                .setMultiChoiceItems(items, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
+                .setMultiChoiceItems(items, checked, (dialog, which, isChecked) -> {
+                    checked[which] = isChecked;
+                    setChecked(checked);
+                    if (onChanged != null) onChanged.run();
+                })
                 .setNeutralButton(R.string.player_osd_reset, (dialog, which) -> {
                     PlayerSetting.resetOsd();
                     if (onChanged != null) onChanged.run();
                 })
                 .setNegativeButton(R.string.dialog_negative, null)
-                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
-                    setChecked(checked);
-                    if (onChanged != null) onChanged.run();
-                })
                 .show();
     }
 

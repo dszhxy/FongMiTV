@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.view.View;
 
@@ -41,6 +42,7 @@ import java.util.Set;
 public class PluginActivity extends BaseActivity implements PluginAdapter.Listener {
 
     private static final int REQUEST_IMPORT = 1001;
+    private static final int REQUEST_IMPORT_TREE = 1002;
 
     private ActivityPluginBinding mBinding;
     private PluginAdapter mAdapter;
@@ -124,10 +126,27 @@ public class PluginActivity extends BaseActivity implements PluginAdapter.Listen
     }
 
     private void importPlugins() {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.plugin_import)
+                .setItems(new CharSequence[]{getString(R.string.plugin_import_file), getString(R.string.plugin_import_dir)}, (dialog, which) -> {
+                    if (which == 0) importFiles();
+                    else importTree();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void importFiles() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         startActivityForResult(Intent.createChooser(intent, getString(R.string.plugin_import)), REQUEST_IMPORT);
+    }
+
+    private void importTree() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_IMPORT_TREE);
     }
 
     private void deleteSelected() {
@@ -208,7 +227,19 @@ public class PluginActivity extends BaseActivity implements PluginAdapter.Listen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != REQUEST_IMPORT || resultCode != RESULT_OK || data == null) return;
+        if (resultCode != RESULT_OK || data == null) return;
+        if (requestCode == REQUEST_IMPORT_TREE) {
+            try {
+                Uri tree = data.getData();
+                if (tree != null) importTree(tree);
+                invalidate();
+                loadPlugins();
+            } catch (Exception e) {
+                Notify.show(e.getMessage());
+            }
+            return;
+        }
+        if (requestCode != REQUEST_IMPORT) return;
         try {
             if (data.getClipData() != null) {
                 int count = data.getClipData().getItemCount();
@@ -220,6 +251,38 @@ public class PluginActivity extends BaseActivity implements PluginAdapter.Listen
             loadPlugins();
         } catch (Exception e) {
             Notify.show(e.getMessage());
+        }
+    }
+
+    private void importTree(Uri treeUri) throws Exception {
+        String rootId = DocumentsContract.getTreeDocumentId(treeUri);
+        walkTree(treeUri, rootId);
+    }
+
+    private void walkTree(Uri treeUri, String docId) {
+        Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId);
+        String[] projection = {
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE
+        };
+        try (Cursor cursor = getContentResolver().query(childrenUri, projection, null, null, null)) {
+            if (cursor == null) return;
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                String name = cursor.getString(1);
+                String mime = cursor.getString(2);
+                if (DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) {
+                    walkTree(treeUri, id);
+                } else if (name != null) {
+                    String lower = name.toLowerCase(Locale.ROOT);
+                    if (!lower.endsWith(".py") && !lower.endsWith(".js")) continue;
+                    try {
+                        copy(DocumentsContract.buildDocumentUriUsingTree(treeUri, id));
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
         }
     }
 

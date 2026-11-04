@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.utils.GroupHeaderUtil;
+
 public abstract class BaseFragment extends Fragment {
 
     private boolean isViewCreated;
@@ -26,6 +28,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         isViewCreated = true;
+        GroupHeaderUtil.apply(view);
         if (getUserVisibleHint()) {
             lazyLoad();
             isDataLoaded = true;

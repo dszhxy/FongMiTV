@@ -463,17 +463,20 @@
     </string-array>
 
     <string name="vod_home">Home</string>
+    <string name="type_all">All</string>
     <string name="search_column">Search layout</string>
     <string name="setting_enhanced">Enhanced</string>
-    <string name="setting_plugin">Plugins</string>
-    <string name="setting_plugin_desc">PY · JS plugins</string>
+    <string name="setting_plugin">Source scripts</string>
+    <string name="setting_plugin_desc">PY · JS source scripts</string>
     <string name="setting_download">Downloads</string>
     <string name="setting_download_desc">Tasks and files</string>
     <string name="setting_lab">Lab</string>
     <string name="setting_lab_desc">Experimental switches</string>
-    <string name="plugin_py">PY plugins</string>
-    <string name="plugin_js">JS plugins</string>
+    <string name="plugin_py">PY scripts</string>
+    <string name="plugin_js">JS scripts</string>
     <string name="plugin_import">Import</string>
+    <string name="plugin_import_file">Import files</string>
+    <string name="plugin_import_dir">Import folder (all PY/JS)</string>
     <string name="plugin_health">Check</string>
     <string name="plugin_select_all">Select all</string>
     <string name="plugin_delete_selected">Delete selected</string>
@@ -581,6 +584,16 @@
     <string name="setting_group_smart">Smart &amp; data</string>
     <string name="appearance_group_theme">Theme &amp; language</string>
     <string name="appearance_group_cover">Cover</string>
+    <string name="appearance_group_wall">Wallpaper</string>
+    <string name="wall_default">Default wallpaper</string>
+    <string name="wall_local">Local wallpaper</string>
+    <string name="wall_url">URL wallpaper</string>
+    <string name="wall_url_hint">Enter wallpaper URL</string>
+    <string name="wall_applied">Wallpaper applied</string>
+    <string name="wall_failed">Failed to set wallpaper</string>
+    <string name="wall_builtin">Built-in wallpaper %1$d</string>
+    <string name="wall_local_desc">Pick an image locally</string>
+    <string name="wall_url_desc">Download an image from URL</string>
     <string name="player_group_kernel">Kernel &amp; decoding</string>
     <string name="player_group_behavior">Playback behavior</string>
     <string name="player_group_picture">Picture</string>
@@ -591,7 +604,7 @@
     <string name="danmaku_group_style">Danmaku style</string>
 
     <!-- OSD -->
-    <string name="player_osd">On-screen display</string>
+    <string name="player_osd">OSD</string>
     <string name="player_osd_title">Title</string>
     <string name="player_osd_resolution">Resolution</string>
     <string name="player_osd_time">Clock</string>

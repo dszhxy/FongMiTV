@@ -17,6 +17,7 @@ import com.fongmi.android.tv.databinding.ActivityEnhancedBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.utils.GroupHeaderUtil;
 import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.utils.Path;
 
@@ -64,6 +65,7 @@ public class EnhancedActivity extends BaseActivity {
         mBinding.drpy.setOnClickListener(this::setDrpy);
         mBinding.adblock.setOnClickListener(this::setAdblock);
         mBinding.aggregatedSearch.setOnClickListener(this::setAggregatedSearch);
+        GroupHeaderUtil.apply(mBinding.getRoot());
         mBinding.ai.setOnClickListener(view -> AiSettingsActivity.start(this));
         mBinding.tmdb.setOnClickListener(view -> TmdbActivity.start(this));
     }

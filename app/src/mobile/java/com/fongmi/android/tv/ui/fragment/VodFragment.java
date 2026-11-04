@@ -34,6 +34,7 @@ import com.fongmi.android.tv.impl.SiteListener;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.activity.HistoryActivity;
 import com.fongmi.android.tv.ui.activity.KeepActivity;
+import com.fongmi.android.tv.ui.activity.PluginActivity;
 import com.fongmi.android.tv.ui.activity.SearchActivity;
 import com.fongmi.android.tv.ui.adapter.TypeAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
@@ -45,6 +46,7 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.ImgUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -99,6 +101,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.logo.setOnClickListener(this::onLogo);
         mBinding.link.setOnClickListener(this::onLink);
         mBinding.title.setOnClickListener(this::onSite);
+        mBinding.typeAll.setOnClickListener(this::onTypeAll);
         mBinding.filter.setOnClickListener(this::onFilter);
         mBinding.filter.setOnLongClickListener(this::onLink);
         mBinding.toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
@@ -173,8 +176,8 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     private void onLogo(View view) {
-        // 图标：顶层 Config / 总线路列表。
-        HistoryDialog.create().vod().readOnly().show(this);
+        // 图标：点击刷新首页内容。
+        RefreshEvent.home();
     }
 
     private void onSite(View view) {
@@ -182,12 +185,24 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         SiteDialog.create().change().show(this);
     }
 
+    private void onTypeAll(View view) {
+        int count = mAdapter.getItemCount();
+        if (count == 0) return;
+        String[] names = new String[count];
+        for (int i = 0; i < count; i++) names[i] = mAdapter.get(i).getTypeName();
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.type_all).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, mBinding.pager.getCurrentItem(), (dialog, which) -> {
+            dialog.dismiss();
+            onItemClick(which, mAdapter.get(which));
+        }).show();
+    }
+
     private void onFilter(View view) {
         if (mAdapter.getItemCount() > 0) FilterDialog.create().filter(mAdapter.get(mBinding.pager.getCurrentItem()).getFilters()).show(this);
     }
 
     private boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.keep) KeepActivity.start(requireActivity());
+        if (item.getItemId() == R.id.plugin) PluginActivity.start(requireActivity());
+        else if (item.getItemId() == R.id.keep) KeepActivity.start(requireActivity());
         else if (item.getItemId() == R.id.search) SearchActivity.start(requireActivity());
         else if (item.getItemId() == R.id.history) HistoryActivity.start(requireActivity());
         return true;

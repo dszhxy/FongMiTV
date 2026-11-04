@@ -31,6 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:tag="group_header"
                 android:text="@string/setting_group_content"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -207,6 +208,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/setting_group_network"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -253,6 +255,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/setting_group_playback"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
@@ -410,6 +413,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:tag="group_header"
                 android:text="@string/setting_group_data"
                 android:textColor="@color/white_60"
                 android:textSize="14sp" />
