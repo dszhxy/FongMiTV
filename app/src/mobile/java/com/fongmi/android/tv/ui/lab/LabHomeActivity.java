@@ -2,6 +2,7 @@ package com.fongmi.android.tv.ui.lab;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -15,6 +16,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
+import java.util.Locale;
+
+import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.R;
 
 /**
@@ -202,6 +206,22 @@ public class LabHomeActivity extends AppCompatActivity {
             grid.addView(envTile(env));
         }
         gridBox.addView(grid);
+        gridBox.addView(footerInfo());
+    }
+
+    /** 页脚版本信息（承接旧实验室页的版本/ABI/机型/系统行） */
+    private TextView footerInfo() {
+        String abi = Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "unknown";
+        String text = String.format(Locale.US, "v%s · %s · %s %s · Android %s (API %d)",
+                BuildConfig.VERSION_NAME, abi, Build.MANUFACTURER, Build.MODEL,
+                Build.VERSION.RELEASE, Build.VERSION.SDK_INT);
+        TextView t = new TextView(this);
+        t.setText(text);
+        t.setTextSize(11);
+        t.setTextColor(LabSkin.WALL_DIM);
+        t.setPadding(dp(18), dp(12), dp(18), 0);
+        LabSkin.halo(t);
+        return t;
     }
 
     /** 两列格定宽：屏宽减网格左右边距（18dp×2）后对半成格，再减格子左右 margin（5dp×2）即卡宽；与 LabEnvActivity 服务格同一公式 */
