@@ -26,8 +26,12 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.impl.LiveListener;
 import com.fongmi.android.tv.impl.SiteListener;
+import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.ui.activity.DownloadActivity;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
+import com.fongmi.android.tv.ui.activity.LabActivity;
+import com.fongmi.android.tv.ui.activity.PluginActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.ConfigDialog;
 import com.fongmi.android.tv.ui.dialog.HistoryDialog;
@@ -37,16 +41,22 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
+import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SettingFragment extends BaseFragment implements ConfigListener, SiteListener, LiveListener {
 
@@ -83,7 +93,40 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.versionText.setText(BuildConfig.VERSION_NAME);
         setOtherText();
+        setEnhancedText();
         setCacheText();
+    }
+
+    private void setEnhancedText() {
+        int plugins = countPlugins(true) + countPlugins(false);
+        mBinding.pluginText.setText(plugins == 0 ? getString(R.string.setting_plugin_desc) : getString(R.string.plugin_count, plugins));
+        int tasks = DownloadManager.get().getTasks().size();
+        mBinding.downloadText.setText(tasks == 0 ? getString(R.string.setting_download_desc) : getString(R.string.download_count, tasks));
+        mBinding.labText.setText(R.string.setting_lab_desc);
+        String[] sizes = ResUtil.getStringArray(R.array.select_size);
+        mBinding.personalText.setText(sizes[PlayerSetting.getSize()]);
+    }
+
+    private int countPlugins(boolean py) {
+        File own = new File(requireContext().getFilesDir(), py ? "plugins/py" : "plugins/js");
+        File cache = py ? Path.py() : Path.js();
+        Set<String> names = new HashSet<>();
+        collect(own, py, names);
+        collect(cache, py, names);
+        return names.size();
+    }
+
+    private void collect(File dir, boolean py, Set<String> names) {
+        String[] files = dir == null ? null : dir.list();
+        if (files == null) return;
+        String ext = py ? ".py" : ".js";
+        for (String name : files) if (name.endsWith(ext)) names.add(name);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mBinding != null) setEnhancedText();
     }
 
     private void setOtherText() {
@@ -112,7 +155,10 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.danmaku.setOnClickListener(this::onDanmaku);
         mBinding.subtitle.setOnClickListener(this::onSubtitle);
+        mBinding.plugin.setOnClickListener(this::onPlugin);
+        mBinding.download.setOnClickListener(this::onDownload);
         mBinding.personal.setOnClickListener(this::onPersonal);
+        mBinding.lab.setOnClickListener(this::onLab);
         mBinding.appearance.setOnClickListener(this::onAppearance);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
@@ -238,8 +284,20 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         getRoot().change(6);
     }
 
+    private void onPlugin(View view) {
+        PluginActivity.start(requireActivity());
+    }
+
+    private void onDownload(View view) {
+        DownloadActivity.start(requireActivity());
+    }
+
     private void onPersonal(View view) {
         getRoot().change(8);
+    }
+
+    private void onLab(View view) {
+        LabActivity.start(requireActivity());
     }
 
     private void onAppearance(View view) {

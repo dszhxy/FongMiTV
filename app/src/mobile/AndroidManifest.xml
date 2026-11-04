@@ -127,6 +127,18 @@
             android:parentActivityName=".ui.activity.HomeActivity"
             android:supportsPictureInPicture="true" />
 
+        <activity
+            android:name=".ui.activity.PluginActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
+            android:name=".ui.activity.DownloadActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
+        <activity
+            android:name=".ui.activity.LabActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+
         <receiver
             android:name=".receiver.ShortcutReceiver"
             android:exported="false" />

@@ -110,11 +110,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.fongmi.android.tv.utils.Traffic;
 import com.fongmi.android.tv.utils.UrlUtil;
 import com.fongmi.android.tv.utils.Util;
+import com.fongmi.android.tv.utils.download.DownloadManager;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class VideoActivity extends PlaybackActivity implements Clock.Callback, CustomKeyDown.Listener, ControlDialog.Listener, ParseDialog.Listener, VodPlaybackHost, FlagAdapter.OnClickListener, EpisodeAdapter.OnClickListener, QualityAdapter.OnClickListener, QuickAdapter.OnClickListener, CastDialog.Listener, InfoDialog.Listener {
@@ -326,6 +328,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     @SuppressLint("ClickableViewAccessibility")
     protected void initEvent() {
         mBinding.name.setOnClickListener(view -> onName());
+        mBinding.download.setOnClickListener(view -> onDownload());
         mBinding.more.setOnClickListener(view -> onMore());
         mBinding.actor.setOnClickListener(view -> onActor());
         mBinding.content.setOnClickListener(view -> onContent());
@@ -864,6 +867,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.control.prev.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
         mBinding.reverse.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
         mBinding.episode.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+        mBinding.download.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
         mBinding.more.setVisibility(items.size() < 10 ? View.GONE : View.VISIBLE);
         mEpisodeAdapter.addAll(items);
     }
@@ -877,6 +881,31 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         String name = mBinding.name.getText().toString();
         Notify.show(getString(R.string.detail_search, name));
         mVod.search(name);
+    }
+
+    private void onDownload() {
+        String url = service() != null && isOwner() ? player().getUrl() : null;
+        if (TextUtils.isEmpty(url)) {
+            Notify.show(R.string.detail_download_play_first);
+            return;
+        }
+        if (!DownloadManager.isSupported(url)) {
+            Notify.show(R.string.detail_download_unsupported);
+            return;
+        }
+        Map<String, String> headers = player().getHeaders();
+        String name = getVodName();
+        if (mEpisodeAdapter.getItemCount() > 0) {
+            Episode episode = mEpisodeAdapter.getActivated();
+            if (!episode.getName().isEmpty()) name += " - " + episode.getName();
+        }
+        final String link = url;
+        final String fileName = name;
+        final Map<String, String> requestHeaders = headers;
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.detail_download).setMessage(getString(R.string.detail_download_confirm, fileName)).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+            DownloadManager.get().add(link, fileName, requestHeaders);
+            Notify.show(R.string.detail_download_added);
+        }).show();
     }
 
     private void onMore() {
