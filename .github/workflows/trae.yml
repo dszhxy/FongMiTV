@@ -16,18 +16,13 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: mobile-arm64_v8a
             task: assembleMobileArm64_v8aRelease
-          - name: mobile-armeabi_v7a
-            task: assembleMobileArmeabi_v7aRelease
-          - name: leanback-arm64_v8a
-            task: assembleLeanbackArm64_v8aRelease
-          - name: leanback-armeabi_v7a
-            task: assembleLeanbackArmeabi_v7aRelease
     steps:
       - name: 拉取源码
         uses: actions/checkout@v4
