@@ -61,21 +61,19 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/adapter_type" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/typeAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/typeMore"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="12dp"
-                android:background="@drawable/shape_item_round"
-                android:paddingStart="12dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="6dp"
-                android:text="@string/type_all"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:scaleType="center"
+                android:src="@drawable/ic_type_more"
+                android:visibility="gone"
+                app:tint="@color/white"
+                tools:visibility="visible" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

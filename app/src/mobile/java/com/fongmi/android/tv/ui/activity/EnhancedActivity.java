@@ -17,6 +17,7 @@ import com.fongmi.android.tv.databinding.ActivityEnhancedBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.lab.LabRunner;
 import com.fongmi.android.tv.utils.GroupHeaderUtil;
 import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.utils.Path;
@@ -81,7 +82,7 @@ public class EnhancedActivity extends BaseActivity {
         mBinding.pluginText.setText(plugins == 0 ? getString(R.string.setting_plugin_desc) : getString(R.string.plugin_count, plugins));
         int tasks = DownloadManager.get().getTasks().size();
         mBinding.downloadText.setText(tasks == 0 ? getString(R.string.setting_download_desc) : getString(R.string.download_count, tasks));
-        mBinding.labText.setText(R.string.lab_env_summary);
+        mBinding.labText.setText(getString(R.string.lab_running_summary, LabRunner.runningCount(this)));
         mBinding.panDriveLoginText.setText(R.string.pan_drive_unsupported);
         mBinding.panLoginText.setText(PanLoginActivity.getSummary(this));
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));

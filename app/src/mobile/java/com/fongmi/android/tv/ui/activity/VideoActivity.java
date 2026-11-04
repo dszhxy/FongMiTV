@@ -1464,17 +1464,11 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         }
         int videoWidth = player().getVideoWidth();
         int videoHeight = player().getVideoHeight();
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
         int percent = duration > 0 ? (int) Math.min(100, position * 100 / duration) : 0;
         updateTraffic();
         StringBuilder info = new StringBuilder();
-        if (PlayerSetting.isOsdResolution()) {
-            if (videoWidth > 0 && videoHeight > 0) info.append(getString(R.string.osd_resolution, videoWidth, videoHeight)).append(" · ");
-            info.append(getString(R.string.osd_screen, screenWidth, screenHeight));
-        }
-        if (PlayerSetting.isOsdProgress() && duration > 0) {
-            appendLine(info, getString(R.string.osd_progress, Util.timeMs(position), Util.timeMs(duration), percent));
+        if (PlayerSetting.isOsdResolution() && videoWidth > 0 && videoHeight > 0) {
+            info.append(getString(R.string.osd_resolution, videoWidth, videoHeight));
         }
         if (PlayerSetting.isOsdTime()) {
             appendLine(info, getString(R.string.osd_time, new SimpleDateFormat("HH:mm:ss").format(new Date())));
@@ -1490,8 +1484,16 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.osdTitle.setVisibility(PlayerSetting.isOsdTitle() && !TextUtils.isEmpty(title) ? View.VISIBLE : View.GONE);
         mBinding.osdInfo.setText(info);
         mBinding.osdInfo.setVisibility(info.length() == 0 ? View.GONE : View.VISIBLE);
-        mBinding.osdMini.setVisibility(PlayerSetting.isOsdMini() && duration > 0 ? View.VISIBLE : View.GONE);
-        mBinding.osdMini.setProgress(percent);
+        boolean showProgress = PlayerSetting.isOsdProgress() && duration > 0;
+        mBinding.osdProgressRow.setVisibility(showProgress ? View.VISIBLE : View.GONE);
+        if (showProgress) {
+            mBinding.osdPosition.setText(Util.timeMs(position));
+            mBinding.osdDuration.setText(Util.timeMs(duration));
+            mBinding.osdMini.setProgress(percent);
+            ViewGroup.LayoutParams params = mBinding.osdProgressRow.getLayoutParams();
+            params.width = ResUtil.dp2px(PlayerSetting.isOsdMini() ? 140 : 220);
+            mBinding.osdProgressRow.setLayoutParams(params);
+        }
         mBinding.osd.setVisibility(View.VISIBLE);
     }
 

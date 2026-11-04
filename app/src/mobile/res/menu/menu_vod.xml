@@ -28,6 +28,6 @@
         android:icon="@drawable/ic_action_history"
         android:title="@string/app_history"
         app:iconTint="@color/white"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
 </menu>

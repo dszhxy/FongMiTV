@@ -337,11 +337,81 @@
             android:orientation="horizontal">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/osd"
+                android:id="@+id/osdTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="标题" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdResolution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="分辨率" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="时间" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="进度" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdTraffic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="网速" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdMini"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="迷你" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdDiagnostics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_accent"
+                android:textColor="@color/selector_control"
+                android:textSize="14sp"
+                tools:text="播放参数" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/osdReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/shape_accent"
-                android:text="@string/player_osd"
+                android:text="@string/player_osd_reset"
                 android:textColor="@color/selector_control"
                 android:textSize="14sp" />
 

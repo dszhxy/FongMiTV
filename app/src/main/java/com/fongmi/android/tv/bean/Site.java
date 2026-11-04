@@ -177,6 +177,10 @@ public class Site implements Parcelable {
         this.name = name;
     }
 
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
     public String getApi() {
         return TextUtils.isEmpty(api) ? "" : api;
     }

@@ -34,7 +34,6 @@ import com.fongmi.android.tv.impl.SiteListener;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.activity.HistoryActivity;
 import com.fongmi.android.tv.ui.activity.KeepActivity;
-import com.fongmi.android.tv.ui.activity.PluginActivity;
 import com.fongmi.android.tv.ui.activity.SearchActivity;
 import com.fongmi.android.tv.ui.adapter.TypeAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
@@ -42,6 +41,7 @@ import com.fongmi.android.tv.ui.dialog.FilterDialog;
 import com.fongmi.android.tv.ui.dialog.HistoryDialog;
 import com.fongmi.android.tv.ui.dialog.LinkDialog;
 import com.fongmi.android.tv.ui.dialog.ReceiveDialog;
+import com.fongmi.android.tv.ui.dialog.ScriptPickerDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.ImgUtil;
 import com.fongmi.android.tv.utils.Notify;
@@ -99,9 +99,10 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     protected void initEvent() {
         mBinding.top.setOnClickListener(this::onTop);
         mBinding.logo.setOnClickListener(this::onLogo);
+        mBinding.logo.setOnLongClickListener(this::onLogoRefresh);
         mBinding.link.setOnClickListener(this::onLink);
         mBinding.title.setOnClickListener(this::onSite);
-        mBinding.typeAll.setOnClickListener(this::onTypeAll);
+        mBinding.typeMore.setOnClickListener(this::onTypeAll);
         mBinding.filter.setOnClickListener(this::onFilter);
         mBinding.filter.setOnLongClickListener(this::onLink);
         mBinding.toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
@@ -125,6 +126,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.type.setHasFixedSize(true);
         mBinding.type.setItemAnimator(null);
         mBinding.type.setAdapter(mAdapter = new TypeAdapter(this));
+        mBinding.type.post(this::updateTypeMoreVisible);
         mBinding.pager.setAdapter(new PageAdapter(getChildFragmentManager()));
     }
 
@@ -136,6 +138,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     private void setAdapter(Result result) {
         mAdapter.addAll(mResult = result);
         mBinding.pager.getAdapter().notifyDataSetChanged();
+        updateTypeMoreVisible();
         setFabVisible(0);
         hideProgress();
         showContent();
@@ -176,8 +179,14 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     private void onLogo(View view) {
-        // 图标：点击刷新首页内容。
+        // 短按：切换线路（当前配置里的站点/线路列表）
+        SiteDialog.create().change().show(this);
+    }
+
+    private boolean onLogoRefresh(View view) {
+        // 长按：刷新首页内容
         RefreshEvent.home();
+        return true;
     }
 
     private void onSite(View view) {
@@ -196,12 +205,21 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         }).show();
     }
 
+    private void updateTypeMoreVisible() {
+        mBinding.type.post(() -> {
+            int width = mBinding.type.getWidth();
+            if (width == 0) return;
+            boolean visible = mAdapter.getItemCount() > 0 && mBinding.type.computeHorizontalScrollRange() > width;
+            mBinding.typeMore.setVisibility(visible ? View.VISIBLE : View.GONE);
+        });
+    }
+
     private void onFilter(View view) {
         if (mAdapter.getItemCount() > 0) FilterDialog.create().filter(mAdapter.get(mBinding.pager.getCurrentItem()).getFilters()).show(this);
     }
 
     private boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.plugin) PluginActivity.start(requireActivity());
+        if (item.getItemId() == R.id.plugin) ScriptPickerDialog.show(requireActivity());
         else if (item.getItemId() == R.id.keep) KeepActivity.start(requireActivity());
         else if (item.getItemId() == R.id.search) SearchActivity.start(requireActivity());
         else if (item.getItemId() == R.id.history) HistoryActivity.start(requireActivity());

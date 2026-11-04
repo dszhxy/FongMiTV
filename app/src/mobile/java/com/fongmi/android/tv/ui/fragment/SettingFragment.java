@@ -38,21 +38,16 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
-import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SettingFragment extends BaseFragment implements ConfigListener, SiteListener, LiveListener {
 
@@ -89,36 +84,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.versionText.setText(BuildConfig.VERSION_NAME);
         setOtherText();
-        setEnhancedText();
         setCacheText();
-    }
-
-    private void setEnhancedText() {
-        int plugins = countPlugins(true) + countPlugins(false);
-        int tasks = DownloadManager.get().getTasks().size();
-        mBinding.enhancedText.setText(getString(R.string.enhanced_summary, plugins, tasks));
-    }
-
-    private int countPlugins(boolean py) {
-        File own = new File(requireContext().getFilesDir(), py ? "plugins/py" : "plugins/js");
-        File cache = py ? Path.py() : Path.js();
-        Set<String> names = new HashSet<>();
-        collect(own, py, names);
-        collect(cache, py, names);
-        return names.size();
-    }
-
-    private void collect(File dir, boolean py, Set<String> names) {
-        String[] files = dir == null ? null : dir.list();
-        if (files == null) return;
-        String ext = py ? ".py" : ".js";
-        for (String name : files) if (name.endsWith(ext)) names.add(name);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mBinding != null) setEnhancedText();
     }
 
     private void setOtherText() {

@@ -81,16 +81,44 @@
                 android:textSize="11sp"
                 tools:text="1920 × 1080 · 屏显 1080 × 2400\n00:12:34 / 00:45:00 · 28%" />
 
-            <ProgressBar
-                android:id="@+id/osdMini"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="160dp"
-                android:layout_height="3dp"
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/osdProgressRow"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:max="100"
-                android:progressTint="@color/white"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="visible">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/osdPosition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white_60"
+                    android:textSize="10sp"
+                    tools:text="00:12:34" />
+
+                <ProgressBar
+                    android:id="@+id/osdMini"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="3dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:max="100"
+                    android:progressTint="@color/white" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/osdDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white_60"
+                    android:textSize="10sp"
+                    tools:text="00:45:00" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

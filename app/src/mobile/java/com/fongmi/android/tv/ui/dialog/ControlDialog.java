@@ -17,6 +17,7 @@ import com.fongmi.android.tv.bean.Parse;
 import com.fongmi.android.tv.databinding.ActivityVideoBinding;
 import com.fongmi.android.tv.databinding.DialogControlBinding;
 import com.fongmi.android.tv.player.PlayerManager;
+import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.SpeedSetting;
 import com.fongmi.android.tv.ui.adapter.ParseAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
@@ -27,6 +28,8 @@ import com.google.android.material.slider.Slider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter.OnClickListener {
 
@@ -86,12 +89,23 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         setScaleText();
         setPlayer();
         setParse();
+        setOsdText();
     }
 
     @Override
     protected void initEvent() {
         binding.timer.setOnClickListener(this::onTimer);
-        binding.osd.setOnClickListener(view -> PlayerOsdDialog.show(requireActivity(), null));
+        binding.osdTitle.setOnClickListener(v -> toggleOsd(binding.osdTitle, PlayerSetting::isOsdTitle, PlayerSetting::putOsdTitle));
+        binding.osdResolution.setOnClickListener(v -> toggleOsd(binding.osdResolution, PlayerSetting::isOsdResolution, PlayerSetting::putOsdResolution));
+        binding.osdTime.setOnClickListener(v -> toggleOsd(binding.osdTime, PlayerSetting::isOsdTime, PlayerSetting::putOsdTime));
+        binding.osdProgress.setOnClickListener(v -> toggleOsd(binding.osdProgress, PlayerSetting::isOsdProgress, PlayerSetting::putOsdProgress));
+        binding.osdTraffic.setOnClickListener(v -> toggleOsd(binding.osdTraffic, PlayerSetting::isOsdTraffic, PlayerSetting::putOsdTraffic));
+        binding.osdMini.setOnClickListener(v -> toggleOsd(binding.osdMini, PlayerSetting::isOsdMini, PlayerSetting::putOsdMini));
+        binding.osdDiagnostics.setOnClickListener(v -> toggleOsd(binding.osdDiagnostics, PlayerSetting::isOsdDiagnostics, PlayerSetting::putOsdDiagnostics));
+        binding.osdReset.setOnClickListener(v -> {
+            PlayerSetting.resetOsd();
+            updateOsdState();
+        });
         binding.speed.addOnChangeListener(this::setSpeed);
         for (TextView view : scales) view.setOnClickListener(this::setScale);
         binding.text.setOnClickListener(v -> dismiss(parent.control.action.text));
@@ -113,6 +127,34 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
     private void onTimer(View view) {
         TimerDialog.create().show(getActivity());
         dismiss();
+    }
+
+    private void setOsdText() {
+        String[] labels = ResUtil.getStringArray(R.array.select_player_osd);
+        TextView[] chips = {binding.osdTitle, binding.osdResolution, binding.osdTime, binding.osdProgress, binding.osdTraffic, binding.osdMini, binding.osdDiagnostics};
+        for (int i = 0; i < chips.length; i++) chips[i].setText(labels[i]);
+        updateOsdState();
+    }
+
+    private void updateOsdState() {
+        setOsdChecked(binding.osdTitle, PlayerSetting.isOsdTitle());
+        setOsdChecked(binding.osdResolution, PlayerSetting.isOsdResolution());
+        setOsdChecked(binding.osdTime, PlayerSetting.isOsdTime());
+        setOsdChecked(binding.osdProgress, PlayerSetting.isOsdProgress());
+        setOsdChecked(binding.osdTraffic, PlayerSetting.isOsdTraffic());
+        setOsdChecked(binding.osdMini, PlayerSetting.isOsdMini());
+        setOsdChecked(binding.osdDiagnostics, PlayerSetting.isOsdDiagnostics());
+    }
+
+    private void setOsdChecked(TextView view, boolean checked) {
+        view.setSelected(checked);
+        view.setAlpha(checked ? 1f : 0.45f);
+    }
+
+    private void toggleOsd(TextView view, BooleanSupplier getter, Consumer<Boolean> setter) {
+        boolean checked = !getter.getAsBoolean();
+        setter.accept(checked);
+        setOsdChecked(view, checked);
     }
 
     private void setSpeed(@NonNull Slider slider, float value, boolean fromUser) {
