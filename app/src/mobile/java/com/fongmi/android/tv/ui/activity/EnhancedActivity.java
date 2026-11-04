@@ -52,7 +52,7 @@ public class EnhancedActivity extends BaseActivity {
     protected void initEvent() {
         mBinding.plugin.setOnClickListener(view -> PluginActivity.start(this));
         mBinding.download.setOnClickListener(view -> DownloadActivity.start(this));
-        mBinding.lab.setOnClickListener(view -> LabActivity.start(this));
+        mBinding.lab.setOnClickListener(view -> com.fongmi.android.tv.ui.lab.LabHomeActivity.start(this));
         mBinding.panLogin.setOnClickListener(view -> PanLoginActivity.start(this));
         mBinding.miniApp.setOnClickListener(view -> openMiniApp());
         mBinding.miniAppSwitch.setOnClickListener(view -> toggleMiniApp());

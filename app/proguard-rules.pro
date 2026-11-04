@@ -88,3 +88,18 @@
 
 # JNI entry points are resolved by name at runtime.
 -keepclasseswithmembernames class com.fongmi.android.tv.player.subtitle.AssNative { native <methods>; }
+
+# 实验室落盘模型（注册表 registry.json＋包内 lab.json）：全是 Gson 反射
+# 落盘、跨版本读回的表。成员被 R8 改名/剥离时，旧版写的文件新版按新名
+# 读回——字段对不上轻则全空、重则类型冲突令整表被当坏文件改名清空。
+# 整类保名保成员，落盘名再由 @SerializedName 钉死，双保险。
+-keep class com.fongmi.android.tv.ui.lab.LabRegistry { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabRegistry$Svc { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabRegistry$Runtime { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest$LabCommand { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest$LabVar { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest$LabOption { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest$LabDownload { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabManifest$LabOutput { *; }
+-keep class com.fongmi.android.tv.ui.lab.LabCustomCommands$CustomCommand { *; }

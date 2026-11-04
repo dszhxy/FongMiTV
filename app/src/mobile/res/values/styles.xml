@@ -13,6 +13,11 @@
 
     <style name="Theme.App" parent="Theme.Base" />
 
+    <!-- 实验室页面：浅色兜底底，实验室皮肤按深字浅底设计 -->
+    <style name="Theme.Lab" parent="Theme.App">
+        <item name="android:windowBackground">#FFFBFBFA</item>
+    </style>
+
     <style name="ThemeOverlay_WebHTV_LightDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="colorSurfaceContainerHigh">@color/white</item>
         <item name="colorSurface">@color/white</item>

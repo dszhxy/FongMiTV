@@ -86,6 +86,13 @@ public class App extends Application implements Application.ActivityLifecycleCal
         Notify.createChannel();
         registerActivityLifecycleCallbacks(this);
         OkHttp.setProxy(Setting.getProxy());
+        // 实验室在 mobile 源集，主源集不能直引（leanback 无此类），按反射调用
+        try {
+            Class.forName("com.fongmi.android.tv.ui.lab.LabBoot")
+                    .getMethod("kick", Context.class)
+                    .invoke(null, this);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override

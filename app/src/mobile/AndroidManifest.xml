@@ -7,6 +7,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <supports-screens
         android:anyDensity="true"
@@ -135,6 +136,70 @@
             android:name=".ui.activity.DownloadActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout" />
 
+        <!-- 实验室：独立包 ui.lab -->
+        <activity
+            android:name=".ui.lab.LabHomeActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabSettingActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabEnvActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabServiceActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabLogActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabPasteImportActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabInstallActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.lab" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.lab.LabLiveOutputActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullUser" />
+        <activity
+            android:name=".ui.lab.LabTerminalActivity"
+            android:theme="@style/Theme.Lab"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboardHidden"
+            android:screenOrientation="fullUser"
+            android:windowSoftInputMode="adjustResize" />
+
+        <service
+            android:name=".ui.lab.LabKeepAlive"
+            android:exported="false" />
+
+        <!-- 旧实验室：播放器实验开关页，从实验室设置进入 -->
         <activity
             android:name=".ui.activity.LabActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout" />
