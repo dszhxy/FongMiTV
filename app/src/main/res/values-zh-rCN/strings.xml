@@ -535,4 +535,21 @@
     <string name="osd_resolution">%1$d × %2$d</string>
     <string name="osd_screen">屏显 %1$d × %2$d</string>
     <string name="osd_progress">%1$s / %2$s · %3$d%%</string>
+    <string name="setting_python_packages">Python 包管理</string>
+    <string name="lab_python_status">Python 3.10 · 支持纯 Python 包</string>
+    <string name="python_pkg_name_hint">包名，例如 requests==2.32.3</string>
+    <string name="python_pkg_install">安装</string>
+    <string name="python_pkg_hint">从 PyPI 下载 py3-none-any wheel；暂不支持含原生扩展的包。</string>
+    <string name="python_pkg_installed">已安装</string>
+    <string name="python_pkg_empty">暂无已安装的包</string>
+    <string name="python_pkg_installing">正在安装 %1$s…</string>
+    <string name="python_pkg_success">已安装 %1$s</string>
+    <string name="python_pkg_pending">已安装，将在 Python 下次启动时生效。</string>
+    <string name="python_pkg_failed">安装失败：%1$s</string>
+    <string name="python_pkg_uninstall">卸载</string>
+    <string name="python_pkg_remove_confirm">确定卸载 %1$s？</string>
+    <string name="python_pkg_removed">已卸载 %1$s</string>
+    <string name="python_pkg_reload">重载环境</string>
+    <string name="python_pkg_reloaded">Python 环境已重载</string>
+    <string name="python_pkg_name_empty">请输入包名</string>
 </resources>

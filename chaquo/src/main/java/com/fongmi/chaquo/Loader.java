@@ -10,6 +10,7 @@ public class Loader {
 
     public Loader() {
         if (!Python.isStarted()) Python.start(Platform.create());
+        Packages.apply();
         app = Python.getInstance().getModule("app");
     }
 

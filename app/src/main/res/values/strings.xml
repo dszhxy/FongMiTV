@@ -540,4 +540,21 @@
     <string name="osd_resolution">%1$d × %2$d</string>
     <string name="osd_screen">Screen %1$d × %2$d</string>
     <string name="osd_progress">%1$s / %2$s · %3$d%%</string>
+    <string name="setting_python_packages">Python packages</string>
+    <string name="lab_python_status">Python 3.10 · pure-Python packages supported</string>
+    <string name="python_pkg_name_hint">Package name, e.g. requests==2.32.3</string>
+    <string name="python_pkg_install">Install</string>
+    <string name="python_pkg_hint">Downloads py3-none-any wheels from PyPI. Packages with native extensions are not supported.</string>
+    <string name="python_pkg_installed">Installed</string>
+    <string name="python_pkg_empty">No packages installed yet</string>
+    <string name="python_pkg_installing">Installing %1$s…</string>
+    <string name="python_pkg_success">Installed %1$s</string>
+    <string name="python_pkg_pending">Installed. It will take effect the next time Python starts.</string>
+    <string name="python_pkg_failed">Install failed: %1$s</string>
+    <string name="python_pkg_uninstall">Uninstall</string>
+    <string name="python_pkg_remove_confirm">Uninstall %1$s?</string>
+    <string name="python_pkg_removed">Uninstalled %1$s</string>
+    <string name="python_pkg_reload">Reload environment</string>
+    <string name="python_pkg_reloaded">Python environment reloaded</string>
+    <string name="python_pkg_name_empty">Enter a package name</string>
 </resources>
