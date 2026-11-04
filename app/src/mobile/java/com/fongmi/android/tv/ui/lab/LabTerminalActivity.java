@@ -195,7 +195,7 @@ public class LabTerminalActivity extends AppCompatActivity {
         send.setOnClickListener(v -> runInput());
         row.addView(send);
         root.addView(row);
-        setContentView(root);
+        LabSkin.setContentView(this, root);
     }
 
     private void startShell() {

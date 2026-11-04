@@ -137,7 +137,7 @@ public class LabLogActivity extends AppCompatActivity {
         scroll.addView(wrap, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
-        setContentView(root);
+        LabSkin.setContentView(this, root);
 
         // 页面进出统一渐入渐出（与 BaseActivity 一致）
         overridePendingTransition(R.anim.xc_fade_in, R.anim.xc_fade_out);

@@ -13,34 +13,34 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.SystemBarStyle;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.fongmi.android.tv.ui.custom.CustomWallView;
+
 /**
- * 实验室 UI 设计语言：跟星辰主 App 同款卡面（抄自设置页 xc_setcard_v2，
- * drawable 实际取值：底 #57FFFFFF、描边 1dp #61FFFFFF、圆角 10dp）。
- * 字色照设置页 activity_xingchen_settings 实际取值：主 #0C0E12、次 #101216、淡 #1B2431。
- * 页面底跟星辰全局壁纸走（ThemeManager 给窗口铺壁纸，实验室页内容根透明；
- * 壁纸没贴上前的兜底底色见 Theme.XingChen.LabPage 的 windowBackground）。
+ * 实验室 UI 设计语言：与 Trae 主 App 一致——深色玻璃卡面＋浅色字。
+ * 页面背景与其它页面同源：铺自定义壁纸（CustomWallView），内容根透明；
+ * 壁纸没贴上前的兜底底色见 Theme.Lab 的 windowBackground。
  * 独立成套，不依赖其它模块的皮肤。布局/条目/顺序一律不动，只出皮。
  */
 public final class LabSkin {
 
     /** 点缀黄（只做按钮底） */
     public static final int YELLOW = 0xFFF2B33D;
-    /** 主字（标题/名称）#0C0E12 —— 星辰设置页同款 */
-    public static final int TEXT_MAIN = 0xFF0C0E12;
-    /** 正文 #101216 —— 星辰设置页同款 */
-    public static final int TEXT_BODY = 0xFF101216;
-    /** 次字 #1B2431 —— 星辰设置页同款 */
-    public static final int TEXT_SUB = 0xFF1B2431;
-    /** 暗字：次字 70% 透明（white_70 同理的派生） */
-    public static final int TEXT_DIM = 0xB31B2431;
-    /** 绿字（运行中/已装）#1E7A4C */
-    public static final int GREEN = 0xFF1E7A4C;
+    /** 主字（标题/名称）—— 深底浅字 */
+    public static final int TEXT_MAIN = 0xFFFFFFFF;
+    /** 正文 */
+    public static final int TEXT_BODY = 0xE6FFFFFF;
+    /** 次字 */
+    public static final int TEXT_SUB = 0xB3FFFFFF;
+    /** 暗字：次字 50% 透明 */
+    public static final int TEXT_DIM = 0x80FFFFFF;
+    /** 绿字（运行中/已装） */
+    public static final int GREEN = 0xFF35D884;
     /** 绿点 #22B45E */
     public static final int GREEN_DOT = 0xFF22B45E;
     /** 出错红 #E5484D —— 星辰主 App 弹窗/布局同款红，深卡上可读 */
     public static final int RED = 0xFFE5484D;
-    /** 琥珀字（状态/进度文案）#9A6206 —— 浅底对比 4.9，看得清的深琥珀 */
-    public static final int AMBER = 0xFF9A6206;
+    /** 琥珀字（状态/进度文案）—— 深底上看得清 */
+    public static final int AMBER = 0xFFF0C040;
     /** 黄钮上的字 #171310 */
     public static final int ON_YELLOW = 0xFF171310;
     /** 深底上的主字 #f7f4ee（稿 a2-dialogs .pt/.opt） */
@@ -51,14 +51,14 @@ public final class LabSkin {
     public static final int HINT_ON_DARK = 0xFFA8A29A;
     /** 深底上的报错红 #ffa49a（稿 .err，报错字跟底拉开对比） */
     public static final int RED_ON_DARK = 0xFFFFA49A;
-    /** 壁纸上的标题字 #16181d（稿 h1） */
-    public static final int WALL_TITLE = 0xFF16181D;
-    /** 壁纸上的副行字 #4a4d54（稿 .sub） */
-    public static final int WALL_SUB = 0xFF4A4D54;
-    /** 壁纸上的弱字 #3c3f46（稿 .autorun） */
-    public static final int WALL_DIM = 0xFF3C3F46;
-    /** 金色环境签 #a86e08（稿 .envtag） */
-    public static final int GOLD_TAG = 0xFFA86E08;
+    /** 壁纸上的标题字 */
+    public static final int WALL_TITLE = 0xFFFFFFFF;
+    /** 壁纸上的副行字 */
+    public static final int WALL_SUB = 0xCCFFFFFF;
+    /** 壁纸上的弱字 */
+    public static final int WALL_DIM = 0x99FFFFFF;
+    /** 金色环境签 */
+    public static final int GOLD_TAG = 0xFFFFD27A;
     /** 运行中绿字 #35d884（稿 .chip.run） */
     public static final int GREEN_ON_DARK = 0xFF35D884;
     /** 运行中计数黄 #f0c040（稿 .pill .n） */
@@ -68,9 +68,9 @@ public final class LabSkin {
         void accept(boolean on);
     }
 
-    /** 壁纸上的字：加浅色光晕，深浅壁纸都看得清（稿 h1 text-shadow） */
+    /** 壁纸上的字：加深色投影，壁纸偏亮时也看得清 */
     public static void halo(android.widget.TextView t) {
-        t.setShadowLayer(14, 0, 2, 0x73FFFFFF);
+        t.setShadowLayer(12, 0, 2, 0x99000000);
     }
 
     /** 深玻璃格（稿 .tile）：深渐变＋1dp 浅描边＋16dp 圆角 */
@@ -146,9 +146,9 @@ public final class LabSkin {
     /** 中性小胶囊（稿 .uninstall：卸载钮） */
     public static GradientDrawable capsuleNeutral(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x1A18140E);
+        d.setColor(0x1FFFFFFF);
         d.setCornerRadius(dp(c, 999));
-        d.setStroke(dp(c, 1), 0x2E18140E);
+        d.setStroke(dp(c, 1), 0x33FFFFFF);
         return d;
     }
 
@@ -261,15 +261,29 @@ public final class LabSkin {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, c.getResources().getDisplayMetrics()));
     }
 
-    /** 状态栏融合：透明栏＋深色图标，内容延伸到栏下（跟 App 其它页同一写法，浅色版） */
+    /** 状态栏融合：透明栏＋浅色图标，内容延伸到栏下（与 BaseActivity 同一写法） */
     public static void edgeToEdge(AppCompatActivity a) {
         EdgeToEdge.enable(a,
-                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT));
+                SystemBarStyle.dark(Color.TRANSPARENT),
+                SystemBarStyle.dark(Color.TRANSPARENT));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             a.getWindow().setStatusBarContrastEnforced(false);
             a.getWindow().setNavigationBarContrastEnforced(false);
         }
+    }
+
+    /**
+     * 与 BaseActivity 一致：内容之下铺全局壁纸，页面根透明，背景跟主 App 其它页同源。
+     */
+    public static void setContentView(AppCompatActivity a, View content) {
+        a.setContentView(content);
+        ViewGroup root = a.findViewById(android.R.id.content);
+        if (root == null) return;
+        for (int i = 0; i < root.getChildCount(); i++) {
+            if (root.getChildAt(i) instanceof CustomWallView) return;
+        }
+        root.addView(new CustomWallView(a, null), 0,
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     public static int statusBarHeight(Context c) {
@@ -282,19 +296,20 @@ public final class LabSkin {
         return id > 0 ? c.getResources().getDimensionPixelSize(id) : 0;
     }
 
-    /** 卡面：星辰设置页同款毛玻璃卡（xc_setcard_v2：底 #57FFFFFF、1dp #61FFFFFF 描边、10dp 圆角） */
+    /** 卡面：深色玻璃卡（与主 App 条目卡同风格：深渐变、1dp 浅描边、10dp 圆角） */
     public static GradientDrawable cardBackground(Context c, boolean running) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(0x57FFFFFF);
+        GradientDrawable d = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xCC26201A, 0xC7181410});
         d.setCornerRadius(dp(c, 10));
-        d.setStroke(dp(c, 1), running ? 0x804ADE80 : 0x61FFFFFF);
+        d.setStroke(dp(c, 1), running ? 0x804ADE80 : 0x33FFFFFF);
         return d;
     }
 
     /** 状态徽：灰（未装/已停止） */
     public static GradientDrawable tagGray(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x140C0E12); // 深字 8%，浅卡上看得见
+        d.setColor(0x26FFFFFF);
         d.setCornerRadius(dp(c, 999));
         return d;
     }
@@ -318,7 +333,7 @@ public final class LabSkin {
     /** 灰色次钮 */
     public static GradientDrawable buttonGray(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x140C0E12); // 深字 8%
+        d.setColor(0x1FFFFFFF);
         d.setCornerRadius(dp(c, 999));
         return d;
     }

@@ -168,7 +168,7 @@ public class LabHomeActivity extends AppCompatActivity {
         scroll.addView(gridBox, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
-        setContentView(root);
+        LabSkin.setContentView(this, root);
     }
 
     /** 总开关拨动：落盘之外，拨上立即补跑一遍自启（冷启那遍之外唯一的触发点） */

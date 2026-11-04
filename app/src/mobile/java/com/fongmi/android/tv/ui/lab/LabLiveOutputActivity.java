@@ -131,7 +131,7 @@ public class LabLiveOutputActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         scroll.addView(card, clp);
         root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
-        setContentView(root);
+        LabSkin.setContentView(this, root);
     }
 
     private void append(String s) {

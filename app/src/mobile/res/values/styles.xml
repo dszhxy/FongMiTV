@@ -13,9 +13,9 @@
 
     <style name="Theme.App" parent="Theme.Base" />
 
-    <!-- 实验室页面：浅色兜底底，实验室皮肤按深字浅底设计 -->
+    <!-- 实验室页面：深色兜底底，实验室皮肤按浅字深底设计 -->
     <style name="Theme.Lab" parent="Theme.App">
-        <item name="android:windowBackground">#FFFBFBFA</item>
+        <item name="android:windowBackground">#FF121418</item>
     </style>
 
     <style name="ThemeOverlay_WebHTV_LightDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">

@@ -113,7 +113,7 @@ public class LabInstallActivity extends AppCompatActivity {
         body.setPadding(0, dp(8), 0, dp(24) + LabSkin.navBarHeight(this));
         root.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        setContentView(root);
+        LabSkin.setContentView(this, root);
     }
 
     private void peek() {

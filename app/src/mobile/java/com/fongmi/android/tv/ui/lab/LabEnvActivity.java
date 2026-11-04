@@ -148,7 +148,7 @@ public class LabEnvActivity extends AppCompatActivity {
         scroll.addView(listBox, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
-        setContentView(root);
+        LabSkin.setContentView(this, root);
     }
 
     private void reload() {
