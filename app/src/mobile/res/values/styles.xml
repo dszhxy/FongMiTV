@@ -1,0 +1,360 @@
+<resources>
+
+    <style name="Theme.Base" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.App</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+    </style>
+
+    <style name="Theme.App" parent="Theme.Base" />
+
+    <!-- 实验室页面：与主 App 同源——透明底＋自定义壁纸，不再铺近黑底 -->
+    <style name="Theme.Lab" parent="Theme.App">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="ThemeOverlay_WebHTV_LightDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurfaceContainerHigh">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="android:windowBackground">@color/transparent</item>
+    </style>
+
+    <style name="Theme.Crash" parent="Theme.Base">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowBackground">@color/grey_700</item>
+    </style>
+
+    <style name="Control">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:textColor">@color/yellow</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="ToolbarTextAppearance" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="titleTextColor">@color/white</item>
+    </style>
+
+    <style name="HongguoCommentRightAnim">
+        <item name="android:windowEnterAnimation">@anim/hongguo_panel_right_in</item>
+        <item name="android:windowExitAnimation">@anim/hongguo_panel_right_out</item>
+    </style>
+
+    
+    <style name="Theme.XingChen.Music" parent="Theme.App">
+        <item name="android:windowBackground">@color/music_page_base</item>
+        <item name="android:colorBackground">@color/music_page_base</item>
+        <item name="android:windowSplashScreenBackground">@color/music_page_base</item>
+    </style>
+
+    
+    
+    <style name="Theme.XingChen.MusicDark" parent="Theme.App">
+        <item name="android:windowBackground">@color/music_random_base</item>
+        <item name="android:colorBackground">@color/music_random_base</item>
+        <item name="android:windowSplashScreenBackground">@color/music_random_base</item>
+    </style>
+
+    
+    <style name="ControlSheetTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">13dp</item>
+        <item name="android:layout_marginBottom">7dp</item>
+        <item name="android:textColor">@color/white_70</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    
+    <style name="ControlSheetTitleLight">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">13dp</item>
+        <item name="android:layout_marginBottom">7dp</item>
+        <item name="android:textColor">#99000000</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    
+    <style name="ControlSheetButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">7dp</item>
+        <item name="android:background">@drawable/selector_control_sheet_button</item>
+        <item name="android:gravity">center</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">@color/selector_control_sheet_text</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    
+    <style name="ControlSheetButtonLight">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">7dp</item>
+        <item name="android:background">@drawable/selector_control_sheet_button_light</item>
+        <item name="android:gravity">center</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">@color/selector_control_sheet_text_dark</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    
+    <style name="VideoActionButton" parent="Video.ContextText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:drawablePadding">2dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:shadowColor">@color/black_90</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    
+    <style name="AudioActionButton" parent="Video.ContextText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">46dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:drawablePadding">3dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textColor">@color/white_80</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    
+    <style name="ShapeAppearance.WebHTV.AudioCover" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    
+    <style name="ToolbarPopupTheme" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/shape_toolbar_popup</item>
+        <item name="android:textColorPrimary">#101216</item>
+        <item name="android:textColorSecondary">#2E3339</item>
+        <item name="android:colorControlNormal">#2D4C55</item>
+        <item name="colorControlNormal">#2D4C55</item>
+        <item name="colorSurface">#F2FFFFFF</item>
+        <item name="colorOnSurface">#18333A</item>
+        <item name="colorOnSurfaceVariant">#5D7278</item>
+        <item name="popupMenuStyle">@style/ToolbarPopupMenu</item>
+        <item name="android:popupMenuStyle">@style/ToolbarPopupMenu</item>
+        <item name="textAppearanceLargePopupMenu">@style/ToolbarPopupTextAppearance</item>
+        <item name="textAppearanceSmallPopupMenu">@style/ToolbarPopupTextAppearance</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/ToolbarPopupTextAppearance</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/ToolbarPopupTextAppearance</item>
+    </style>
+
+    
+    <style name="ToolbarPopupMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/shape_toolbar_popup</item>
+    </style>
+
+    
+    <style name="ToolbarPopupTextAppearance" parent="TextAppearance.AppCompat.Widget.PopupMenu.Large">
+        <item name="android:textColor">#18333A</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+
+    
+    <style name="Theme.XingChen" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+              <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="colorPrimary">#f0a400</item>
+        <item name="colorPrimaryVariant">#c07f00</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+    </style>
+
+
+    
+    <style name="ThemeOverlay.XingChen.GlassDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">16dp</item>
+        <item name="background">@drawable/dialog_glass</item>
+        
+        <item name="android:windowBackground">@drawable/dialog_glass</item>
+    </style>
+
+    
+    
+    <style name="XingChen.DialogEditText.Dark" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_input_dark</item>
+        <item name="android:textColor">#F2F4F8</item>
+        <item name="android:textColorHint">#6E7686</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    
+    <style name="ThemeOverlay.XingChen.GlassDialog.Dark" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">16dp</item>
+        <item name="background">@drawable/dialog_glass_dark</item>
+        
+        <item name="android:windowBackground">@drawable/dialog_glass_dark</item>
+        <item name="android:textColor">#F2F4F8</item>
+        <item name="android:textColorPrimary">#F2F4F8</item>
+        <item name="android:textColorSecondary">#A8B0C0</item>
+        
+        <item name="colorOnSurface">#F2F4F8</item>
+        <item name="android:textColorAlertDialogListItem">#F2F4F8</item>
+        <item name="textColorAlertDialogListItem">#F2F4F8</item>
+        <item name="android:colorAccent">#D9A420</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.Dark</item>
+    </style>
+
+    
+    
+    <style name="XingChen.DialogEditText.HkLight" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_input_light</item>
+        <item name="android:textColor">#101216</item>
+        <item name="android:textColorHint">#3A3F45</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    
+    <style name="ThemeOverlay.XingChen.GlassDialog.HkLight" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">16dp</item>
+        <item name="android:windowBackground">@drawable/dialog_glass_light</item>
+        <item name="android:textColor">#101216</item>
+        <item name="android:textColorPrimary">#101216</item>
+        <item name="android:textColorSecondary">#1E2126</item>
+        <item name="android:textColorAlertDialogListItem">#101216</item>
+        <item name="textColorAlertDialogListItem">#101216</item>
+        <item name="android:colorAccent">#D9A420</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.HkLight</item>
+    </style>
+
+    
+    
+    <style name="HkDialogFade">
+        <item name="android:windowEnterAnimation">@anim/hk_dialog_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/hk_dialog_fade_out</item>
+    </style>
+
+    
+    
+    <style name="XcPopupFade">
+        <item name="android:windowEnterAnimation">@anim/hk_dialog_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/hk_dialog_fade_out</item>
+    </style>
+
+    
+    
+    <style name="Theme.XingChen.HkPage" parent="Theme.XingChen">
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
+        
+        <item name="android:windowBackground">@color/hk_status_bar</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    
+    
+    <style name="Theme.XingChen.LabPage" parent="Theme.XingChen.HkPage">
+        <item name="android:windowBackground">#FFFBFBFA</item>
+    </style>
+
+    
+    
+    <style name="MusicSettingSection">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">28dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:textColor">#8E8E93</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    
+    <style name="MusicSettingRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">60dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    
+    
+    <style name="MusicSettingDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0.5dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:background">#0F000000</item>
+    </style>
+
+    
+    
+    <style name="MusicSettingIcon">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:background">@drawable/bg_music_setting_icon</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:tint">#FFFFFF</item>
+    </style>
+
+    
+    <style name="MusicSettingName">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">#1C1C1E</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    
+    <style name="MusicSettingValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:textColor">#8E8E93</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    
+    
+    <style name="MusicSettingSwitch">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:scaleX">0.75</item>
+        <item name="android:scaleY">0.75</item>
+        <item name="thumbTint">@color/music_switch_thumb</item>
+        <item name="trackTint">@color/music_switch_track</item>
+    </style>
+
+
+</resources>
