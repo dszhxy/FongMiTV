@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        // 官方仓库优先：阿里云镜像近期频繁 502，只作兜底
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = "https://maven.aliyun.com/repository/gradle-plugin" }
+        maven { url = "https://maven.aliyun.com/repository/google" }
+        maven { url = "https://maven.aliyun.com/repository/public" }
+    }
+}
+
+plugins {
+    id "org.gradle.toolchains.foojay-resolver-convention" version "1.0.0"
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url = uri("$rootDir/third_party/maven") }
+        // 官方仓库优先：阿里云镜像近期频繁 502，只作兜底
+        google()
+        mavenCentral()
+        maven { url = "https://jitpack.io" }
+        maven { url = "https://maven.aliyun.com/repository/google" }
+        maven { url = "https://maven.aliyun.com/repository/public" }
+        flatDir { dirs "$rootDir/app/libs" }
+    }
+}
+
+include ':app'
+include ':catvod'
+include ':chaquo'
+include ':quickjs'
+rootProject.name = "TV"
