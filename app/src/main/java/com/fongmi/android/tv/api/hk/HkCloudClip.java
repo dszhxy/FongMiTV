@@ -34,7 +34,8 @@ public class HkCloudClip {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final MediaType TEXT = MediaType.get("text/plain; charset=utf-8");
 
-    private static final String UA = "Mozilla/5.0 (Linux; Android 15; 2407FRK8EC Build/AP3A.240617.008; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.6613.127 Mobile Safari/537.36";
+    /** 与 {@link HkUaEnum#MOBILE} 取值逐字符一致，统一引用避免多处维护。 */
+    private static final String UA = HkUaEnum.MOBILE.getContent();
 
     public static String name(int clipNum) {
         switch (clipNum) {
