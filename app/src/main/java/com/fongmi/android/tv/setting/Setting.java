@@ -54,6 +54,14 @@ public class Setting {
         Prefers.put("proxy", proxy);
     }
 
+    public static boolean isCompactEpisodeTitle() {
+        return Prefers.getBoolean("compact_episode_title");
+    }
+
+    public static void putCompactEpisodeTitle(boolean compact) {
+        Prefers.put("compact_episode_title", compact);
+    }
+
     public static int getBackupMode() {
         return Prefers.getInt("backup_mode", 0);
     }

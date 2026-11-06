@@ -72,7 +72,7 @@ public class EpisodeListDialog extends AppCompatDialogFragment implements FlagAd
         if (episodes == null) return this;
         Flag flag = new Flag("默认");
         flag.mergeEpisodes(new ArrayList<>(episodes), false);
-        flag.setSelected(true);
+        flag.setSelected(flag);
         this.flags = new ArrayList<>();
         this.flags.add(flag);
         return this;
