@@ -7,7 +7,7 @@ import com.fongmi.android.tv.utils.ResUtil;
 public class Product {
 
     public static int getDeviceType() {
-        return 0;
+        return com.fongmi.android.tv.ui.UiMode.isLeanback() ? 0 : 1;
     }
 
     public static int getColumn() {

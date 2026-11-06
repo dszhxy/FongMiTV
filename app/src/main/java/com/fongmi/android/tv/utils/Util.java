@@ -20,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.fongmi.android.tv.App;
-import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.R;
 import com.github.catvod.utils.Shell;
 
@@ -171,11 +170,11 @@ public class Util {
     }
 
     public static boolean isLeanback() {
-        return "leanback".equals(BuildConfig.FLAVOR_mode);
+        return com.fongmi.android.tv.ui.UiMode.isLeanback();
     }
 
     public static boolean isMobile() {
-        return "mobile".equals(BuildConfig.FLAVOR_mode);
+        return com.fongmi.android.tv.ui.UiMode.isMobile();
     }
 
     public static boolean isFullscreen(Activity activity) {

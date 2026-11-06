@@ -15,7 +15,7 @@ import com.google.android.material.shape.ShapeAppearanceModel;
 public class Product {
 
     public static int getDeviceType() {
-        return 1;
+        return com.fongmi.android.tv.ui.UiMode.isLeanback() ? 0 : 1;
     }
 
     public static int getColumn(Context context) {
