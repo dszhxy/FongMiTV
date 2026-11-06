@@ -15,23 +15,23 @@
 
     <!-- ========== 5种弹窗风格的App主题变体 ========== -->
     <style name="Theme.App.DialogClassic" parent="Theme.App">
-        <item name="alertDialogTheme">@style/ThemeOverlay_XingChen_GlassDialog_Dark</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
     </style>
 
     <style name="Theme.App.DialogWhite" parent="Theme.App">
-        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_White</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
     </style>
 
     <style name="Theme.App.DialogAmoled" parent="Theme.App">
-        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_Amoled</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
     </style>
 
     <style name="Theme.App.DialogIOS" parent="Theme.App">
-        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_IOS</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
     </style>
 
     <style name="Theme.App.DialogNeon" parent="Theme.App">
-        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_Neon</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
     </style>
 
     <!-- 实验室页面：与主 App 同源——透明底＋自定义壁纸，不再铺近黑底 -->
