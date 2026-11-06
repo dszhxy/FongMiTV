@@ -44,7 +44,6 @@ android {
     }
 
     flavorDimensions = ["mode", "abi"]
-
     productFlavors {
         leanback {
             dimension "mode"
@@ -59,6 +58,14 @@ android {
         armeabi_v7a {
             dimension "abi"
             ndk { abiFilters "armeabi-v7a" }
+        }
+    }
+
+    // mobile / leanback 完全一致的源码与资源集中到 src/shared，避免重复维护
+    sourceSets {
+        main {
+            java.srcDirs += ['src/shared/java']
+            res.srcDirs += ['src/shared/res']
         }
     }
 
