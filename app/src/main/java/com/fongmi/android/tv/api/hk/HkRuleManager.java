@@ -46,6 +46,8 @@ import okhttp3.Response;
 public class HkRuleManager {
 
     private static final String DIR = "plugins/hk";
+    /** 裸 UA（8.83 原文即 "Mozilla/5.0"，仅作占位）——云取规则/剪贴板等轻量请求共用，避免字面量散落。 */
+    private static final String PLAIN_UA = "Mozilla/5.0";
     private static final String DATA_DIR = "plugins/hk/data";
     private static final String PREFS = "hk_rule";
     private static final String KEY_ENABLED_PREFIX = "enabled_";
@@ -730,7 +732,7 @@ public class HkRuleManager {
                 if (id.isEmpty()) return null;
                 OkHttpClient client = HkHttp.client();
                 Request req = new Request.Builder().url(CMDIM_BASE + "/" + id)
-                        .header("User-Agent", "Mozilla/5.0").build();
+                        .header("User-Agent", PLAIN_UA).build();
                 try (Response resp = client.newCall(req).execute()) {
                     if (!resp.isSuccessful() || resp.body() == null) return null;
                     Matcher mm = Pattern.compile("class=\"test_box\"[^>]*>(.*?)</div>",
@@ -766,7 +768,7 @@ public class HkRuleManager {
         Request req = new Request.Builder().url(PASTEME_API + rest)
                 .header("referer", PASTEME_REFERER)
                 .header("cookie", "")
-                .header("User-Agent", "Mozilla/5.0").build();
+                .header("User-Agent", PLAIN_UA).build();
         try (Response resp = client.newCall(req).execute()) {
             if (!resp.isSuccessful() || resp.body() == null) return null;
             return extractRuleJsonFromPasteme(resp.body().string());
@@ -782,7 +784,7 @@ public class HkRuleManager {
             String key = path.substring("/apidb/".length()).split("[\\s/]")[0];
             if (key.isEmpty()) throw new IllegalArgumentException("口令中 apidb key 为空");
             Request req = new Request.Builder().url(TEXTDB_GET + key)
-                    .header("User-Agent", "Mozilla/5.0").build();
+                    .header("User-Agent", PLAIN_UA).build();
             try (Response resp = client.newCall(req).execute()) {
                 if (!resp.isSuccessful() || resp.body() == null)
                     throw new IllegalArgumentException("云端请求失败（HTTP " + resp.code() + "）");
@@ -813,7 +815,7 @@ public class HkRuleManager {
             String id = path.substring(1).split("[\\s/]")[0];
             if (id.isEmpty()) throw new IllegalArgumentException("口令中缺少便签ID");
             Request req = new Request.Builder().url(CMDIM_BASE + "/" + id)
-                    .header("User-Agent", "Mozilla/5.0").build();
+                    .header("User-Agent", PLAIN_UA).build();
             try (Response resp = client.newCall(req).execute()) {
                 if (!resp.isSuccessful() || resp.body() == null)
                     throw new IllegalArgumentException("云端请求失败（HTTP " + resp.code() + "）");
@@ -830,7 +832,7 @@ public class HkRuleManager {
             id = id.split("[\\s/]")[0];
             if (id.isEmpty()) throw new IllegalArgumentException("口令中缺少 pasteId");
             Request req = new Request.Builder().url("https://pastebin.com/raw/" + id)
-                    .header("User-Agent", "Mozilla/5.0").build();
+                    .header("User-Agent", PLAIN_UA).build();
             try (Response resp = client.newCall(req).execute()) {
                 if (!resp.isSuccessful() || resp.body() == null)
                     throw new IllegalArgumentException("云端请求失败（HTTP " + resp.code() + "）");
@@ -845,7 +847,7 @@ public class HkRuleManager {
             String id = path.substring(1).split("[\\s/]")[0];
             if (id.isEmpty()) throw new IllegalArgumentException("口令中缺少便签ID");
             Request req = new Request.Builder().url("https://note.ms/" + id)
-                    .header("User-Agent", "Mozilla/5.0").build();
+                    .header("User-Agent", PLAIN_UA).build();
             try (Response resp = client.newCall(req).execute()) {
                 if (!resp.isSuccessful() || resp.body() == null)
                     throw new IllegalArgumentException("云端请求失败（HTTP " + resp.code() + "）");
@@ -860,7 +862,7 @@ public class HkRuleManager {
             String id = path.substring(1).split("[\\s/]")[0];
             if (id.isEmpty()) throw new IllegalArgumentException("口令中缺少便签ID");
             Request req = new Request.Builder().url("https://txtpad.cn/" + id)
-                    .header("User-Agent", "Mozilla/5.0").build();
+                    .header("User-Agent", PLAIN_UA).build();
             try (Response resp = client.newCall(req).execute()) {
                 if (!resp.isSuccessful() || resp.body() == null)
                     throw new IllegalArgumentException("云端请求失败（HTTP " + resp.code() + "）");
@@ -879,7 +881,7 @@ public class HkRuleManager {
             for (String base : bases) {
                 try {
                     Request req = new Request.Builder().url(base + key)
-                            .header("User-Agent", "Mozilla/5.0").build();
+                            .header("User-Agent", PLAIN_UA).build();
                     try (Response resp = client.newCall(req).execute()) {
                         if (!resp.isSuccessful() || resp.body() == null) continue;
                         String json = unwrapShareText(resp.body().string());
@@ -1067,7 +1069,7 @@ public class HkRuleManager {
                 .add("value", b64)
                 .build();
         Request req = new Request.Builder().url(TEXTDB_API_UPDATE).post(body)
-                .header("User-Agent", "Mozilla/5.0").build();
+                .header("User-Agent", PLAIN_UA).build();
         try (Response resp = client.newCall(req).execute()) {
             if (!resp.isSuccessful() || resp.body() == null)
                 throw new IllegalArgumentException("上传失败（HTTP " + resp.code() + "）");
@@ -1104,7 +1106,7 @@ public class HkRuleManager {
         Request req = new Request.Builder().url(CMDIM_BASE + "/").post(body)
                 .header("Origin", CMDIM_BASE)
                 .header("Referer", CMDIM_BASE + "/")
-                .header("User-Agent", "Mozilla/5.0").build();
+                .header("User-Agent", PLAIN_UA).build();
         try (Response resp = client.newCall(req).execute()) {
             String loc = resp.header("Location");
             if (loc == null || loc.isEmpty())

@@ -55,6 +55,8 @@ import okhttp3.ResponseBody;
 public class HkM3u8ClearUtil {
 
     private static final String TAG = "HkM3u8ClearUtil";
+    /** 裸 UA（8.83 原文即 "Mozilla/5.0"，仅作占位）——云取规则/剪贴板等轻量请求共用，避免字面量散落。 */
+    private static final String PLAIN_UA = "Mozilla/5.0";
     private static final String RULES_FILE = "hk_m3u8_rules.json";
 
     private static final Pattern REGEX_MEDIA_DURATION = Pattern.compile("#EXTINF:([\\d\\.]+)\\b");
@@ -527,7 +529,7 @@ public class HkM3u8ClearUtil {
         try {
             OkHttpClient client = HkHttp.client();
             Request.Builder rb = new Request.Builder().url(url);
-            rb.header("User-Agent", "Mozilla/5.0");
+            rb.header("User-Agent", PLAIN_UA);
             if (headers != null) {
                 for (Map.Entry<String, String> e : headers.entrySet()) {
                     if (e.getKey() != null && e.getValue() != null) {
