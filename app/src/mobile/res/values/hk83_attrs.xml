@@ -24,14 +24,6 @@
         <attr name="lineSpaceLowerLimit" />
         <attr name="operateType" />
     </declare-styleable>
-    <attr name="align" format="integer">
-        <enum name="left" value="0" />
-        <enum name="center" value="1" />
-        <enum name="right" value="2" />
-    </attr>
-    <declare-styleable name="AlignTextView">
-        <attr name="align" />
-    </declare-styleable>
     <declare-styleable name="RecyclerFastScroller">
         <attr name="rfs_barColor" format="color" />
         <attr name="rfs_handleNormalColor" format="color" />
