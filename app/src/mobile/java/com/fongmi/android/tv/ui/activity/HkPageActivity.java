@@ -56,6 +56,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.SiteApi;
@@ -590,7 +592,8 @@ public class HkPageActivity extends BaseActivity {
             String message = codes.size() == 1
                     ? "剪贴板中有海阔云口令，是否立即导入？\n\n" + codes.get(0)
                     : "剪贴板中有 " + codes.size() + " 个海阔云口令，是否全部导入？\n\n" + TextUtils.join("\n", codes);
-            new HkDialogs(this)
+            // 与软件普通弹窗一致：白底 Material 弹窗（原 HkDialogs 是深色毛玻璃）
+            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
                     .setTitle(codes.size() == 1 ? "检测到云口令" : "检测到多个云口令")
                     .setMessage(message)
                     .setPositiveButton("导入", (d, w) -> {
@@ -1660,24 +1663,25 @@ public class HkPageActivity extends BaseActivity {
         et.setMinLines(2);
         et.setMaxLines(5);
         et.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
-        et.setTextColor(0xFFF2F4F8);
-        et.setHintTextColor(0xFF9AA1B0);
+        et.setTextColor(0xFF101216);
+        et.setHintTextColor(0xFF3A3F45);
         if (!TextUtils.isEmpty(preset)) et.setText(preset);
         box.addView(et);
         EditText etPwd = new EditText(this);
         etPwd.setHint("密码（分享人设了密码才填，没有可不填）");
         etPwd.setSingleLine(true);
-        etPwd.setTextColor(0xFFF2F4F8);
-        etPwd.setHintTextColor(0xFF9AA1B0);
+        etPwd.setTextColor(0xFF101216);
+        etPwd.setHintTextColor(0xFF3A3F45);
         etPwd.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         box.addView(etPwd);
         CheckBox cb = new CheckBox(this);
         cb.setText("导入失败时，再问我一次密码");
-        cb.setTextColor(0xFFF2F4F8);
+        cb.setTextColor(0xFF101216);
         cb.setChecked(importPwdPromptEnabled());
         cb.setOnCheckedChangeListener((v, checked) -> setImportPwdPromptEnabled(checked));
         box.addView(cb);
-        new HkDialogs(this)
+        // 与软件普通弹窗一致：白底 Material 弹窗
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
                 .setTitle("从云口令导入")
                 .setView(box)
                 .setPositiveButton("导入", (d, w) -> importCloudCodeInput(
@@ -1741,10 +1745,11 @@ public class HkPageActivity extends BaseActivity {
         EditText et = new EditText(this);
         et.setHint("输入分享人给的密码");
         et.setSingleLine(true);
-        et.setTextColor(0xFFF2F4F8);
-        et.setHintTextColor(0xFF9AA1B0);
+        et.setTextColor(0xFF101216);
+        et.setHintTextColor(0xFF3A3F45);
         et.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        new HkDialogs(this)
+        // 与软件普通弹窗一致：白底 Material 弹窗
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
                 .setTitle("这个分享可能设了密码")
                 .setMessage("没填密码导入失败了。分享人要是给了密码，填这里再试一次。")
                 .setView(et)
