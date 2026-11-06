@@ -730,4 +730,13 @@
     <string name="lut_unfavorited">Removed from favorites</string>
     <string name="player_lut">LUT color</string>
     <string name="lut_title_value">%1$s · %2$s</string>
+
+    <string name="lut_unavailable_tunnel">Tunnel mode does not support LUT color</string>
+    <string name="lut_unavailable_video_prefer">Extension video decode does not support LUT color</string>
+    <string name="lut_unavailable_no_video">Current content has no video track</string>
+    <string name="lut_unavailable_player">Current player engine does not support LUT color</string>
+    <string name="lut_unavailable_hdr">HDR/Dolby Vision content does not support LUT color yet</string>
+    <string name="lut_unavailable_drm">DRM protected videos do not support LUT color</string>
+    <string name="lut_unavailable_output_mode">Current output mode does not support LUT color. Switch to GPU output mode to use it</string>
+    <string name="lut_unavailable_soft_decode">Software decode does not support LUT color</string>
 </resources>
