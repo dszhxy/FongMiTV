@@ -592,8 +592,8 @@ public class HkPageActivity extends BaseActivity {
             String message = codes.size() == 1
                     ? "剪贴板中有海阔云口令，是否立即导入？\n\n" + codes.get(0)
                     : "剪贴板中有 " + codes.size() + " 个海阔云口令，是否全部导入？\n\n" + TextUtils.join("\n", codes);
-            // 与软件普通弹窗一致：白底 Material 弹窗（原 HkDialogs 是深色毛玻璃）
-            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
+            // 跟随用户设置的弹窗风格
+            new com.fongmi.android.tv.ui.hk.HkDialogs(this)
                     .setTitle(codes.size() == 1 ? "检测到云口令" : "检测到多个云口令")
                     .setMessage(message)
                     .setPositiveButton("导入", (d, w) -> {
@@ -1680,8 +1680,8 @@ public class HkPageActivity extends BaseActivity {
         cb.setChecked(importPwdPromptEnabled());
         cb.setOnCheckedChangeListener((v, checked) -> setImportPwdPromptEnabled(checked));
         box.addView(cb);
-        // 与软件普通弹窗一致：白底 Material 弹窗
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
+        // 跟随用户设置的弹窗风格
+        new com.fongmi.android.tv.ui.hk.HkDialogs(this)
                 .setTitle("从云口令导入")
                 .setView(box)
                 .setPositiveButton("导入", (d, w) -> importCloudCodeInput(
@@ -1748,8 +1748,8 @@ public class HkPageActivity extends BaseActivity {
         et.setTextColor(0xFF101216);
         et.setHintTextColor(0xFF3A3F45);
         et.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        // 与软件普通弹窗一致：白底 Material 弹窗
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_WebHTV_LightDialog)
+        // 跟随用户设置的弹窗风格
+        new com.fongmi.android.tv.ui.hk.HkDialogs(this)
                 .setTitle("这个分享可能设了密码")
                 .setMessage("没填密码导入失败了。分享人要是给了密码，填这里再试一次。")
                 .setView(et)

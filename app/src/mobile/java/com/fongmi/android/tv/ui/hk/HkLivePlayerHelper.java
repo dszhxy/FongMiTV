@@ -167,7 +167,7 @@ public final class HkLivePlayerHelper {
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp.leftMargin = pad / 2;
             box.addView(label, lp);
-            android.app.Dialog dialog = new MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_WebHTV_LightDialog).setView(box).create();
+            android.app.Dialog dialog = new HkDialogs(activity).setView(box).create();
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
             dialog.show();

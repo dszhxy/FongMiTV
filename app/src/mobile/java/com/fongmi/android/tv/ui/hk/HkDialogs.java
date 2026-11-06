@@ -62,8 +62,25 @@ public class HkDialogs extends AlertDialog.Builder {
     public AlertDialog create() {
         AlertDialog dialog = super.create();
         Window window = dialog.getWindow();
-        if (window != null) window.setWindowAnimations(R.style.HkDialogFade);
+        if (window != null) {
+            window.setWindowAnimations(R.style.HkDialogFade);
+            // 强制应用弹窗背景，确保主题生效
+            int style = com.fongmi.android.tv.setting.Setting.getDialogStyle();
+            window.setBackgroundDrawableResource(getDialogBackgroundRes(style));
+        }
         return dialog;
+    }
+
+    /** 根据风格返回dialog背景drawable */
+    private static int getDialogBackgroundRes(int style) {
+        switch (style) {
+            case 1: return R.drawable.bg_dialog_white;
+            case 2: return R.drawable.bg_dialog_dark_amoled;
+            case 3: return R.drawable.bg_dialog_ios;
+            case 4: return R.drawable.bg_dialog_neon;
+            case 0:
+            default: return R.drawable.dialog_glass_dark;
+        }
     }
 
     /**
@@ -115,10 +132,17 @@ public class HkDialogs extends AlertDialog.Builder {
         for (int i = 0; i < items.length; i++) {
             TextView tv = new TextView(context);
             tv.setText(items[i]);
-            tv.setTextColor(i == selectedIndex ? 0xFFB8890F : 0xFF101216);
+            int s2 = com.fongmi.android.tv.setting.Setting.getDialogStyle();
+            boolean lightBg = (s2 == 1 || s2 == 3);
+            tv.setTextColor(i == selectedIndex
+                    ? (lightBg ? 0xFF6750A4 : 0xFFD9A420)
+                    : (lightBg ? 0xFF101216 : 0xFFE8E8F0));
             tv.setTextSize(16);
             tv.setGravity(Gravity.CENTER);
-            tv.setBackgroundResource(R.drawable.dialog_option_card_light);
+            int s = com.fongmi.android.tv.setting.Setting.getDialogStyle();
+            tv.setBackgroundResource(s == 1 || s == 3 ? R.drawable.dialog_option_card_light
+                    : s == 0 ? R.drawable.dialog_option_card_dark
+                    : R.drawable.dialog_option_card_dark); // 暗色/霓虹都用深色卡片
             tv.setPadding(dp16, dp14, dp16, dp14);
             final int which = i;
             tv.setOnClickListener(v -> {
