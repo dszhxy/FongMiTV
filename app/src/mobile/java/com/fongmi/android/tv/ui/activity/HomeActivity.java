@@ -97,7 +97,11 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
             boolean ruleLike = com.fongmi.android.tv.api.hk.HkRuleManager.isShareCommandText(text)
                     || com.fongmi.android.tv.api.hk.HkRuleManager.isCloudCode(text)
                     || com.fongmi.android.tv.api.hk.HkRuleManager.isJsRuleText(text)
-                    || text.contains("\"find_rule\"");
+                    || text.contains("\"find_rule\"")
+                    || text.contains("海阔视界")
+                    || text.contains("小程序￥")
+                    || (text.contains("home_rule") && text.contains("{"))
+                    || text.matches(".*云[1-9]oooole/\\S+.*");
             if (!ruleLike) return;
             new com.fongmi.android.tv.ui.hk.HkDialogs(this)
                     .setTitle("检测到小程序")

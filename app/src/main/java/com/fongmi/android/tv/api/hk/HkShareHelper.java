@@ -56,7 +56,11 @@ public class HkShareHelper {
         if (cmd == null) return null;
         try {
             ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("hk_rule", cmd));
+            if (cm != null) {
+                cm.setPrimaryClip(ClipData.newPlainText("hk_rule", cmd));
+                // 标记为已处理，避免回到首页又弹导入提示
+                com.github.catvod.utils.Prefers.put("hk_clip_handled", cmd);
+            }
         } catch (Exception ignored) {
         }
         return cmd;

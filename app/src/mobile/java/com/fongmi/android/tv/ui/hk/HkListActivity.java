@@ -1004,8 +1004,10 @@ public class HkListActivity extends AppCompatActivity
             android.content.ClipboardManager cm = (android.content.ClipboardManager)
                     activity.getSystemService(Context.CLIPBOARD_SERVICE);
             if (cm != null) {
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("",
-                        "rule://" + encoded.replaceAll("\\s+", "")));
+                String text = "rule://" + encoded.replaceAll("\\s+", "");
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("", text));
+                // 标记为已处理，避免回到首页又弹导入提示
+                com.github.catvod.utils.Prefers.put("hk_clip_handled", text);
             }
             HkRouteBlocker.toastShortBottom(activity, "口令已复制到剪贴板");
         } catch (Exception e) {
@@ -1032,6 +1034,8 @@ public class HkListActivity extends AppCompatActivity
                                             activity.getSystemService(Context.CLIPBOARD_SERVICE);
                                     if (cm != null) {
                                         cm.setPrimaryClip(android.content.ClipData.newPlainText("", code));
+                                        // 标记为已处理，避免回到首页又弹导入提示
+                                        com.github.catvod.utils.Prefers.put("hk_clip_handled", code);
                                     }
                                     HkRouteBlocker.toastShortBottom(activity, "口令已复制到剪贴板");
                                 })
