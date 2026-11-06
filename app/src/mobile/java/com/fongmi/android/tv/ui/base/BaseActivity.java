@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.custom.CustomWallView;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -38,6 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applyDialogTheme();
         enableEdgeToEdge();
         enableDynamicColor();
         super.onCreate(savedInstanceState);
@@ -120,7 +122,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSubscribe(Object o) {
+    public void onSubscribe(RefreshEvent event) {
+        if (event.getType() == RefreshEvent.Type.THEME) {
+            recreate();
+        }
     }
 
     protected void onBackInvoked() {
@@ -149,5 +154,21 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    /**
+     * 根据用户设置的弹窗风格应用对应AlertDialog主题
+     * 必须在super.onCreate之前调用
+     */
+    protected void applyDialogTheme() {
+        int style = Setting.getDialogStyle();
+        switch (style) {
+            case 1: setTheme(R.style.Theme_App_DialogWhite); break;
+            case 2: setTheme(R.style.Theme_App_DialogAmoled); break;
+            case 3: setTheme(R.style.Theme_App_DialogIOS); break;
+            case 4: setTheme(R.style.Theme_App_DialogNeon); break;
+            case 0:
+            default: setTheme(R.style.Theme_App_DialogClassic); break;
+        }
     }
 }

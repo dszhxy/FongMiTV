@@ -13,6 +13,27 @@
 
     <style name="Theme.App" parent="Theme.Base" />
 
+    <!-- ========== 5种弹窗风格的App主题变体 ========== -->
+    <style name="Theme.App.DialogClassic" parent="Theme.App">
+        <item name="alertDialogTheme">@style/ThemeOverlay_XingChen_GlassDialog_Dark</item>
+    </style>
+
+    <style name="Theme.App.DialogWhite" parent="Theme.App">
+        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_White</item>
+    </style>
+
+    <style name="Theme.App.DialogAmoled" parent="Theme.App">
+        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_Amoled</item>
+    </style>
+
+    <style name="Theme.App.DialogIOS" parent="Theme.App">
+        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_IOS</item>
+    </style>
+
+    <style name="Theme.App.DialogNeon" parent="Theme.App">
+        <item name="alertDialogTheme">@style/ThemeOverlay_FongMi_Dialog_Neon</item>
+    </style>
+
     <!-- 实验室页面：与主 App 同源——透明底＋自定义壁纸，不再铺近黑底 -->
     <style name="Theme.Lab" parent="Theme.App">
         <item name="android:windowBackground">@android:color/transparent</item>

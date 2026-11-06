@@ -200,8 +200,8 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
             Setting.putDialogStyle(which);
             mBinding.dialogStyleText.setText(DIALOG_STYLE_NAMES[which]);
             dialog.dismiss();
-            // 重启Activity以应用新风格
-            requireActivity().recreate();
+            // 全局刷新主题：所有Activity都会recreate应用新风格
+            RefreshEvent.theme();
         }).show();
     }
 
