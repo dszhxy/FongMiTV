@@ -18,15 +18,15 @@ import androidx.appcompat.app.AlertDialog;
 import com.fongmi.android.tv.R;
 
 /**
- * 海阔弹窗统一入口：与软件统一的白底 Material3 主题 + 统一淡入淡出。
+ * 海阔弹窗统一入口：深色毛玻璃主题 + 统一淡入淡出。
  * 用法：把 new AlertDialog.Builder(...) 换成 new HkDialogs(...)，其余链式调用一字不动。
  * 只换弹窗的皮（主题背景/圆角/按钮与列表字色/淡入动画）；文案、按钮个数与顺序、点击回调逻辑一律不动。
- * 选项类弹窗走 cards(...)：白底独立圆角卡片 + 间距，条目/顺序/点击语义与 setItems 对等。
+ * 选项类弹窗走 cards(...)：白底独立圆角卡片 + 间距（深色底上突出），条目/顺序/点击语义与 setItems 对等。
  */
 public class HkDialogs extends AlertDialog.Builder {
 
     public HkDialogs(@NonNull Context context) {
-        super(context, R.style.ThemeOverlay_WebHTV_LightDialog);
+        super(context, R.style.ThemeOverlay_XingChen_GlassDialog_Dark);
     }
 
     /** 宿主 Activity 已结束/已销毁时返回 true：此时再 show 弹窗会抛 BadToken/状态异常，调用方应直接放弃。 */
