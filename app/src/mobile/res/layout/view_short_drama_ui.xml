@@ -152,7 +152,6 @@
         android:paddingTop="56dp"
         android:paddingEnd="18dp"
         android:paddingBottom="18dp">
-
         <TextView
             android:id="@+id/sdTitle"
             android:layout_width="match_parent"
@@ -165,7 +164,6 @@
             android:textColor="#FFFFFF"
             android:textSize="19sp"
             android:textStyle="bold" />
-
         <TextView
             android:id="@+id/sdEpisode"
             android:layout_width="wrap_content"
@@ -179,7 +177,6 @@
             android:textColor="#F2FFFFFF"
             android:textSize="12sp"
             android:textStyle="bold" />
-
         <ProgressBar
             android:id="@+id/sdProgress"
             style="?android:attr/progressBarStyleHorizontal"
