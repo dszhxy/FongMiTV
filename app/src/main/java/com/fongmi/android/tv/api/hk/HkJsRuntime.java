@@ -2273,818 +2273,854 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
     /**
      * 注册结果列表动态修改、批量请求、文件与 m3u8 缓存相关 API。
      */
+
     private void registerItemAndFileApi() {
-        // ---- 当前结果列表的动态修改（官方经 EventBus 改 UI 列表；本宿主直接改 results） ----
-        putFunction("updateItem", args -> {
-            // updateItem(id, obj) 或 updateItem(obj)（obj.extra.id / obj.url 作 id）
-            // 8.83 JSEngine.java:1167：obj 非 JSON 对象抛"updateItem：格式有误，只支持json"
-            String id = null;
-            Object obj = null;
-            if (args != null && args.length >= 2) {
-                Object idArg = args[0];
-                if (idArg instanceof String) id = (String) idArg;
-                else if (toStrMap(idArg) != null) obj = idArg;
-                if (obj == null) obj = args[1];
-            } else if (args != null && args.length == 1) {
-                obj = args[0];
-            }
-            if (obj == null) throw new RuntimeException("updateItem：格式有误，只支持json");
-            Map<String, Object> m = toStrMap(obj);
-            if (m == null) throw new RuntimeException("updateItem：格式有误，只支持json");
-            if (id == null) {
-                id = str(m, "url");
-                if (TextUtils.isEmpty(id)) {
-                    Object extra = m.get("extra");
-                    if (extra instanceof Map) id = str((Map<String, Object>) extra, "id");
+        registerListItemsApi();
+        registerFileAndClipboardApi();
+        registerM3u8AndPageApi();
+        registerCodecApi();
+        registerNetMiscApi();
+        registerEventAndUiStubApi();
+        registerUnderlineAliasApi();
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerListItemsApi() {
+            // ---- 当前结果列表的动态修改（官方经 EventBus 改 UI 列表；本宿主直接改 results） ----
+            putFunction("updateItem", args -> {
+                // updateItem(id, obj) 或 updateItem(obj)（obj.extra.id / obj.url 作 id）
+                // 8.83 JSEngine.java:1167：obj 非 JSON 对象抛"updateItem：格式有误，只支持json"
+                String id = null;
+                Object obj = null;
+                if (args != null && args.length >= 2) {
+                    Object idArg = args[0];
+                    if (idArg instanceof String) id = (String) idArg;
+                    else if (toStrMap(idArg) != null) obj = idArg;
+                    if (obj == null) obj = args[1];
+                } else if (args != null && args.length == 1) {
+                    obj = args[0];
                 }
-            }
-                if (!TextUtils.isEmpty(id)) {
-                    int idx = findResultIndex(id);
-                    if (idx >= 0) {
-                        mergeItem(results.get(idx), m);
-                        Logger.t(TAG).d("updateItem: %s", id);
-                        // 8.83 JSEngine.updateItem(26507)：post ItemModifyEvent(UPDATE) 经 EventBus，
-                        // 内容页收到后就地更新条目（parse 时直接改 results 已够；展示后需同步 UI）
-                        postItemModifyEvent(results.get(idx),
-                                com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.UPDATE, null);
+                if (obj == null) throw new RuntimeException("updateItem：格式有误，只支持json");
+                Map<String, Object> m = toStrMap(obj);
+                if (m == null) throw new RuntimeException("updateItem：格式有误，只支持json");
+                if (id == null) {
+                    id = str(m, "url");
+                    if (TextUtils.isEmpty(id)) {
+                        Object extra = m.get("extra");
+                        if (extra instanceof Map) id = str((Map<String, Object>) extra, "id");
                     }
-                    if (collectRaw) {
-                        for (Map<String, String> raw : rawResults) {
-                            if (id.equals(raw.get("url"))) {
-                                for (Map.Entry<String, Object> e : m.entrySet()) {
-                                    if (!"extra".equals(e.getKey())) raw.put(e.getKey(), String.valueOf(e.getValue()));
+                }
+                    if (!TextUtils.isEmpty(id)) {
+                        int idx = findResultIndex(id);
+                        if (idx >= 0) {
+                            mergeItem(results.get(idx), m);
+                            Logger.t(TAG).d("updateItem: %s", id);
+                            // 8.83 JSEngine.updateItem(26507)：post ItemModifyEvent(UPDATE) 经 EventBus，
+                            // 内容页收到后就地更新条目（parse 时直接改 results 已够；展示后需同步 UI）
+                            postItemModifyEvent(results.get(idx),
+                                    com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.UPDATE, null);
+                        }
+                        if (collectRaw) {
+                            for (Map<String, String> raw : rawResults) {
+                                if (id.equals(raw.get("url"))) {
+                                    for (Map.Entry<String, Object> e : m.entrySet()) {
+                                        if (!"extra".equals(e.getKey())) raw.put(e.getKey(), String.valueOf(e.getValue()));
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            return null;
-        });
-        putFunction("addItemAfter", args -> {
-            addItemAt(args, true);
-            return null;
-        });
-        putFunction("addItemBefore", args -> {
-            addItemAt(args, false);
-            return null;
-        });
-        // 8.83 JSEngine.java:1258：id 非字符串抛"deleteItem：格式有误，请传入ID字符串"；支持 id 数组批量删。
-        putFunction("deleteItem", args -> {
-            if (args == null || args.length == 0 || args[0] == null)
-                throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
-            List<String> ids = new ArrayList<>();
-            Object o = args[0];
-            if (o instanceof NativeArray) {
-                NativeArray na = (NativeArray) o;
-                for (int i = 0; i < na.size(); i++) {
-                    Object e = na.get(i);
-                    if (!(e instanceof String))
-                        throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
-                    ids.add((String) e);
-                }
-            } else if (o instanceof String) {
-                ids.add((String) o);
-            } else {
-                throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
-            }
-            for (String id : ids) {
-                int idx = findResultIndex(id);
-                HkItem removed = null;
-                if (idx >= 0) removed = results.remove(idx);
-                if (collectRaw) rawResults.removeIf(r -> id.equals(r.get("url")));
-                Logger.t(TAG).d("deleteItem: %s", id);
-                // 8.83 JSEngine.deleteItem(13478)：post ItemModifyEvent(DELETE) 经 EventBus
-                if (removed != null) {
-                    postItemModifyEvent(removed,
-                            com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.DELETE, null);
-                }
-            }
-            return null;
-        });
-        // 8.83 JSEngine.java:1268：cls 非字符串抛"deleteItemByCls：格式有误，请传入cls字符串"
-        putFunction("deleteItemByCls", args -> {
-            if (args == null || args.length == 0 || !(args[0] instanceof String))
-                throw new RuntimeException("deleteItemByCls：格式有误，请传入cls字符串");
-            String cls = (String) args[0];
-            results.removeIf(it -> cls.equals(it.getColType()));
-            if (collectRaw) rawResults.removeIf(r -> cls.equals(r.get("col_type")));
-            Logger.t(TAG).d("deleteItemByCls: %s", cls);
-            // 8.83 JSEngine.deleteItemByCls(13643)：post ItemModifyEvent(DELETE) + setCls 经 EventBus
-            postItemModifyEvent(null,
-                    com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.DELETE, cls);
-            return null;
-        });
-        // 官方 clearItem(key) 清的是规则持久化存储里的 key；本宿主 kv.json 即规则存储，对其删 key 等价。
-        putFunction("clearItem", args -> {
-            if (args != null && args.length > 0 && args[0] != null) {
-                kv.remove(argStr(args[0]));
-                saveKv();
-                Logger.t(TAG).d("clearItem: %s", args[0]);
-            }
-            return null;
-        });
-
-        // ---- 私有加密 JS：8.83（JSEngine.java:2711）：AesUtil.decrypt(AES_DEFAULT_KEY, code) 后求值 ----
-        putFunction("evalPrivateJS", args -> {
-            if (args == null || args.length == 0) return null;
-            try {
-                String plain = aesUtilCrypt(false, AES_DEFAULT_KEY, argStr(args[0]));
-                if (TextUtils.isEmpty(plain)) return null;
-                return evalJs(plain);
-            } catch (Throwable e) {
-                Logger.t(TAG).d("evalPrivateJS failed: %s", e.getMessage());
                 return null;
-            }
-        });
+            });
+            putFunction("addItemAfter", args -> {
+                addItemAt(args, true);
+                return null;
+            });
+            putFunction("addItemBefore", args -> {
+                addItemAt(args, false);
+                return null;
+            });
+            // 8.83 JSEngine.java:1258：id 非字符串抛"deleteItem：格式有误，请传入ID字符串"；支持 id 数组批量删。
+            putFunction("deleteItem", args -> {
+                if (args == null || args.length == 0 || args[0] == null)
+                    throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
+                List<String> ids = new ArrayList<>();
+                Object o = args[0];
+                if (o instanceof NativeArray) {
+                    NativeArray na = (NativeArray) o;
+                    for (int i = 0; i < na.size(); i++) {
+                        Object e = na.get(i);
+                        if (!(e instanceof String))
+                            throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
+                        ids.add((String) e);
+                    }
+                } else if (o instanceof String) {
+                    ids.add((String) o);
+                } else {
+                    throw new RuntimeException("deleteItem：格式有误，请传入ID字符串");
+                }
+                for (String id : ids) {
+                    int idx = findResultIndex(id);
+                    HkItem removed = null;
+                    if (idx >= 0) removed = results.remove(idx);
+                    if (collectRaw) rawResults.removeIf(r -> id.equals(r.get("url")));
+                    Logger.t(TAG).d("deleteItem: %s", id);
+                    // 8.83 JSEngine.deleteItem(13478)：post ItemModifyEvent(DELETE) 经 EventBus
+                    if (removed != null) {
+                        postItemModifyEvent(removed,
+                                com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.DELETE, null);
+                    }
+                }
+                return null;
+            });
+            // 8.83 JSEngine.java:1268：cls 非字符串抛"deleteItemByCls：格式有误，请传入cls字符串"
+            putFunction("deleteItemByCls", args -> {
+                if (args == null || args.length == 0 || !(args[0] instanceof String))
+                    throw new RuntimeException("deleteItemByCls：格式有误，请传入cls字符串");
+                String cls = (String) args[0];
+                results.removeIf(it -> cls.equals(it.getColType()));
+                if (collectRaw) rawResults.removeIf(r -> cls.equals(r.get("col_type")));
+                Logger.t(TAG).d("deleteItemByCls: %s", cls);
+                // 8.83 JSEngine.deleteItemByCls(13643)：post ItemModifyEvent(DELETE) + setCls 经 EventBus
+                postItemModifyEvent(null,
+                        com.fongmi.android.tv.api.hk.event.rule.ItemModifyEvent.Action.DELETE, cls);
+                return null;
+            });
+            // 官方 clearItem(key) 清的是规则持久化存储里的 key；本宿主 kv.json 即规则存储，对其删 key 等价。
+            putFunction("clearItem", args -> {
+                if (args != null && args.length > 0 && args[0] != null) {
+                    kv.remove(argStr(args[0]));
+                    saveKv();
+                    Logger.t(TAG).d("clearItem: %s", args[0]);
+                }
+                return null;
+            });
 
-        // ---- W2：fc/fetchCache 按 8.83 require0 代码缓存重做 ----
-        // 原版 fc = require0(url, h, options, ruleTitleKey, evalKey=false, v)，returnType=STRING
-        // （JSEngine.smali:3554-3563）：支持 js:/file:///hiker://page/ 前缀、本地 libs/<md5>.js 缓存、
-        // 版本校验、h 默认 24 小时、h==0 强制重下。我方之前是纯 URL body 文件缓存，走样。
-        // 软失败口径保留（取不到回 ""，不抛错打死整页，见 require 处注释）。
-        putFunction("fc", args -> fcImpl(args));
-        // 官方全名：fetchCache 即 fc
-        putFunction("fetchCache", args -> fcImpl(args));
-        // W5（8.83 require0:3702/3719）：requireCache 求值走调用方作用域——照 require 同款修法（UU 1.3.30）。
-        putFunctionEx("rc", (cx, scope, args) -> requireCacheEval(args, cx, scope));
-        // 官方全名：requireCache 即 rc
-        putFunctionEx("requireCache", (cx, scope, args) -> requireCacheEval(args, cx, scope));
-        // ---- 批量（bf=batchFetch 并发取回 body 数组；be=batchExecute 预加载；bcm 返回原地址） ----
-        // W7：8.83 JSEngine.batchExecute (smali:11005, 2230-2266)：线程数 min(n,16)，
-        // CountDownLatch 总等待 n/16*10+10 秒，按索引组装结果。我方之前固定 4 线程＋每项 30s。
-        putFunction("bf", args -> batchFetchImpl(args));
-        // 官方全名：batchFetch 即 bf（并发取回 body 数组）
-        putFunction("batchFetch", args -> batchFetchImpl(args));
-        // ------------------------------------------------------------------
-        // 8.83: batchExecute(Object tasks, Object listener0, Object success, Object ruleKey)V
-        // [JSEngine.smali 11276-11680]  alias "be". D2: 真实实现（替代 no-op）。
-        // 语义：tasks 为 [{id, func, param}]，并发在独立 Rhino Context 里执行各
-        // func(param)；每完成一个，若 listener0.func 存在且完成数 <= success，
-        // 则回调 listener0.func(listener0.param, id, false, result)；返回 "break"
-        // 则停止后续回调。等待 (n/16*30+30)s 后取消并关闭线程池。
-        // 跨小程序内容搜索（"我的主页"规则）依赖此实现。
-        // ------------------------------------------------------------------
-        putFunction("be", args -> {
-            batchExecuteImpl(args);
-            return null;
-        });
-        // 官方全名：batchExecute 即 be
-        putFunction("batchExecute", args -> {
-            batchExecuteImpl(args);
-            return null;
-        });
-        putFunction("bcm", args -> batchCacheM3u8Impl(args));
-        // 官方全名：batchCacheM3u8 即 bcm（8.83 JSEngine.java:1943，returnType=JSON）
-        putFunction("batchCacheM3u8", args -> batchCacheM3u8Impl(args));
-        // ---- PC 模式请求（桌面 UA）与 postRequest（即 post） ----
-        putFunction("fetchPC", args -> {
-            if (args == null || args.length == 0) return "";
-            String url = argStr(args[0]);
-            String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
-            return fetchSync(url, mergeDesktopUa(options));
-        });
-        // 官方 postPC：桌面 UA 的 POST
-        putFunction("postPC", args -> {
-            if (args == null || args.length == 0) return "";
-            String url = argStr(args[0]);
-            String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
-            options = applyGeneratePostOps(options);
-            return fetchSync(url, mergeDesktopUa(options));
-        });
-        // 官方 fetchCookie(url, options)：带 withHeaders 抓取，返回 set-cookie
-        putFunction("fetchCookie", args -> {
-            if (args == null || args.length == 0) return "";
-            try {
+            // ---- 私有加密 JS：8.83（JSEngine.java:2711）：AesUtil.decrypt(AES_DEFAULT_KEY, code) 后求值 ----
+            putFunction("evalPrivateJS", args -> {
+                if (args == null || args.length == 0) return null;
+                try {
+                    String plain = aesUtilCrypt(false, AES_DEFAULT_KEY, argStr(args[0]));
+                    if (TextUtils.isEmpty(plain)) return null;
+                    return evalJs(plain);
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("evalPrivateJS failed: %s", e.getMessage());
+                    return null;
+                }
+            });
+
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerFileAndClipboardApi() {
+            // ---- W2：fc/fetchCache 按 8.83 require0 代码缓存重做 ----
+            // 原版 fc = require0(url, h, options, ruleTitleKey, evalKey=false, v)，returnType=STRING
+            // （JSEngine.smali:3554-3563）：支持 js:/file:///hiker://page/ 前缀、本地 libs/<md5>.js 缓存、
+            // 版本校验、h 默认 24 小时、h==0 强制重下。我方之前是纯 URL body 文件缓存，走样。
+            // 软失败口径保留（取不到回 ""，不抛错打死整页，见 require 处注释）。
+            putFunction("fc", args -> fcImpl(args));
+            // 官方全名：fetchCache 即 fc
+            putFunction("fetchCache", args -> fcImpl(args));
+            // W5（8.83 require0:3702/3719）：requireCache 求值走调用方作用域——照 require 同款修法（UU 1.3.30）。
+            putFunctionEx("rc", (cx, scope, args) -> requireCacheEval(args, cx, scope));
+            // 官方全名：requireCache 即 rc
+            putFunctionEx("requireCache", (cx, scope, args) -> requireCacheEval(args, cx, scope));
+            // ---- 批量（bf=batchFetch 并发取回 body 数组；be=batchExecute 预加载；bcm 返回原地址） ----
+            // W7：8.83 JSEngine.batchExecute (smali:11005, 2230-2266)：线程数 min(n,16)，
+            // CountDownLatch 总等待 n/16*10+10 秒，按索引组装结果。我方之前固定 4 线程＋每项 30s。
+            putFunction("bf", args -> batchFetchImpl(args));
+            // 官方全名：batchFetch 即 bf（并发取回 body 数组）
+            putFunction("batchFetch", args -> batchFetchImpl(args));
+            // ------------------------------------------------------------------
+            // 8.83: batchExecute(Object tasks, Object listener0, Object success, Object ruleKey)V
+            // [JSEngine.smali 11276-11680]  alias "be". D2: 真实实现（替代 no-op）。
+            // 语义：tasks 为 [{id, func, param}]，并发在独立 Rhino Context 里执行各
+            // func(param)；每完成一个，若 listener0.func 存在且完成数 <= success，
+            // 则回调 listener0.func(listener0.param, id, false, result)；返回 "break"
+            // 则停止后续回调。等待 (n/16*30+30)s 后取消并关闭线程池。
+            // 跨小程序内容搜索（"我的主页"规则）依赖此实现。
+            // ------------------------------------------------------------------
+            putFunction("be", args -> {
+                batchExecuteImpl(args);
+                return null;
+            });
+            // 官方全名：batchExecute 即 be
+            putFunction("batchExecute", args -> {
+                batchExecuteImpl(args);
+                return null;
+            });
+            putFunction("bcm", args -> batchCacheM3u8Impl(args));
+            // 官方全名：batchCacheM3u8 即 bcm（8.83 JSEngine.java:1943，returnType=JSON）
+            putFunction("batchCacheM3u8", args -> batchCacheM3u8Impl(args));
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerM3u8AndPageApi() {
+            // ---- PC 模式请求（桌面 UA）与 postRequest（即 post） ----
+            putFunction("fetchPC", args -> {
+                if (args == null || args.length == 0) return "";
                 String url = argStr(args[0]);
                 String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
-                // 强制 withHeaders
-                if (!options.contains("withHeaders")) {
-                    options = options.trim();
-                    if (options.endsWith("}")) options = options.substring(0, options.length() - 1) + ",\"withHeaders\":true}";
-                    else options = "{\"withHeaders\":true}";
-                }
-                String result = fetchSync(url, options);
-                if (TextUtils.isEmpty(result)) return "";
-                Map<String, Object> map = GSON.fromJson(result, new com.google.gson.reflect.TypeToken<Map<String, Object>>() {}.getType());
-                if (map == null) return "";
-                Object headers = map.get("headers");
-                if (!(headers instanceof Map)) return "";
-                Map<String, Object> hm = (Map<String, Object>) headers;
-                // 8.83（JSEngine.java:2033）：取 headers 的 set-cookie 全量值（三种大小写），
-                // 返回其 JSON 数组字符串；无 cookie / 失败返回 ""。旧实现截成"名=值; "拼接串是错的。
-                List<String> cookies = new ArrayList<>();
-                for (Map.Entry<String, Object> e : hm.entrySet()) {
-                    if (e.getKey() != null && e.getKey().equalsIgnoreCase("set-cookie") && e.getValue() != null) {
-                        Object v = e.getValue();
-                        if (v instanceof List) {
-                            for (Object one : (List<?>) v) {
-                                if (one != null) cookies.add(String.valueOf(one));
+                return fetchSync(url, mergeDesktopUa(options));
+            });
+            // 官方 postPC：桌面 UA 的 POST
+            putFunction("postPC", args -> {
+                if (args == null || args.length == 0) return "";
+                String url = argStr(args[0]);
+                String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
+                options = applyGeneratePostOps(options);
+                return fetchSync(url, mergeDesktopUa(options));
+            });
+            // 官方 fetchCookie(url, options)：带 withHeaders 抓取，返回 set-cookie
+            putFunction("fetchCookie", args -> {
+                if (args == null || args.length == 0) return "";
+                try {
+                    String url = argStr(args[0]);
+                    String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
+                    // 强制 withHeaders
+                    if (!options.contains("withHeaders")) {
+                        options = options.trim();
+                        if (options.endsWith("}")) options = options.substring(0, options.length() - 1) + ",\"withHeaders\":true}";
+                        else options = "{\"withHeaders\":true}";
+                    }
+                    String result = fetchSync(url, options);
+                    if (TextUtils.isEmpty(result)) return "";
+                    Map<String, Object> map = GSON.fromJson(result, new com.google.gson.reflect.TypeToken<Map<String, Object>>() {}.getType());
+                    if (map == null) return "";
+                    Object headers = map.get("headers");
+                    if (!(headers instanceof Map)) return "";
+                    Map<String, Object> hm = (Map<String, Object>) headers;
+                    // 8.83（JSEngine.java:2033）：取 headers 的 set-cookie 全量值（三种大小写），
+                    // 返回其 JSON 数组字符串；无 cookie / 失败返回 ""。旧实现截成"名=值; "拼接串是错的。
+                    List<String> cookies = new ArrayList<>();
+                    for (Map.Entry<String, Object> e : hm.entrySet()) {
+                        if (e.getKey() != null && e.getKey().equalsIgnoreCase("set-cookie") && e.getValue() != null) {
+                            Object v = e.getValue();
+                            if (v instanceof List) {
+                                for (Object one : (List<?>) v) {
+                                    if (one != null) cookies.add(String.valueOf(one));
+                                }
+                            } else {
+                                cookies.add(String.valueOf(v));
                             }
-                        } else {
-                            cookies.add(String.valueOf(v));
                         }
                     }
+                    if (cookies.isEmpty()) return "";
+                    return GSON.toJson(cookies);
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("fetchCookie failed: %s", e.getMessage());
+                    return "";
                 }
-                if (cookies.isEmpty()) return "";
-                return GSON.toJson(cookies);
-            } catch (Throwable e) {
-                Logger.t(TAG).d("fetchCookie failed: %s", e.getMessage());
-                return "";
-            }
-        });
-        putFunction("postRequest", args -> {
-            if (args == null || args.length == 0) return "";
-            String url = argStr(args[0]);
-            String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
-            // 8.83 post0(request=true)：generatePostOps 之后再走 generateRequestOptions（缺 UA 时补移动端 UA）
-            return fetchSync(url, injectMobileUa(applyGeneratePostOps(options)));
-        });
-        // fcbw/ewr：WebView 取码与 Web 规则执行
-        // 8.83 原文：
-        //   fetchCodeByWebView(url, options) (JSEngine.smali:15513，别名 fcbw)：
-        //     用 WebkitFetcher（WebView）在后台加载 url，取 JS 渲染后的页面源码；
-        //     options.timeout（1000-30000ms，默认 30000ms）；同步等待 CountDownLatch；返回源码字符串。
-        //   executeWebRule(url, rule, options) (JSEngine.smali:15132，别名 ewr)：
-        //     用 WebkitExecutor 在 WebView 里执行另一条 web 规则；同上超时机制；返回执行结果字符串。
-        // 移植：HkWebkitFetcher（WebView 主线程加载 + CountDownLatch 同步等待，语义与 8.83 一致）
-        putFunction("fetchCodeByWebView", args -> {
-            try {
-                String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
-                if (url.isEmpty()) return "";
-                java.util.Map<String, Object> options = jsOptions(args, 1);
-                return HkWebkitFetcher.fetchCodeByWebView(url, options);
-            } catch (Throwable t) {
-                return "";
-            }
-        });
-        putFunction("fcbw", args -> {
-            try {
-                String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
-                if (url.isEmpty()) return "";
-                java.util.Map<String, Object> options = jsOptions(args, 1);
-                return HkWebkitFetcher.fetchCodeByWebView(url, options);
-            } catch (Throwable t) {
-                return "";
-            }
-        });
-        putFunction("executeWebRule", args -> {
-            try {
-                String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
-                String rule = args != null && args.length > 1 && args[1] != null ? String.valueOf(args[1]) : "";
-                if (url.isEmpty()) return "";
-                java.util.Map<String, Object> options = jsOptions(args, 2);
-                return HkWebkitFetcher.executeWebRule(url, rule, options);
-            } catch (Throwable t) {
-                return "";
-            }
-        });
-        putFunction("ewr", args -> {
-            try {
-                String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
-                String rule = args != null && args.length > 1 && args[1] != null ? String.valueOf(args[1]) : "";
-                if (url.isEmpty()) return "";
-                java.util.Map<String, Object> options = jsOptions(args, 2);
-                return HkWebkitFetcher.executeWebRule(url, rule, options);
-            } catch (Throwable t) {
-                return "";
-            }
-        });
-        stub("cacheCode0", null);
-        // setPageReverse：官方设置页面倒序标记；宿主存 kv 供规则自查
-        // 8.83 JSEngine.setPageReverse(4140)：post OnReversePageEvent(reverse) 经 EventBus，FilmListActivity.onSetReverse 接收后调 reverseArticleList
-        putFunction("setPageReverse", args -> {
-            setPageReverseDo(args);
-            return null;
-        });
-        // W1：8.83 里 refreshPage 与 setPageReverse 同挂别名 "refresh"
-        // （JSEngine.smali:22084 refreshPage / :24779 setPageReverse），注册顺序靠后者胜，
-        // 别名 refresh 实际指向倒序页面语义（OnReversePageEvent，smali:4140）。
-        // 注：别名赢家依赖原版方法声明顺序，ART 上为声明顺序，非规范保证
-        // （对差表"没定死"第 5 项）。
-        putFunction("refresh", args -> {
-            setPageReverseDo(args);
-            return null;
-        });
-
-        // ---- 文件（作用域限定 App 文件目录；hiker://files/ 映射到 filesDir） ----
-        putFunction("writeFile", args -> {
-            if (args != null && args.length > 1) writeFileContent(resolveHikerPath(argStr(args[0])), argStr(args[1]));
-            return null;
-        });
-        putFunction("readFile", args -> {
-            // 8.83 JSEngine.java:2132：第 2 参是 ruleTitleKey；含分隔符公开读，否则 basename+规则目录私有读。
-            // 兼容说明：星辰曾把第 2 参当 charset 用。双重解释——合法字符集名当 charset（兼容星辰旧规则），
-            // 否则当 ruleTitleKey（8.83 语义；规则标题不可能是字符集名，两边不冲突）。
-            if (args == null || args.length == 0) return "";
-            String p = argStr(args[0]);
-            String second = args.length > 1 && args[1] != null ? argStr(args[1]) : null;
-            String charset = null;
-            String rt = null;
-            if (second != null && !second.isEmpty()) {
-                if (isCharsetName(second)) charset = second;
-                else rt = second;
-            }
-            if (p.contains("/")) {
-                return readFileContent(resolveHikerPath(p), charset);
-            }
-            String base = p.substring(p.lastIndexOf('/') + 1);
-            if (base.isEmpty()) base = p;
-            return readFileContent(new File(ruleDirForTitle(rt), base).getAbsolutePath(), charset);
-        });
-        putFunction("fileExist", args -> {
-            // 8.83 JSEngine.java:1574 @JSAnnotation(returnType=BOOL)：JS 侧拿到的是真布尔。
-            // 曾回字符串 "false"——JS 里非空字符串为真，红果代理 if(!fileExist(...)) 永不成立、
-            // 密文从不下载、只回 45 字节报错文本（真机+字节级实证）。全局 miss 再查按规则 libs。
-            if (args == null || args.length == 0) return Boolean.FALSE;
-            String p = argStr(args[0]);
-            if (new File(resolveHikerPath(p)).exists()) return Boolean.TRUE;
-            return resolvePerRuleLibFile(p) != null ? Boolean.TRUE : Boolean.FALSE;
-        });
-        // 官方别名：exist 即 fileExist
-        putFunction("exist", args -> {
-            if (args == null || args.length == 0) return Boolean.FALSE;
-            String p = argStr(args[0]);
-            if (new File(resolveHikerPath(p)).exists()) return Boolean.TRUE;
-            return resolvePerRuleLibFile(p) != null ? Boolean.TRUE : Boolean.FALSE;
-        });
-        // getPath(filePath)：8.83（JSEngine.java:2105）恒返回 "file://" + getFilePath(filePath)。
-        // 内部文件操作（writeFile/readFile/exists/delete/download）都直接调 resolveHikerPath，
-        // 不走 JS 可见的 getPath，故加前缀无连环影响。空输入仍回 ""。
-        putFunction("getPath", args -> {
-            if (args == null || args.length == 0) return "";
-            String p = resolveHikerPath(argStr(args[0]));
-            if (TextUtils.isEmpty(p)) return "";
-            return "file://" + p;
-        });
-        putFunction("saveFile", args -> {
-            // 8.83 JSEngine.java:2120：hiker://files/ 走公开路径；否则取 basename 存入规则目录；第 3 参为 ruleTitleKey。
-            if (args != null && args.length > 1) {
-                String p = argStr(args[0]);
-                String content = argStr(args[1]);
-                String rt = args.length > 2 && args[2] != null ? argStr(args[2]) : null;
-                if (p.startsWith("hiker://files/")) {
-                    writeFileContent(resolveHikerPath(p), content);
-                } else {
-                    String base = p.substring(p.lastIndexOf('/') + 1);
-                    if (base.isEmpty()) base = p;
-                    writeFileContent(new File(ruleDirForTitle(rt), base).getAbsolutePath(), content);
-                }
-            }
-            return null;
-        });
-        // 8.83 JSEngine.java:2145：含分隔符公开删 + 私有删两份都删；无分隔符只删私有（basename+规则目录）。
-        putFunction("deleteFile", args -> {
-            try {
-                if (args != null && args.length > 0) {
-                    String p = argStr(args[0]);
-                    String rt = args.length > 1 && args[1] != null ? argStr(args[1]) : null;
-                    if (p.contains("/")) {
-                        new File(resolveHikerPath(p)).delete();
-                    }
-                    String base = p.substring(p.lastIndexOf('/') + 1);
-                    if (!base.isEmpty()) new File(ruleDirForTitle(rt), base).delete();
-                }
-            } catch (Throwable ignored) {}
-            return null;
-        });
-
-        // 8.83 JSEngine.java:2514 downloadFile：失败抛 Exception("下载文件失败：…")；第 3 参 headers。
-        putFunction("downloadFile", args -> {
-            if (args == null || args.length < 2) throw new RuntimeException("下载文件失败：参数不足");
-            String url = argStr(args[0]);
-            String dest = resolveHikerPath(argStr(args[1]));
-            String headers = args.length > 2 && args[2] != null ? stringifyArg(args[2]) : "{}";
-            downloadToFile(url, dest, headers);
-            return null;
-        });
-
-        // ---- 剪贴板 / 分享 ----
-        putFunction("copy", args -> {
-            try {
-                if (args != null && args.length > 0) {
-                    ClipboardManager cm = (ClipboardManager) App.get().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-                    if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("hk", argStr(args[0])));
-                }
-            } catch (Throwable e) {
-                Logger.t(TAG).d("copy failed: %s", e.getMessage());
-            }
-            return null;
-        });
-        putFunction("parsePaste", args -> {
-            // 解析分享文本：云口令则拉取规则 JSON 返回；内容不是规则时（如聚合接口列表）
-            // 返回通道粘贴文本原文（8.83 RuleImporterManager.parseSync 语义）；非云口令返回原文
-            if (args == null || args.length == 0) return "";
-            String t = argStr(args[0]).trim();
-            try {
-                if (HkRuleManager.isCloudCode(t)) {
-                    HkRule r = HkRuleManager.get().importByCloudCode(t);
-                    Logger.t(TAG).d("parsePaste: cloud code imported %s", r.getTitle());
-                    return GSON.toJson(r);
-                }
-            } catch (Throwable e) {
-                Logger.t(TAG).d("parsePaste cloud failed: %s", e.getMessage());
-                try {
-                    String content = HkRuleManager.get().fetchPasteRawText(t);
-                    if (content != null && !content.isEmpty()) return content;
-                } catch (Throwable ignored) {
-                }
-            }
-            return t;
-        });
-        putFunction("getPastes", args -> {
-            // 8.83 JSEngine.getPastes：returnType=JSON。星辰无剪贴板分享能力，回真数组（1.3.42 扫尾）。
-            return toJsArray(new ArrayList<>());
-        });
-        putFunction("sharePaste", args -> {
-            Logger.t(TAG).d("sharePaste: no-op in host");
-            return "";
-        });
-
-        // ---- m3u8 ----
-        putFunction("fixM3u8", args -> {
-            if (args == null || args.length < 2) return args != null && args.length > 0 ? argStr(args[0]) : "";
-            return fixM3u8Content(argStr(args[0]), argStr(args[1]));
-        });
-        // 8.83 JSEngine.java:1928 cacheM3u8：真下载索引文件到 hiker://files/cache/，返回 "file##url"；非 m3u8/等价时返原 url。
-        putFunction("cacheM3u8", args -> {
-            String url = args != null && args.length > 0 ? argStr(args[0]) : "";
-            String options = args != null && args.length > 1 && args[1] != null ? stringifyArg(args[1]) : null;
-            String fileName = args != null && args.length > 2 && args[2] != null && !TextUtils.isEmpty(argStr(args[2]))
-                    ? argStr(args[2]) : "video.m3u8";
-            String file = downloadM3u8File(url, fileName, options);
-            return file.equals(url) ? url : file + "##" + url;
-        });
-
-        // proxyClearM3u8：移植自 8.83 JSEngine.proxyClearM3u8 (JSEngine.smali:21401)。
-        // 语义：proxyClearM3u8(u, h, r) 去 m3u8 广告片段。
-        //   u: m3u8 URL；h: headers Map（可选，取 "headers"/"header" 子键）；r: 广告规则 JSONArray（可选）。
-        //   返回：清理后的内容存为 hiker://files/_cache/<md5>.m3u8，返回 "file://<path>##<原URL>"；
-        //   若清理结果为空则返回原 URL。
-        // 依赖：8.83 的 M3u8ClearUtil.getProxyContent（2193 行，smali_classes2）。
-        //   完整移植见 HkM3u8ClearUtil.java（待搬运）。
-        putFunction("proxyClearM3u8", args -> {
-            try {
-                if (args == null || args.length == 0 || args[0] == null) return "";
+            });
+            putFunction("postRequest", args -> {
+                if (args == null || args.length == 0) return "";
                 String url = argStr(args[0]);
-                if (url == null || url.isEmpty() || "undefined".equals(url)) return "";
-                // h 参数：headers Map（8.83 从 "headers" 或 "header" 子键取）
-                java.util.Map<String, String> headers = new java.util.HashMap<>();
-                if (args.length > 1 && args[1] != null) {
-                    Object h = args[1];
-                    // Rhino NativeObject -> Map 转换（复用现有 argMap 逻辑）
-                    java.util.Map<?, ?> hm = toStringMap(h);
-                    if (hm != null) {
-                        Object sub = hm.get("headers");
-                        if (sub == null) sub = hm.get("header");
-                        java.util.Map<?, ?> sm = toStringMap(sub);
-                        if (sm != null) {
-                            for (java.util.Map.Entry<?, ?> e : sm.entrySet()) {
-                                if (e.getKey() != null && e.getValue() != null) {
-                                    headers.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
+                String options = args.length > 1 && args[1] != null ? stringifyArg(args[1]) : "{}";
+                // 8.83 post0(request=true)：generatePostOps 之后再走 generateRequestOptions（缺 UA 时补移动端 UA）
+                return fetchSync(url, injectMobileUa(applyGeneratePostOps(options)));
+            });
+            // fcbw/ewr：WebView 取码与 Web 规则执行
+            // 8.83 原文：
+            //   fetchCodeByWebView(url, options) (JSEngine.smali:15513，别名 fcbw)：
+            //     用 WebkitFetcher（WebView）在后台加载 url，取 JS 渲染后的页面源码；
+            //     options.timeout（1000-30000ms，默认 30000ms）；同步等待 CountDownLatch；返回源码字符串。
+            //   executeWebRule(url, rule, options) (JSEngine.smali:15132，别名 ewr)：
+            //     用 WebkitExecutor 在 WebView 里执行另一条 web 规则；同上超时机制；返回执行结果字符串。
+            // 移植：HkWebkitFetcher（WebView 主线程加载 + CountDownLatch 同步等待，语义与 8.83 一致）
+            putFunction("fetchCodeByWebView", args -> {
+                try {
+                    String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
+                    if (url.isEmpty()) return "";
+                    java.util.Map<String, Object> options = jsOptions(args, 1);
+                    return HkWebkitFetcher.fetchCodeByWebView(url, options);
+                } catch (Throwable t) {
+                    return "";
+                }
+            });
+            putFunction("fcbw", args -> {
+                try {
+                    String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
+                    if (url.isEmpty()) return "";
+                    java.util.Map<String, Object> options = jsOptions(args, 1);
+                    return HkWebkitFetcher.fetchCodeByWebView(url, options);
+                } catch (Throwable t) {
+                    return "";
+                }
+            });
+            putFunction("executeWebRule", args -> {
+                try {
+                    String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
+                    String rule = args != null && args.length > 1 && args[1] != null ? String.valueOf(args[1]) : "";
+                    if (url.isEmpty()) return "";
+                    java.util.Map<String, Object> options = jsOptions(args, 2);
+                    return HkWebkitFetcher.executeWebRule(url, rule, options);
+                } catch (Throwable t) {
+                    return "";
+                }
+            });
+            putFunction("ewr", args -> {
+                try {
+                    String url = args != null && args.length > 0 && args[0] != null ? String.valueOf(args[0]) : "";
+                    String rule = args != null && args.length > 1 && args[1] != null ? String.valueOf(args[1]) : "";
+                    if (url.isEmpty()) return "";
+                    java.util.Map<String, Object> options = jsOptions(args, 2);
+                    return HkWebkitFetcher.executeWebRule(url, rule, options);
+                } catch (Throwable t) {
+                    return "";
+                }
+            });
+            stub("cacheCode0", null);
+            // setPageReverse：官方设置页面倒序标记；宿主存 kv 供规则自查
+            // 8.83 JSEngine.setPageReverse(4140)：post OnReversePageEvent(reverse) 经 EventBus，FilmListActivity.onSetReverse 接收后调 reverseArticleList
+            putFunction("setPageReverse", args -> {
+                setPageReverseDo(args);
+                return null;
+            });
+            // W1：8.83 里 refreshPage 与 setPageReverse 同挂别名 "refresh"
+            // （JSEngine.smali:22084 refreshPage / :24779 setPageReverse），注册顺序靠后者胜，
+            // 别名 refresh 实际指向倒序页面语义（OnReversePageEvent，smali:4140）。
+            // 注：别名赢家依赖原版方法声明顺序，ART 上为声明顺序，非规范保证
+            // （对差表"没定死"第 5 项）。
+            putFunction("refresh", args -> {
+                setPageReverseDo(args);
+                return null;
+            });
+
+            // ---- 文件（作用域限定 App 文件目录；hiker://files/ 映射到 filesDir） ----
+            putFunction("writeFile", args -> {
+                if (args != null && args.length > 1) writeFileContent(resolveHikerPath(argStr(args[0])), argStr(args[1]));
+                return null;
+            });
+            putFunction("readFile", args -> {
+                // 8.83 JSEngine.java:2132：第 2 参是 ruleTitleKey；含分隔符公开读，否则 basename+规则目录私有读。
+                // 兼容说明：星辰曾把第 2 参当 charset 用。双重解释——合法字符集名当 charset（兼容星辰旧规则），
+                // 否则当 ruleTitleKey（8.83 语义；规则标题不可能是字符集名，两边不冲突）。
+                if (args == null || args.length == 0) return "";
+                String p = argStr(args[0]);
+                String second = args.length > 1 && args[1] != null ? argStr(args[1]) : null;
+                String charset = null;
+                String rt = null;
+                if (second != null && !second.isEmpty()) {
+                    if (isCharsetName(second)) charset = second;
+                    else rt = second;
+                }
+                if (p.contains("/")) {
+                    return readFileContent(resolveHikerPath(p), charset);
+                }
+                String base = p.substring(p.lastIndexOf('/') + 1);
+                if (base.isEmpty()) base = p;
+                return readFileContent(new File(ruleDirForTitle(rt), base).getAbsolutePath(), charset);
+            });
+            putFunction("fileExist", args -> {
+                // 8.83 JSEngine.java:1574 @JSAnnotation(returnType=BOOL)：JS 侧拿到的是真布尔。
+                // 曾回字符串 "false"——JS 里非空字符串为真，红果代理 if(!fileExist(...)) 永不成立、
+                // 密文从不下载、只回 45 字节报错文本（真机+字节级实证）。全局 miss 再查按规则 libs。
+                if (args == null || args.length == 0) return Boolean.FALSE;
+                String p = argStr(args[0]);
+                if (new File(resolveHikerPath(p)).exists()) return Boolean.TRUE;
+                return resolvePerRuleLibFile(p) != null ? Boolean.TRUE : Boolean.FALSE;
+            });
+            // 官方别名：exist 即 fileExist
+            putFunction("exist", args -> {
+                if (args == null || args.length == 0) return Boolean.FALSE;
+                String p = argStr(args[0]);
+                if (new File(resolveHikerPath(p)).exists()) return Boolean.TRUE;
+                return resolvePerRuleLibFile(p) != null ? Boolean.TRUE : Boolean.FALSE;
+            });
+            // getPath(filePath)：8.83（JSEngine.java:2105）恒返回 "file://" + getFilePath(filePath)。
+            // 内部文件操作（writeFile/readFile/exists/delete/download）都直接调 resolveHikerPath，
+            // 不走 JS 可见的 getPath，故加前缀无连环影响。空输入仍回 ""。
+            putFunction("getPath", args -> {
+                if (args == null || args.length == 0) return "";
+                String p = resolveHikerPath(argStr(args[0]));
+                if (TextUtils.isEmpty(p)) return "";
+                return "file://" + p;
+            });
+            putFunction("saveFile", args -> {
+                // 8.83 JSEngine.java:2120：hiker://files/ 走公开路径；否则取 basename 存入规则目录；第 3 参为 ruleTitleKey。
+                if (args != null && args.length > 1) {
+                    String p = argStr(args[0]);
+                    String content = argStr(args[1]);
+                    String rt = args.length > 2 && args[2] != null ? argStr(args[2]) : null;
+                    if (p.startsWith("hiker://files/")) {
+                        writeFileContent(resolveHikerPath(p), content);
+                    } else {
+                        String base = p.substring(p.lastIndexOf('/') + 1);
+                        if (base.isEmpty()) base = p;
+                        writeFileContent(new File(ruleDirForTitle(rt), base).getAbsolutePath(), content);
+                    }
+                }
+                return null;
+            });
+            // 8.83 JSEngine.java:2145：含分隔符公开删 + 私有删两份都删；无分隔符只删私有（basename+规则目录）。
+            putFunction("deleteFile", args -> {
+                try {
+                    if (args != null && args.length > 0) {
+                        String p = argStr(args[0]);
+                        String rt = args.length > 1 && args[1] != null ? argStr(args[1]) : null;
+                        if (p.contains("/")) {
+                            new File(resolveHikerPath(p)).delete();
+                        }
+                        String base = p.substring(p.lastIndexOf('/') + 1);
+                        if (!base.isEmpty()) new File(ruleDirForTitle(rt), base).delete();
+                    }
+                } catch (Throwable ignored) {}
+                return null;
+            });
+
+            // 8.83 JSEngine.java:2514 downloadFile：失败抛 Exception("下载文件失败：…")；第 3 参 headers。
+            putFunction("downloadFile", args -> {
+                if (args == null || args.length < 2) throw new RuntimeException("下载文件失败：参数不足");
+                String url = argStr(args[0]);
+                String dest = resolveHikerPath(argStr(args[1]));
+                String headers = args.length > 2 && args[2] != null ? stringifyArg(args[2]) : "{}";
+                downloadToFile(url, dest, headers);
+                return null;
+            });
+
+            // ---- 剪贴板 / 分享 ----
+            putFunction("copy", args -> {
+                try {
+                    if (args != null && args.length > 0) {
+                        ClipboardManager cm = (ClipboardManager) App.get().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                        if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("hk", argStr(args[0])));
+                    }
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("copy failed: %s", e.getMessage());
+                }
+                return null;
+            });
+            putFunction("parsePaste", args -> {
+                // 解析分享文本：云口令则拉取规则 JSON 返回；内容不是规则时（如聚合接口列表）
+                // 返回通道粘贴文本原文（8.83 RuleImporterManager.parseSync 语义）；非云口令返回原文
+                if (args == null || args.length == 0) return "";
+                String t = argStr(args[0]).trim();
+                try {
+                    if (HkRuleManager.isCloudCode(t)) {
+                        HkRule r = HkRuleManager.get().importByCloudCode(t);
+                        Logger.t(TAG).d("parsePaste: cloud code imported %s", r.getTitle());
+                        return GSON.toJson(r);
+                    }
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("parsePaste cloud failed: %s", e.getMessage());
+                    try {
+                        String content = HkRuleManager.get().fetchPasteRawText(t);
+                        if (content != null && !content.isEmpty()) return content;
+                    } catch (Throwable ignored) {
+                    }
+                }
+                return t;
+            });
+            putFunction("getPastes", args -> {
+                // 8.83 JSEngine.getPastes：returnType=JSON。星辰无剪贴板分享能力，回真数组（1.3.42 扫尾）。
+                return toJsArray(new ArrayList<>());
+            });
+            putFunction("sharePaste", args -> {
+                Logger.t(TAG).d("sharePaste: no-op in host");
+                return "";
+            });
+
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerCodecApi() {
+            // ---- m3u8 ----
+            putFunction("fixM3u8", args -> {
+                if (args == null || args.length < 2) return args != null && args.length > 0 ? argStr(args[0]) : "";
+                return fixM3u8Content(argStr(args[0]), argStr(args[1]));
+            });
+            // 8.83 JSEngine.java:1928 cacheM3u8：真下载索引文件到 hiker://files/cache/，返回 "file##url"；非 m3u8/等价时返原 url。
+            putFunction("cacheM3u8", args -> {
+                String url = args != null && args.length > 0 ? argStr(args[0]) : "";
+                String options = args != null && args.length > 1 && args[1] != null ? stringifyArg(args[1]) : null;
+                String fileName = args != null && args.length > 2 && args[2] != null && !TextUtils.isEmpty(argStr(args[2]))
+                        ? argStr(args[2]) : "video.m3u8";
+                String file = downloadM3u8File(url, fileName, options);
+                return file.equals(url) ? url : file + "##" + url;
+            });
+
+            // proxyClearM3u8：移植自 8.83 JSEngine.proxyClearM3u8 (JSEngine.smali:21401)。
+            // 语义：proxyClearM3u8(u, h, r) 去 m3u8 广告片段。
+            //   u: m3u8 URL；h: headers Map（可选，取 "headers"/"header" 子键）；r: 广告规则 JSONArray（可选）。
+            //   返回：清理后的内容存为 hiker://files/_cache/<md5>.m3u8，返回 "file://<path>##<原URL>"；
+            //   若清理结果为空则返回原 URL。
+            // 依赖：8.83 的 M3u8ClearUtil.getProxyContent（2193 行，smali_classes2）。
+            //   完整移植见 HkM3u8ClearUtil.java（待搬运）。
+            putFunction("proxyClearM3u8", args -> {
+                try {
+                    if (args == null || args.length == 0 || args[0] == null) return "";
+                    String url = argStr(args[0]);
+                    if (url == null || url.isEmpty() || "undefined".equals(url)) return "";
+                    // h 参数：headers Map（8.83 从 "headers" 或 "header" 子键取）
+                    java.util.Map<String, String> headers = new java.util.HashMap<>();
+                    if (args.length > 1 && args[1] != null) {
+                        Object h = args[1];
+                        // Rhino NativeObject -> Map 转换（复用现有 argMap 逻辑）
+                        java.util.Map<?, ?> hm = toStringMap(h);
+                        if (hm != null) {
+                            Object sub = hm.get("headers");
+                            if (sub == null) sub = hm.get("header");
+                            java.util.Map<?, ?> sm = toStringMap(sub);
+                            if (sm != null) {
+                                for (java.util.Map.Entry<?, ?> e : sm.entrySet()) {
+                                    if (e.getKey() != null && e.getValue() != null) {
+                                        headers.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
+                                    }
                                 }
                             }
                         }
                     }
+                    // r 参数：广告规则 JSONArray（8.83 传 List<M3u8ClearAdRule>）
+                    java.util.List<HkM3u8ClearAdRule> adRules = null;
+                    if (args.length > 2 && args[2] != null) {
+                        try {
+                            String rJson = argStr(args[2]);
+                            if (rJson != null && !rJson.isEmpty() && !"undefined".equals(rJson)) {
+                                adRules = new com.google.gson.Gson().fromJson(rJson,
+                                        new com.google.gson.reflect.TypeToken<java.util.List<HkM3u8ClearAdRule>>() {
+                                        }.getType());
+                            }
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                    if (adRules == null) adRules = HkM3u8ClearUtil.getRules();
+                    String cleaned = HkM3u8ClearUtil.getProxyContent(url, headers, adRules);
+                    if (cleaned == null || cleaned.isEmpty()) {
+                        return url; // 8.83：清理结果为空返回原 URL
+                    }
+                    // 存缓存文件，返回 file://## 格式（8.83 JSEngine.smali:21580-21620）
+                    String name = md5(url) + ".m3u8";
+                    java.io.File cacheDir = new java.io.File(App.get().getFilesDir(), "hk_m3u8_cache");
+                    if (!cacheDir.exists()) cacheDir.mkdirs();
+                    java.io.File out = new java.io.File(cacheDir, name);
+                    try (java.io.FileWriter fw = new java.io.FileWriter(out)) {
+                        fw.write(cleaned);
+                    }
+                    com.fongmi.android.tv.api.hk.HkM3u8ClearUtil.pruneCacheDir(cacheDir);
+                    return "file://" + out.getAbsolutePath() + "##" + url;
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("proxyClearM3u8 failed: %s", e.getMessage());
+                    return args != null && args.length > 0 && args[0] != null ? argStr(args[0]) : "";
                 }
-                // r 参数：广告规则 JSONArray（8.83 传 List<M3u8ClearAdRule>）
-                java.util.List<HkM3u8ClearAdRule> adRules = null;
-                if (args.length > 2 && args[2] != null) {
+            });
+
+            // ---- 页面信息 ----
+            // setPageTitle：8.83 JSEngine.setPageTitle(2758)：post SetPageTitleEvent(title) 经 EventBus
+            putFunction("setPageTitle", args -> {
+                if (args != null && args.length > 0) {
+                    pageTitle = argStr(args[0]);
                     try {
-                        String rJson = argStr(args[2]);
-                        if (rJson != null && !rJson.isEmpty() && !"undefined".equals(rJson)) {
-                            adRules = new com.google.gson.Gson().fromJson(rJson,
-                                    new com.google.gson.reflect.TypeToken<java.util.List<HkM3u8ClearAdRule>>() {
-                                    }.getType());
+                        org.greenrobot.eventbus.EventBus.getDefault().post(new com.fongmi.android.tv.api.hk.event.home.SetPageTitleEvent(pageTitle));
+                    } catch (Throwable ignored) {
+                    }
+                }
+                return null;
+            });
+            // 8.83 smali:17466：取当前 Activity.getTitle()；拿不到/为空时回 setPageTitle 存的值
+            putFunction("getPageTitle", args -> {
+                try {
+                    android.app.Activity a = App.activity();
+                    if (a != null) {
+                        CharSequence t = a.getTitle();
+                        if (t != null && t.length() > 0) return t.toString();
+                    }
+                } catch (Throwable ignored) {
+                }
+                return pageTitle;
+            });
+            putFunction("getHome", args -> {
+                if (args == null || args.length == 0) return "";
+                return homeOf(argStr(args[0]));
+            });
+            // 8.83 JSEngine.java:1966：不做 URL 编码（HttpHelper.buildParamStr：k=v&k2=v2，非字符串值 JSON 序列化）；
+            // url 为空只返回参数串（无前导 ?）
+            putFunction("buildUrl", args -> {
+                if (args == null || args.length == 0) return "";
+                String url = argStr(args[0]);
+                String body = "";
+                if (args.length >= 2 && args[1] != null) {
+                    try {
+                        String json = stringifyArg(args[1]);
+                        Map<String, Object> map = GSON.fromJson(json, new com.google.gson.reflect.TypeToken<Map<String, Object>>() {}.getType());
+                        if (map != null && !map.isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            for (Map.Entry<String, Object> e : map.entrySet()) {
+                                if (e.getValue() == null) continue;
+                                if (sb.length() > 0) sb.append('&');
+                                Object v = e.getValue();
+                                sb.append(e.getKey()).append('=')
+                                        .append(v instanceof String ? (String) v : GSON.toJson(v));
+                            }
+                            body = sb.toString();
                         }
                     } catch (Throwable ignored) {
                     }
                 }
-                if (adRules == null) adRules = HkM3u8ClearUtil.getRules();
-                String cleaned = HkM3u8ClearUtil.getProxyContent(url, headers, adRules);
-                if (cleaned == null || cleaned.isEmpty()) {
-                    return url; // 8.83：清理结果为空返回原 URL
+                if (url == null || url.isEmpty() || "undefined".equals(url)) return body;
+                if (url.contains("?")) return url + "&" + body;
+                return url + "?" + body;
+            });
+            putFunction("joinUrl", args -> {
+                if (args == null || args.length < 2) return args != null && args.length > 0 ? argStr(args[0]) : "";
+                try {
+                    return new java.net.URI(argStr(args[0])).resolve(argStr(args[1])).toString();
+                } catch (Throwable e) {
+                    return argStr(args[1]);
                 }
-                // 存缓存文件，返回 file://## 格式（8.83 JSEngine.smali:21580-21620）
-                String name = md5(url) + ".m3u8";
-                java.io.File cacheDir = new java.io.File(App.get().getFilesDir(), "hk_m3u8_cache");
-                if (!cacheDir.exists()) cacheDir.mkdirs();
-                java.io.File out = new java.io.File(cacheDir, name);
-                try (java.io.FileWriter fw = new java.io.FileWriter(out)) {
-                    fw.write(cleaned);
-                }
-                com.fongmi.android.tv.api.hk.HkM3u8ClearUtil.pruneCacheDir(cacheDir);
-                return "file://" + out.getAbsolutePath() + "##" + url;
-            } catch (Throwable e) {
-                Logger.t(TAG).d("proxyClearM3u8 failed: %s", e.getMessage());
-                return args != null && args.length > 0 && args[0] != null ? argStr(args[0]) : "";
-            }
-        });
+            });
+            // getColTypes：8.83（JSEngine.java:2495）ReturnType.JSON（桥接层把 JSON 串转成真数组给 JS）。
+            // 星辰旧实现回 GSON 串，putFunction 经 Rhino 直接透传——JS 拿到的是字符串不是数组。
+            // 改为直接回真数组（toJsArray 原生对象通道），与 8.83 的 JS 可见形态一致。
+            putFunction("getColTypes", args -> toJsArray(COL_TYPES));
 
-        // ---- 页面信息 ----
-        // setPageTitle：8.83 JSEngine.setPageTitle(2758)：post SetPageTitleEvent(title) 经 EventBus
-        putFunction("setPageTitle", args -> {
-            if (args != null && args.length > 0) {
-                pageTitle = argStr(args[0]);
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerNetMiscApi() {
+            // ---- 编解码补充 ----
+            putFunction("md5", args -> {
+                if (args == null || args.length == 0) return "";
+                String v = Util.md5(argStr(args[0]));
+                return v == null ? "" : v;
+            });
+            // 官方 _base64 全局：8.83 JSEngine 注入的 MyBase64 实例（DEFAULT/NO_WRAP 常量 + 编解码方法），
+            // 规则如 CryptoUtil.Data.parseBase64(s, _base64.NO_WRAP) 依赖其存在
+            putFunction("__b64encodeToString", args -> {
+                if (args == null || args.length == 0) return "";
                 try {
-                    org.greenrobot.eventbus.EventBus.getDefault().post(new com.fongmi.android.tv.api.hk.event.home.SetPageTitleEvent(pageTitle));
-                } catch (Throwable ignored) {
+                    byte[] data = args[0] instanceof byte[] ? (byte[]) args[0] : argStr(args[0]).getBytes("UTF-8");
+                    int flags = args.length > 1 ? (int) Double.parseDouble(argStr(args[1])) : android.util.Base64.DEFAULT;
+                    return android.util.Base64.encodeToString(data, flags);
+                } catch (Throwable e) {
+                    return "";
                 }
-            }
-            return null;
-        });
-        // 8.83 smali:17466：取当前 Activity.getTitle()；拿不到/为空时回 setPageTitle 存的值
-        putFunction("getPageTitle", args -> {
+            });
+            putFunction("__b64decode", args -> {
+                if (args == null || args.length == 0) return toJsArray(new byte[0]);
+                try {
+                    int flags = args.length > 1 ? (int) Double.parseDouble(argStr(args[1])) : android.util.Base64.DEFAULT;
+                    return toJsArray(android.util.Base64.decode(argStr(args[0]), flags));
+                } catch (Throwable e) {
+                    return toJsArray(new byte[0]);
+                }
+            });
             try {
-                android.app.Activity a = App.activity();
-                if (a != null) {
-                    CharSequence t = a.getTitle();
-                    if (t != null && t.length() > 0) return t.toString();
-                }
-            } catch (Throwable ignored) {
+                evalJsInSharedScope(
+                    "var _base64 = {\n" +
+                    "  DEFAULT: 0,\n" +
+                    "  NO_PADDING: 1,\n" +
+                    "  NO_WRAP: 2,\n" +
+                    "  CRLF: 4,\n" +
+                    "  URL_SAFE: 8,\n" +
+                    "  encodeToString: function(d, f) { return __b64encodeToString(d, f); },\n" +
+                    "  decode: function(s, f) { return __b64decode(s, f); },\n" +
+                    "  encode: function(d, f) { return __b64decode(__b64encodeToString(d, f)); },\n" +
+                    "  decodeToString: function(s, f) { var b = __b64decode(s, f); var r = ''; for (var i = 0; i < b.length; i++) r += String.fromCharCode(b[i] & 255); return r; }\n" +
+                    "};\n"
+                );
+            } catch (Throwable e) {
+                Logger.t(TAG).d("_base64 inject failed: " + e.getMessage());
             }
-            return pageTitle;
-        });
-        putFunction("getHome", args -> {
-            if (args == null || args.length == 0) return "";
-            return homeOf(argStr(args[0]));
-        });
-        // 8.83 JSEngine.java:1966：不做 URL 编码（HttpHelper.buildParamStr：k=v&k2=v2，非字符串值 JSON 序列化）；
-        // url 为空只返回参数串（无前导 ?）
-        putFunction("buildUrl", args -> {
-            if (args == null || args.length == 0) return "";
-            String url = argStr(args[0]);
-            String body = "";
-            if (args.length >= 2 && args[1] != null) {
+            putFunction("hexToBase64", args -> {
+                if (args == null || args.length == 0) return "";
+                return hexToB64(argStr(args[0]));
+            });
+            putFunction("hexToBytes", args -> {
+                if (args == null || args.length == 0) return toJsArray(new byte[0]);
                 try {
-                    String json = stringifyArg(args[1]);
-                    Map<String, Object> map = GSON.fromJson(json, new com.google.gson.reflect.TypeToken<Map<String, Object>>() {}.getType());
-                    if (map != null && !map.isEmpty()) {
-                        StringBuilder sb = new StringBuilder();
-                        for (Map.Entry<String, Object> e : map.entrySet()) {
-                            if (e.getValue() == null) continue;
-                            if (sb.length() > 0) sb.append('&');
-                            Object v = e.getValue();
-                            sb.append(e.getKey()).append('=')
-                                    .append(v instanceof String ? (String) v : GSON.toJson(v));
+                    String h = argStr(args[0]).trim();
+                    byte[] b = new byte[h.length() / 2];
+                    for (int i = 0; i < b.length; i++) b[i] = (byte) Integer.parseInt(h.substring(i * 2, i * 2 + 2), 16);
+                    return toJsArray(b);
+                } catch (Throwable e) {
+                    return toJsArray(new byte[0]);
+                }
+            });
+            putFunction("rsaEncrypt", args -> {
+                if (args == null || args.length < 2) return "";
+                return rsaCrypto(true, argStr(args[0]), argStr(args[1]));
+            });
+            putFunction("rsaDecrypt", args -> {
+                if (args == null || args.length < 2) return "";
+                return rsaCrypto(false, argStr(args[0]), argStr(args[1]));
+            });
+            putFunction("getCryptoJS", args -> {
+                // 官方语义：返回内置 CryptoJS 库（aes.js）源码，规则 eval(getCryptoJS()) 后使用
+                String code = loadAsset("aes.js");
+                if (code == null) {
+                    Logger.t(TAG).d("getCryptoJS: aes.js missing in assets");
+                    return "";
+                }
+                return code;
+            });
+            // B32：8.83 smali:26129 的入口守卫字面语义是反的——非 undefined 输入直接回 null，
+            // 规范化分支不可达（undefined 进去反而在 tryGetString 抛错），且该 APK 内无任何调用方，
+            // 疑似原版 bug。按函数本意实现 sane 语义：null/undefined→null；""→""；解析失败→"null"；
+            // 成功→规范化重序列化。原版中段（isEmpty→""、parse 失败→"null"、成功→toJSONString）逐字对齐。
+            putFunction("toCorrectJSONString", args -> {
+                if (args == null || args.length == 0 || args[0] == null) return null;
+                Object o = args[0];
+                if (!(o instanceof String)) throw new RuntimeException("参数类型只能是字符串");
+                String t = (String) o;
+                if (t.isEmpty()) return "";
+                try {
+                    Object parsed = GSON.fromJson(t, Object.class);
+                    if (parsed == null) return "null";
+                    return GSON.toJson(parsed);
+                } catch (Throwable e) {
+                    return "null";
+                }
+            });
+            // 8.83 smali:18729 justTestSign(appId, devId, userId)：三参 tryGetString；
+            // 拼 "appId:devId:userId:0" 后用设备 AndroidKeyStore 的 EC 密钥做 SHA256withECDSA 签名，
+            // 返回 <签名hex后128位>01##04<公钥hex>（EcdsaSha256Kt.sign 等价）。
+            // 注：原版 catch 块疑似笔误（异常时回 devId），此处异常回 ""。
+            putFunction("justTestSign", args -> {
+                try {
+                    String appId = mustBeString(args, 0);
+                    String devId = mustBeString(args, 1);
+                    String userId = mustBeString(args, 2);
+                    return ecdsaSignDevice(appId + ":" + devId + ":" + userId + ":0");
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("justTestSign failed: %s", e.getMessage());
+                    return "";
+                }
+            });
+
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerEventAndUiStubApi() {
+            // ---- 网络杂项 ----
+            // getCookie(url)：8.83（smali:16625 → CookieJarUtil.getCookie）：
+            // 取 Application 的 cookie 池 loadForRequest(httpUrl)，拼成 "name=value; name=value"，无则空串。
+            // 旧注记说宿主没维护池子是错的——HkCookieJar（照 8.83 CookieJarImpl 移植）早已接入 HkHttp 的 OkHttp。
+            putFunction("getCookie", args -> {
+                try {
+                    String url = args != null && args.length > 0 ? argStr(args[0]) : "";
+                    if (TextUtils.isEmpty(url)) return "";
+                    okhttp3.HttpUrl httpUrl = okhttp3.HttpUrl.parse(url);
+                    if (httpUrl == null) return "";
+                    StringBuilder sb = new StringBuilder();
+                    for (okhttp3.Cookie c : HkCookieJar.get(App.get()).loadForRequest(httpUrl)) {
+                        if (sb.length() > 0) sb.append("; ");
+                        sb.append(c.name()).append("=").append(c.value());
+                    }
+                    return sb.toString();
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("getCookie failed: %s", e.getMessage());
+                    return "";
+                }
+            });
+            putFunction("getIP", args -> getLocalIp());
+            // ipping(ip, h)：8.83（smali:18432，java:4008）：h 取整（缺省 3000）；
+            // InetAddress.getByName(ip).isReachable(timeout)，异常打日志回 false。
+            putFunction("ipping", args -> {
+                try {
+                    String ip = args != null && args.length > 0 ? argStr(args[0]) : "";
+                    int timeout = 3000;
+                    if (args != null && args.length > 1) {
+                        Object h = argsNativeObjectAdjust(args[1]);
+                        if (h instanceof Number) timeout = ((Number) h).intValue();
+                    }
+                    return java.net.InetAddress.getByName(ip).isReachable(timeout);
+                } catch (Throwable e) {
+                    Logger.t(TAG).d("ipping failed: %s", e.getMessage());
+                    return false;
+                }
+            });
+            // 8.83 JSEngine.isLogin：恒返回字符串 "true"（此前写反成 false，按登录态分流的规则全走错分支）
+            // 8.83 smali:18539：returnType=BOOL，桥接把 "true" 转为真布尔；JS 可见为 boolean true
+            putFunction("isLogin", args -> Boolean.TRUE);
+
+            // ---- 事件监听（官方 onClose 等；宿主仅记录，不触发） ----
+            putFunction("addListener", args -> {
+                try {
+                    if (args != null && args.length > 1) {
+                        listeners.put(argStr(args[0]), argStr(args[1]));
+                        Logger.t(TAG).d("addListener: %s", args[0]);
+                    }
+                } catch (Throwable ignored) {}
+                return null;
+            });
+            // 官方别名：listen 即 addListener
+            putFunction("listen", args -> {
+                try {
+                    if (args != null && args.length > 1) listeners.put(argStr(args[0]), argStr(args[1]));
+                } catch (Throwable ignored) {}
+                return null;
+            });
+
+            // ---- 选择弹窗（官方弹 UI；宿主无 UI，no-op） ----
+            putFunction("showSelectOptions", args -> {
+                Logger.t(TAG).d("showSelectOptions: no-op in host");
+                return null;
+            });
+
+    }
+
+    /** 见 registerItemAndFileApi 编排（PR-5 按 // ---- 分节拆出，纯搬运）。 */
+    private void registerUnderlineAliasApi() {
+            // ---- 下划线内部别名：8.83（smali:10148）三参全透传 HtmlParser.parseDomForUrl(html, rule, urlKey)，
+            // urlKey 用于拼绝对地址。pd 走 CommonParser 口径，_pd 走 HtmlParser 口径，两套不得互串。
+            putFunction("_pd", args -> {
+                if (args == null || args.length < 2) return "";
+                String urlKey = args.length > 2 ? argStr(args[2]) : "";
+                return parser.hpdh(argStr(args[0]), sel(args[1]), urlKey);
+            });
+            putFunction("_pdfh", args -> {
+                if (args == null || args.length < 2) return "";
+                return parser.hpdh(argStr(args[0]), sel(args[1]), "");
+            });
+            putFunction("_pdfa", args -> {
+                if (args == null || args.length < 2) return toJsArray(new ArrayList<>());
+                return toJsArray(parser.hpda(argStr(args[0]), sel(args[1])));
+            });
+            // _pdfl(html, listRule, htmlRule, texts, urls)：8.83（HtmlParser.smali:569）：
+            // 每项 = parseDomForUrl(itemHtml, htmlRule, "").trim() + "$" + parseDomForUrl(itemHtml, texts, urls)，
+            // 返回 text$url 真数组。旧实现只调 pdfa 丢了 texts/urls（每项只剩裸 html）。
+            putFunction("_pdfl", args -> {
+                if (args == null || args.length < 2) return toJsArray(new ArrayList<>());
+                String htmlRule = args.length > 2 ? argStr(args[2]) : "";
+                String texts = args.length > 3 ? argStr(args[3]) : "";
+                String urls = args.length > 4 ? argStr(args[4]) : "";
+                return toJsArray(parser.hpdfl(argStr(args[0]), sel(args[1]), htmlRule, texts, urls));
+            });
+            // _findItem(id)：8.83（JSEngine.java:1280）按 id 查当前条目列表（ItemFindEvent 机制），
+            // 找到返回条目对象、找不到 null。星辰旧实现恒 ""。
+            // 条目来源用运行时现有的当前列表持有处 results（id 存 extra.id，见 _findItemsByCls 同源）。
+            // returnType=JSON：原版桥接层 JSON.parse 后是真 JS 对象；此处把 Map 经 parseJson 转成
+            // 带原型的真对象（1.3.42 UU 案同图），不用 Rhino 的 NativeJavaObject 包装。
+            putFunction("_findItem", args -> {
+                try {
+                    String id = args != null && args.length > 0 ? argStr(args[0]) : "";
+                    for (HkItem it : results) {
+                        if (id.equals(it.getExtra("id"))) {
+                            return parseJson(GSON.toJson(itemToFullMap(it)));
                         }
-                        body = sb.toString();
                     }
-                } catch (Throwable ignored) {
+                    return null;
+                } catch (Throwable e) {
+                    return null;
                 }
-            }
-            if (url == null || url.isEmpty() || "undefined".equals(url)) return body;
-            if (url.contains("?")) return url + "&" + body;
-            return url + "?" + body;
-        });
-        putFunction("joinUrl", args -> {
-            if (args == null || args.length < 2) return args != null && args.length > 0 ? argStr(args[0]) : "";
-            try {
-                return new java.net.URI(argStr(args[0])).resolve(argStr(args[1])).toString();
-            } catch (Throwable e) {
-                return argStr(args[1]);
-            }
-        });
-        // getColTypes：8.83（JSEngine.java:2495）ReturnType.JSON（桥接层把 JSON 串转成真数组给 JS）。
-        // 星辰旧实现回 GSON 串，putFunction 经 Rhino 直接透传——JS 拿到的是字符串不是数组。
-        // 改为直接回真数组（toJsArray 原生对象通道），与 8.83 的 JS 可见形态一致。
-        putFunction("getColTypes", args -> toJsArray(COL_TYPES));
-
-        // ---- 编解码补充 ----
-        putFunction("md5", args -> {
-            if (args == null || args.length == 0) return "";
-            String v = Util.md5(argStr(args[0]));
-            return v == null ? "" : v;
-        });
-        // 官方 _base64 全局：8.83 JSEngine 注入的 MyBase64 实例（DEFAULT/NO_WRAP 常量 + 编解码方法），
-        // 规则如 CryptoUtil.Data.parseBase64(s, _base64.NO_WRAP) 依赖其存在
-        putFunction("__b64encodeToString", args -> {
-            if (args == null || args.length == 0) return "";
-            try {
-                byte[] data = args[0] instanceof byte[] ? (byte[]) args[0] : argStr(args[0]).getBytes("UTF-8");
-                int flags = args.length > 1 ? (int) Double.parseDouble(argStr(args[1])) : android.util.Base64.DEFAULT;
-                return android.util.Base64.encodeToString(data, flags);
-            } catch (Throwable e) {
-                return "";
-            }
-        });
-        putFunction("__b64decode", args -> {
-            if (args == null || args.length == 0) return toJsArray(new byte[0]);
-            try {
-                int flags = args.length > 1 ? (int) Double.parseDouble(argStr(args[1])) : android.util.Base64.DEFAULT;
-                return toJsArray(android.util.Base64.decode(argStr(args[0]), flags));
-            } catch (Throwable e) {
-                return toJsArray(new byte[0]);
-            }
-        });
-        try {
-            evalJsInSharedScope(
-                "var _base64 = {\n" +
-                "  DEFAULT: 0,\n" +
-                "  NO_PADDING: 1,\n" +
-                "  NO_WRAP: 2,\n" +
-                "  CRLF: 4,\n" +
-                "  URL_SAFE: 8,\n" +
-                "  encodeToString: function(d, f) { return __b64encodeToString(d, f); },\n" +
-                "  decode: function(s, f) { return __b64decode(s, f); },\n" +
-                "  encode: function(d, f) { return __b64decode(__b64encodeToString(d, f)); },\n" +
-                "  decodeToString: function(s, f) { var b = __b64decode(s, f); var r = ''; for (var i = 0; i < b.length; i++) r += String.fromCharCode(b[i] & 255); return r; }\n" +
-                "};\n"
-            );
-        } catch (Throwable e) {
-            Logger.t(TAG).d("_base64 inject failed: " + e.getMessage());
-        }
-        putFunction("hexToBase64", args -> {
-            if (args == null || args.length == 0) return "";
-            return hexToB64(argStr(args[0]));
-        });
-        putFunction("hexToBytes", args -> {
-            if (args == null || args.length == 0) return toJsArray(new byte[0]);
-            try {
-                String h = argStr(args[0]).trim();
-                byte[] b = new byte[h.length() / 2];
-                for (int i = 0; i < b.length; i++) b[i] = (byte) Integer.parseInt(h.substring(i * 2, i * 2 + 2), 16);
-                return toJsArray(b);
-            } catch (Throwable e) {
-                return toJsArray(new byte[0]);
-            }
-        });
-        putFunction("rsaEncrypt", args -> {
-            if (args == null || args.length < 2) return "";
-            return rsaCrypto(true, argStr(args[0]), argStr(args[1]));
-        });
-        putFunction("rsaDecrypt", args -> {
-            if (args == null || args.length < 2) return "";
-            return rsaCrypto(false, argStr(args[0]), argStr(args[1]));
-        });
-        putFunction("getCryptoJS", args -> {
-            // 官方语义：返回内置 CryptoJS 库（aes.js）源码，规则 eval(getCryptoJS()) 后使用
-            String code = loadAsset("aes.js");
-            if (code == null) {
-                Logger.t(TAG).d("getCryptoJS: aes.js missing in assets");
-                return "";
-            }
-            return code;
-        });
-        // B32：8.83 smali:26129 的入口守卫字面语义是反的——非 undefined 输入直接回 null，
-        // 规范化分支不可达（undefined 进去反而在 tryGetString 抛错），且该 APK 内无任何调用方，
-        // 疑似原版 bug。按函数本意实现 sane 语义：null/undefined→null；""→""；解析失败→"null"；
-        // 成功→规范化重序列化。原版中段（isEmpty→""、parse 失败→"null"、成功→toJSONString）逐字对齐。
-        putFunction("toCorrectJSONString", args -> {
-            if (args == null || args.length == 0 || args[0] == null) return null;
-            Object o = args[0];
-            if (!(o instanceof String)) throw new RuntimeException("参数类型只能是字符串");
-            String t = (String) o;
-            if (t.isEmpty()) return "";
-            try {
-                Object parsed = GSON.fromJson(t, Object.class);
-                if (parsed == null) return "null";
-                return GSON.toJson(parsed);
-            } catch (Throwable e) {
-                return "null";
-            }
-        });
-        // 8.83 smali:18729 justTestSign(appId, devId, userId)：三参 tryGetString；
-        // 拼 "appId:devId:userId:0" 后用设备 AndroidKeyStore 的 EC 密钥做 SHA256withECDSA 签名，
-        // 返回 <签名hex后128位>01##04<公钥hex>（EcdsaSha256Kt.sign 等价）。
-        // 注：原版 catch 块疑似笔误（异常时回 devId），此处异常回 ""。
-        putFunction("justTestSign", args -> {
-            try {
-                String appId = mustBeString(args, 0);
-                String devId = mustBeString(args, 1);
-                String userId = mustBeString(args, 2);
-                return ecdsaSignDevice(appId + ":" + devId + ":" + userId + ":0");
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Throwable e) {
-                Logger.t(TAG).d("justTestSign failed: %s", e.getMessage());
-                return "";
-            }
-        });
-
-        // ---- 网络杂项 ----
-        // getCookie(url)：8.83（smali:16625 → CookieJarUtil.getCookie）：
-        // 取 Application 的 cookie 池 loadForRequest(httpUrl)，拼成 "name=value; name=value"，无则空串。
-        // 旧注记说宿主没维护池子是错的——HkCookieJar（照 8.83 CookieJarImpl 移植）早已接入 HkHttp 的 OkHttp。
-        putFunction("getCookie", args -> {
-            try {
-                String url = args != null && args.length > 0 ? argStr(args[0]) : "";
-                if (TextUtils.isEmpty(url)) return "";
-                okhttp3.HttpUrl httpUrl = okhttp3.HttpUrl.parse(url);
-                if (httpUrl == null) return "";
-                StringBuilder sb = new StringBuilder();
-                for (okhttp3.Cookie c : HkCookieJar.get(App.get()).loadForRequest(httpUrl)) {
-                    if (sb.length() > 0) sb.append("; ");
-                    sb.append(c.name()).append("=").append(c.value());
-                }
-                return sb.toString();
-            } catch (Throwable e) {
-                Logger.t(TAG).d("getCookie failed: %s", e.getMessage());
-                return "";
-            }
-        });
-        putFunction("getIP", args -> getLocalIp());
-        // ipping(ip, h)：8.83（smali:18432，java:4008）：h 取整（缺省 3000）；
-        // InetAddress.getByName(ip).isReachable(timeout)，异常打日志回 false。
-        putFunction("ipping", args -> {
-            try {
-                String ip = args != null && args.length > 0 ? argStr(args[0]) : "";
-                int timeout = 3000;
-                if (args != null && args.length > 1) {
-                    Object h = argsNativeObjectAdjust(args[1]);
-                    if (h instanceof Number) timeout = ((Number) h).intValue();
-                }
-                return java.net.InetAddress.getByName(ip).isReachable(timeout);
-            } catch (Throwable e) {
-                Logger.t(TAG).d("ipping failed: %s", e.getMessage());
-                return false;
-            }
-        });
-        // 8.83 JSEngine.isLogin：恒返回字符串 "true"（此前写反成 false，按登录态分流的规则全走错分支）
-        // 8.83 smali:18539：returnType=BOOL，桥接把 "true" 转为真布尔；JS 可见为 boolean true
-        putFunction("isLogin", args -> Boolean.TRUE);
-
-        // ---- 事件监听（官方 onClose 等；宿主仅记录，不触发） ----
-        putFunction("addListener", args -> {
-            try {
-                if (args != null && args.length > 1) {
-                    listeners.put(argStr(args[0]), argStr(args[1]));
-                    Logger.t(TAG).d("addListener: %s", args[0]);
-                }
-            } catch (Throwable ignored) {}
-            return null;
-        });
-        // 官方别名：listen 即 addListener
-        putFunction("listen", args -> {
-            try {
-                if (args != null && args.length > 1) listeners.put(argStr(args[0]), argStr(args[1]));
-            } catch (Throwable ignored) {}
-            return null;
-        });
-
-        // ---- 选择弹窗（官方弹 UI；宿主无 UI，no-op） ----
-        putFunction("showSelectOptions", args -> {
-            Logger.t(TAG).d("showSelectOptions: no-op in host");
-            return null;
-        });
-
-        // ---- 下划线内部别名：8.83（smali:10148）三参全透传 HtmlParser.parseDomForUrl(html, rule, urlKey)，
-        // urlKey 用于拼绝对地址。pd 走 CommonParser 口径，_pd 走 HtmlParser 口径，两套不得互串。
-        putFunction("_pd", args -> {
-            if (args == null || args.length < 2) return "";
-            String urlKey = args.length > 2 ? argStr(args[2]) : "";
-            return parser.hpdh(argStr(args[0]), sel(args[1]), urlKey);
-        });
-        putFunction("_pdfh", args -> {
-            if (args == null || args.length < 2) return "";
-            return parser.hpdh(argStr(args[0]), sel(args[1]), "");
-        });
-        putFunction("_pdfa", args -> {
-            if (args == null || args.length < 2) return toJsArray(new ArrayList<>());
-            return toJsArray(parser.hpda(argStr(args[0]), sel(args[1])));
-        });
-        // _pdfl(html, listRule, htmlRule, texts, urls)：8.83（HtmlParser.smali:569）：
-        // 每项 = parseDomForUrl(itemHtml, htmlRule, "").trim() + "$" + parseDomForUrl(itemHtml, texts, urls)，
-        // 返回 text$url 真数组。旧实现只调 pdfa 丢了 texts/urls（每项只剩裸 html）。
-        putFunction("_pdfl", args -> {
-            if (args == null || args.length < 2) return toJsArray(new ArrayList<>());
-            String htmlRule = args.length > 2 ? argStr(args[2]) : "";
-            String texts = args.length > 3 ? argStr(args[3]) : "";
-            String urls = args.length > 4 ? argStr(args[4]) : "";
-            return toJsArray(parser.hpdfl(argStr(args[0]), sel(args[1]), htmlRule, texts, urls));
-        });
-        // _findItem(id)：8.83（JSEngine.java:1280）按 id 查当前条目列表（ItemFindEvent 机制），
-        // 找到返回条目对象、找不到 null。星辰旧实现恒 ""。
-        // 条目来源用运行时现有的当前列表持有处 results（id 存 extra.id，见 _findItemsByCls 同源）。
-        // returnType=JSON：原版桥接层 JSON.parse 后是真 JS 对象；此处把 Map 经 parseJson 转成
-        // 带原型的真对象（1.3.42 UU 案同图），不用 Rhino 的 NativeJavaObject 包装。
-        putFunction("_findItem", args -> {
-            try {
-                String id = args != null && args.length > 0 ? argStr(args[0]) : "";
-                for (HkItem it : results) {
-                    if (id.equals(it.getExtra("id"))) {
-                        return parseJson(GSON.toJson(itemToFullMap(it)));
+            });
+            // findItemsByCls/deleteItemByCls：按条目 extra.cls 匹配当前已收集结果
+            // B35：8.83 _findItemsByCls 回 ArticleList 完整序列化（含 content/extra/type 等），此处按 HkItem 现有字段补齐
+            // returnType=JSON：原版桥接层 JSON.parse 后是真数组，此处走 parseJson（1.3.42 UU 案同图）。
+            putFunction("_findItemsByCls", args -> {
+                try {
+                    String cls = args != null && args.length > 0 ? argStr(args[0]) : "";
+                    List<Map<String, Object>> out = new ArrayList<>();
+                    for (HkItem it : results) {
+                        if (cls.equals(it.getExtra("cls"))) out.add(itemToFullMap(it));
                     }
+                    return parseJson(GSON.toJson(out));
+                } catch (Throwable e) {
+                    return toJsArray(new ArrayList<>());
                 }
-                return null;
-            } catch (Throwable e) {
-                return null;
-            }
-        });
-        // findItemsByCls/deleteItemByCls：按条目 extra.cls 匹配当前已收集结果
-        // B35：8.83 _findItemsByCls 回 ArticleList 完整序列化（含 content/extra/type 等），此处按 HkItem 现有字段补齐
-        // returnType=JSON：原版桥接层 JSON.parse 后是真数组，此处走 parseJson（1.3.42 UU 案同图）。
-        putFunction("_findItemsByCls", args -> {
-            try {
-                String cls = args != null && args.length > 0 ? argStr(args[0]) : "";
-                List<Map<String, Object>> out = new ArrayList<>();
-                for (HkItem it : results) {
-                    if (cls.equals(it.getExtra("cls"))) out.add(itemToFullMap(it));
-                }
-                return parseJson(GSON.toJson(out));
-            } catch (Throwable e) {
-                return toJsArray(new ArrayList<>());
-            }
-        });
+            });
 
     }
 
