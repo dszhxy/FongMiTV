@@ -1,4 +1,4 @@
-name: Sync upstream FongMi/TV
+name: Sync upstream FongMi/TV -> fm-up
 
 on:
   schedule:
@@ -10,14 +10,14 @@ permissions:
   contents: write
 
 concurrency:
-  group: sync-upstream
+  group: sync-fm-up
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: 将 FongMi/TV 的 fongmi 分支同步到 upstream-sync
+      - name: 将 FongMi/TV 的 fongmi 分支同步到 fm-up
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -31,12 +31,12 @@ jobs:
           git fetch --no-tags upstream fongmi:refs/remotes/upstream/fongmi
 
           UPSTREAM_SHA=$(git rev-parse refs/remotes/upstream/fongmi)
-          MIRROR_SHA=$(git ls-remote origin refs/heads/upstream-sync | cut -f1)
+          MIRROR_SHA=$(git ls-remote origin refs/heads/fm-up | cut -f1)
 
           if [ "$UPSTREAM_SHA" = "$MIRROR_SHA" ]; then
-            echo "upstream-sync 已是最新：${UPSTREAM_SHA}"
+            echo "fm-up 已是最新：${UPSTREAM_SHA}"
             exit 0
           fi
 
-          git push --force origin refs/remotes/upstream/fongmi:refs/heads/upstream-sync
-          echo "upstream-sync 已更新：${MIRROR_SHA:-<empty>} -> ${UPSTREAM_SHA}"
+          git push --force origin refs/remotes/upstream/fongmi:refs/heads/fm-up
+          echo "fm-up 已更新：${MIRROR_SHA:-<empty>} -> ${UPSTREAM_SHA}"
