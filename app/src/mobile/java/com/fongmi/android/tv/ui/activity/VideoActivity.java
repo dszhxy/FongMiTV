@@ -2068,6 +2068,11 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void updateOsd() {
+        // 短剧模式完全隐藏 OSD（时间/分辨率/网速/进度/标题等），纯沉浸刷剧
+        if (mShortDramaMode) {
+            mBinding.osd.setVisibility(View.GONE);
+            return;
+        }
         if (!PlayerSetting.isOsdEnabled()) {
             mBinding.osd.setVisibility(View.GONE);
             return;
