@@ -8,7 +8,7 @@
     <color name="half_transparent2">#60000000</color>
     <color name="tabText">#99999999</color>
     <color name="tabText2">#ff888888</color>
-    <color name="text">#ff222222</color>
+    <color name="m_text">#ff222222</color>
     <color name="text_color_default">#ff888888</color>
     <color name="whiteblack">#99999999</color>
     <color name="whiteblack2">#60333333</color>
