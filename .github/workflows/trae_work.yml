@@ -1,0 +1,102 @@
+name: trae_work 打包
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - trae_work
+  workflow_dispatch:
+
+concurrency:
+  group: trae-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: mobile-arm64_v8a
+            task: assembleMobileArm64_v8aRelease
+          - name: mobile-armeabi_v7a
+            task: assembleMobileArmeabi_v7aRelease
+          - name: leanback-arm64_v8a
+            task: assembleLeanbackArm64_v8aRelease
+          - name: leanback-armeabi_v7a
+            task: assembleLeanbackArmeabi_v7aRelease
+    steps:
+      - name: 拉取源码
+        uses: actions/checkout@v4
+        with:
+          # 拉取完整历史，保证 versionCode 取到准确的 git 提交数
+          fetch-depth: 0
+
+      - name: 配置 JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: 配置 Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 配置 Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: 配置 Gradle 缓存
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 编译 ${{ matrix.name }}
+        run: |
+          chmod +x gradlew
+          ./gradlew ${{ matrix.task }} --parallel --build-cache
+
+      - name: 查看 APK
+        run: find app/build/outputs/apk -name "*.apk"
+
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载全部 APK
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*'
+          merge-multiple: true
+          path: apk
+
+      - name: 查看 APK
+        run: ls -lh apk
+
+      - name: 发布 trae_work 发布包
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: trae_work-build-${{ github.run_number }}
+          name: Ys影视 trae_work 构建 ${{ github.run_number }}
+          body: |
+            trae_work 分支自动打包
+
+            包含：
+            - Mobile ARM64 / ARMv7
+            - Leanback ARM64 / ARMv7
+          prerelease: true
+          files: |
+            apk/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

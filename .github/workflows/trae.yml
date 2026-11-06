@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - trae
-      - trae_work
   workflow_dispatch:
 
 concurrency:
