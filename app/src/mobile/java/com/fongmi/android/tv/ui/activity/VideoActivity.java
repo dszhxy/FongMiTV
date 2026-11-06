@@ -759,6 +759,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位。 */
+    /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位；边界时给提示。 */
     @Override
     public void onPageDragEnd(boolean committed) {
         if (mBinding != null) mBinding.player.setTranslationY(0f);
@@ -766,6 +767,17 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         if (mSdNext != null) mSdNext.setVisibility(View.GONE);
         hideSdPreviewLabel(mSdPrevLabel);
         hideSdPreviewLabel(mSdNextLabel);
+        // 未切集且在边界：弹 toast 提示
+        if (!committed && mShortDramaMode && mEpisodeAdapter != null) {
+            int pos = mEpisodeAdapter.getPosition();
+            int count = mEpisodeAdapter.getItemCount();
+            if (pos >= count - 1 && !canPageDown()) {
+                ToastUtil.show(this, "已经是最后一集了");
+            }
+            else if (pos <= 0 && !canPageUp()) {
+                ToastUtil.show(this, "已经是第一集了");
+            }
+        }
     }
 
     // ===== 短剧专用 UI：抖音式竖屏播放器 =====
@@ -820,7 +832,17 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private void shareShortDrama() {
         PlayerManager player = player();
         if (player == null || TextUtils.isEmpty(player.getUrl())) return;
-        onShare(getName(), player.getUrl(), player.getHeaders());
+        try {
+            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (cm != null) {
+                android.content.ClipData clip = android.content.ClipData.newPlainText(getName(), player.getUrl());
+                cm.setPrimaryClip(clip);
+                ToastUtil.show(this, "播放链接已复制");
+            }
+        } catch (Throwable ignored) {
+            // 兜底：系统分享
+            onShare(getName(), player.getUrl(), player.getHeaders());
+        }
     }
 
     /** 锁定态：只留解锁按钮，其余短剧 UI 全部收起（抖音式防误触）。 */
@@ -2069,6 +2091,11 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void updateOsd() {
         if (!PlayerSetting.isOsdEnabled()) {
+            mBinding.osd.setVisibility(View.GONE);
+            return;
+        }
+        // 短剧模式：不显示屏显（分辨率/时间/标题等 OSD 信息）
+        if (mShortDramaMode) {
             mBinding.osd.setVisibility(View.GONE);
             return;
         }
