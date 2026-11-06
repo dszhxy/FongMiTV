@@ -5702,6 +5702,8 @@ public class HkPageActivity extends BaseActivity {
             android.webkit.WebView wv = new android.webkit.WebView(this);
             wv.getSettings().setJavaScriptEnabled(true);
             wv.getSettings().setDomStorageEnabled(true);
+            wv.getSettings().setUseWideViewPort(true);
+            wv.getSettings().setLoadWithOverviewMode(true);
             // CookieManager：默认 acceptCookie=false，验证码图片等需 Cookie 的资源加载失败
             android.webkit.CookieManager cm = android.webkit.CookieManager.getInstance();
             cm.setAcceptCookie(true);
@@ -5713,8 +5715,19 @@ public class HkPageActivity extends BaseActivity {
                 }
             });
             wv.loadUrl(url);
+            // 用ScrollView包裹WebView，确保内容（尤其验证码图片）可以完整滚动显示
+            android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
+            scrollView.addView(wv, new android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            int dp320 = (int) (320 * getResources().getDisplayMetrics().density);
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dp320);
+            scrollView.setLayoutParams(lp);
+            int dp16 = (int) (16 * getResources().getDisplayMetrics().density);
+            scrollView.setPadding(dp16, dp16, dp16, dp16);
             new HkDialogs(this)
-                    .setView(wv)
+                    .setView(scrollView)
                     .setPositiveButton("关闭", (d, w) -> {
                         try { wv.destroy(); } catch (Throwable ignored) {}
                         d.dismiss();

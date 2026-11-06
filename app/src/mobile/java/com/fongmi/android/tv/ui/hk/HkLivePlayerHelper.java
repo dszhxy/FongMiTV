@@ -1,7 +1,8 @@
 package com.fongmi.android.tv.ui.hk;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -165,7 +166,7 @@ public final class HkLivePlayerHelper {
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp.leftMargin = pad / 2;
             box.addView(label, lp);
-            android.app.Dialog dialog = new AlertDialog.Builder(activity).setView(box).create();
+            android.app.Dialog dialog = new MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_WebHTV_LightDialog).setView(box).create();
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
             dialog.show();
