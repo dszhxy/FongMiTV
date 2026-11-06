@@ -694,22 +694,22 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public boolean canPageUp() {
-        // 上划 = 上一集：需要存在上一集
-        return mEpisodeAdapter != null && mEpisodeAdapter.getPosition() > 0;
-    }
-
-    @Override
-    public boolean canPageDown() {
-        // 下划 = 下一集：需要存在下一集
+        // 上划 = 下一集（抖音式）：需要存在下一集
         return mEpisodeAdapter != null
                 && mEpisodeAdapter.getPosition() < mEpisodeAdapter.getItemCount() - 1;
     }
 
-    /** 短剧翻页：下划（up=false）下一集，上划（up=true）上一集。 */
+    @Override
+    public boolean canPageDown() {
+        // 下划 = 上一集（抖音式）：需要存在上一集
+        return mEpisodeAdapter != null && mEpisodeAdapter.getPosition() > 0;
+    }
+
+    /** 短剧翻页：上划（up=true）下一集，下划（up=false）上一集（抖音式）。 */
     @Override
     public void onPageCommit(boolean up) {
-        if (up) mVod.prevEpisode(true);
-        else mVod.nextEpisode(true);
+        if (up) mVod.nextEpisode(true);
+        else mVod.prevEpisode(true);
         if (mBinding != null) mBinding.player.setTranslationY(0f);
     }
 
@@ -758,7 +758,6 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         if (label != null) label.setVisibility(View.GONE);
     }
 
-    /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位。 */
     /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位。 */
     @Override
     public void onPageDragEnd(boolean committed) {
