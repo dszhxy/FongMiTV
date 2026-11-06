@@ -1,12 +1,12 @@
 package com.fongmi.android.tv.api.hk;
-import com.fongmi.android.tv.utils.ToastUtil;
-
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Base64;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.utils.ToastUtil;
 import com.fongmi.quickjs.bean.Req;
 import com.fongmi.quickjs.utils.Crypto;
 import com.fongmi.quickjs.utils.Parser;
@@ -17,19 +17,29 @@ import com.github.catvod.utils.Util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.orhanobut.logger.Logger;
+
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
 import org.greenrobot.eventbus.EventBus;
 import org.mozilla.javascript.BaseFunction;
+import org.mozilla.javascript.ConsString;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.ConsString;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.GeneratedClassLoader;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.NativeJavaArray;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.SecurityController;
 import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider;
+import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -37,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.NetworkInterface;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -60,18 +71,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import android.os.Environment;
-import java.net.URI;
-import java.util.UUID;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.GeneratedClassLoader;
-import org.mozilla.javascript.Script;
-import org.mozilla.javascript.SecurityController;
-import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider;
-import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 
 /**
  * 海阔 JS 运行时（M2，设计文档 §4.4）。
@@ -1358,6 +1357,20 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
     }
 
     private void registerApi() {
+        // 按功能域拆分为多个子方法，便于维护；调用顺序与原单一方法内的注册顺序一致。
+        registerCoreApi();
+        registerShimAndSupportApi();
+        registerStorage0Api();
+        registerItemAndFileApi();
+        registerDomAndUiApi();
+        registerDownloadAndProxyApi();
+        registerLegacyStubApi();
+    }
+
+    /**
+     * 注册结果返回、网络请求、DOM 解析、变量存储、日志等核心 API。
+     */
+    private void registerCoreApi() {
         // 8.83 原版 JSON.parse：空串/非法 JSON 抛 SyntaxError（"Empty JSON string"），不吞错。
         // 之前宽容模式（返回空对象）导致规则 try/catch 降级失效，空对象往下传才在各处报 startsWith on undefined。
         // 已恢复原版行为。
@@ -1698,6 +1711,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             return null;
         });
 
+    }
+
+    /**
+     * 注册聚阅库兼容垫片，以及编码/加密/计时器/公共变量等支撑性 API。
+     */
+    private void registerShimAndSupportApi() {
         // 聚阅库兼容垫片（1.3.47 聚阅借名垫齐案）：聚阅 SrcJuPublic.js
         //（dc83a9ca6959bd597f109b9f1e16df6e.js）在全新作用域里借用了一批只定义在
         // SrcJuMethod.js（ea2ea7f49c1d87b8d19784fa4206921f.js）顶层的名字，
@@ -2170,6 +2189,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             return null;
         });
 
+    }
+
+    /**
+     * 构建并注册 storage0 对象（支持 JSON 对象持久化的存储封装）。
+     */
+    private void registerStorage0Api() {
         // ---- storage0 对象（官方：支持存储 JSON 对象的存储封装） ----
         // put* 用 stringifyArg 把值（含 JSObject）序列化为 JSON 存；get* 存的是 JSON 对象/数组则解析回 JS 对象返回
         // 壳只建一次存进 sharedStorage0：新鲜作用域补注册时直接共用，避免跨 Context 重建与重复挂载。
@@ -2243,6 +2268,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
         HkHostClasses.installFileUtilChain(cryptoTarget, cryptoFileUtil);
         injectAndroidPackage(cryptoTarget);
 
+    }
+
+    /**
+     * 注册结果列表动态修改、批量请求、文件与 m3u8 缓存相关 API。
+     */
+    private void registerItemAndFileApi() {
         // ---- 当前结果列表的动态修改（官方经 EventBus 改 UI 列表；本宿主直接改 results） ----
         putFunction("updateItem", args -> {
             // updateItem(id, obj) 或 updateItem(obj)（obj.extra.id / obj.url 作 id）
@@ -3055,6 +3086,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             }
         });
 
+    }
+
+    /**
+     * 注册 xpath 选择器、页面交互、搜索模式、二维码等 DOM/UI API。
+     */
+    private void registerDomAndUiApi() {
         // ---- xpath/xpathArray（xpa）：8.83 JSEngine 同款 javax.xml 真 XPath 求值 ----
         // 此前是空桩（借口宿主 Parser 不支持），XML/RSS 类规则必死
         // 8.83 JSEngine.java:2971：失败 throws Exception（靠 try/catch 判失败的规则进 catch）
@@ -3435,6 +3472,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             downloadToFile(url, dest, headers);
             return null;
         });
+    }
+
+    /**
+     * 注册下载、缓存清理、代理服务、设备信息等 API。
+     */
+    private void registerDownloadAndProxyApi() {
         putFunction("saveImage", args -> {
             // 官方 saveImage(url, path)：参数顺序注意是 (url, path)
             if (args == null || args.length < 2) return null;
@@ -3778,6 +3821,12 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             return GSON.toJson(ua);
         });
 
+    }
+
+    /**
+     * 注册原版存在但本宿主为薄桩的兼容 API，以及 Uint8Array 垫片。
+     */
+    private void registerLegacyStubApi() {
         // ---- 原版 8.83 补齐（JSEngine @JSAnnotation 清单全量对账，2026-10-17） ----
         // 原版 160 个注解函数（去重后 159 个名），此前缺 25 个。逐个按原版行为补：
         // 自带能力的按原版实现；依赖原版应用内能力（X5/EPUB/WebDAV/Chaquopy/网页代理/
@@ -3985,6 +4034,7 @@ public class HkJsRuntime implements HkSelector.JsEvaluator, Parser.JsEvaluator {
             Logger.t(TAG).d("Uint8Array shim failed: %s", e.getMessage());
         }
     }
+
 
     /** 8.83 AesUtil 同款（encrypt/decrypt）：AES/ECB/PKCS5Padding；密钥补"0"到 32 字节（只补不截）；
      * base64 出入（Android Base64 NO_WRAP）；UTF-8。原版无 SHA1PRNG、无 hex。 */
