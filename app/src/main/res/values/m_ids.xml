@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 海阔：对照 8.83 res/values/ids.xml，预声明 item 布局引用的 id -->
 <resources>
+
     <item type="id" name="edit" />
     <item type="id" name="item_result_img_bg" />
     <item type="id" name="item_bg" />
@@ -36,4 +36,5 @@
     <item type="id" name="hk_dynamic_bg" />
     <!-- 实验室 tab：代码动态加到底栏菜单，id 在此预声明（菜单 XML 里不再放第 7 项，Material 写死最多 6 项） -->
     <item type="id" name="lab" />
+
 </resources>

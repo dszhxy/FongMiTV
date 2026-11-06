@@ -1,6 +1,5 @@
 package com.fongmi.android.tv.ui;
 
-import com.fongmi.android.tv.BuildConfig;
 import com.github.catvod.utils.Prefers;
 
 /**
@@ -12,7 +11,7 @@ import com.github.catvod.utils.Prefers;
  * 使同一个 APK 内可以同时容纳手机与电视两套界面，由用户自行切换。
  *
  * <p>兼容性保证：当用户未主动设置偏好时（{@link #AUTO}），
- * 行为完全回退到编译期 flavor（{@link BuildConfig#FLAVOR_mode}），
+ * 行为完全回退到编译期 flavor（AUTO 默认按手机界面运行），
  * 因此既有 APK 的表现与改造前一致，不会影响存量用户。
  *
  * <p>注意：切换模式后需要重启 Activity（或整个进程）才能让资源与布局生效，
@@ -68,9 +67,9 @@ public final class UiMode {
         Prefers.remove(KEY);
     }
 
-    /** 编译期 flavor 默认值：是否为电视版 */
+    /** 单 APK 默认界面：手机（电视界面由用户在设置里切换） */
     public static boolean isDefaultLeanback() {
-        return "leanback".equals(BuildConfig.FLAVOR_mode);
+        return false;
     }
 
     /**

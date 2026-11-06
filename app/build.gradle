@@ -36,6 +36,8 @@ android {
         versionCode commitCount
         versionName "0.0.1.${commitCount}"
         buildConfigField "String", "MPV_NATIVE_SOURCES", "\"mpv-jni-ffmpeg-shared-v1\""
+        // 取消 mode flavor 后 BuildConfig.FLAVOR 只剩 abi，更新通道固定沿用 mobile
+        buildConfigField "String", "UI_CHANNEL", "\"mobile\""
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.fongmi.android.tv.event.EventIndex"]
@@ -43,14 +45,8 @@ android {
         }
     }
 
-    flavorDimensions = ["mode", "abi"]
+    flavorDimensions = ["abi"]
     productFlavors {
-        leanback {
-            dimension "mode"
-        }
-        mobile {
-            dimension "mode"
-        }
         arm64_v8a {
             dimension "abi"
             ndk { abiFilters "arm64-v8a" }
@@ -64,8 +60,8 @@ android {
     // mobile / leanback 完全一致的源码与资源集中到 src/shared，避免重复维护
     sourceSets {
         main {
-            java.srcDirs += ['src/shared/java']
-            res.srcDirs += ['src/shared/res']
+            java.srcDirs += ['src/shared/java', 'src/mobile/java', 'src/leanback/java']
+            res.srcDirs += ['src/shared/res', 'src/mobile/res', 'src/leanback/res']
         }
     }
 
@@ -145,10 +141,9 @@ android {
 androidComponents {
     onVariants(selector().withBuildType('release')) { variant ->
         def flavors = variant.productFlavors.collectEntries { [(it.first): it.second] }
-        def mode = flavors['mode'] ?: 'mode'
         def abi = flavors['abi'] ?: 'abi'
         variant.outputs.each { output ->
-            output.outputFileName.set("${mode}-${abi}.apk")
+            output.outputFileName.set("mobile-${abi}.apk")
         }
     }
 }
@@ -189,12 +184,12 @@ dependencies {
     implementation libs.permissionx
     implementation libs.simple.xml
     implementation libs.textdrawable
-    leanbackImplementation libs.leanback
-    leanbackImplementation libs.androidautosize
-    mobileImplementation libs.biometric
-    mobileImplementation libs.zxing.android.embedded
-    mobileImplementation libs.commons.compress
-    mobileImplementation libs.xz
+    implementation libs.leanback
+    implementation libs.androidautosize
+    implementation libs.biometric
+    implementation libs.zxing.android.embedded
+    implementation libs.commons.compress
+    implementation libs.xz
     annotationProcessor libs.room.compiler
     annotationProcessor libs.eventbus.annotation.processor
     annotationProcessor libs.glide.compiler

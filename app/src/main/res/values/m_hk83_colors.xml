@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 海阔 8.83 原版颜色（res/values/colors.xml 原值），供照抄移植的原版布局引用；与工程既有同名同值的不重复定义。 -->
 <resources>
+
     <color name="blackText">#ff222222</color>
     <color name="blackText3">#ff444444</color>
     <color name="black_77">#773e3e40</color>
@@ -21,4 +21,5 @@
     <color name="green">#ff14c47c</color>
     <color name="gray_text">#ff848484</color>
     <color name="red_shallow">#fffe7577</color>
+
 </resources>

@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+
 
     <!-- App -->
     <string name="app_keep">Keep</string>
@@ -17,13 +19,13 @@
     <string name="menu_reset">Reset</string>
 
     <!-- Vod -->
-    <string name="vod_home">Home</string>
+    
 
     <!-- Detail -->
     <string name="detail_flag">Flag</string>
     <string name="detail_episode">Episode</string>
     <string name="detail_quality">Quality</string>
-    <string name="detail_content">Summary</string>
+    
     <string name="detail_search">Searching <xliff:g name="name">%s</xliff:g></string>
 
     <!-- Device -->
@@ -878,6 +880,7 @@
     <string name="music_mode">播放模式</string>
     
     <string name="music_play_pause">播放/暂停</string>
+
 
 
 </resources>

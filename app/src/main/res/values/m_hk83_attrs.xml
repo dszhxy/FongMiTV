@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 海阔 8.83 原版自定义属性（res/values/attrs.xml 原定义），供照抄移植的自定义 View 使用。 -->
 <resources>
+
     <attr name="center" format="integer">
         <enum name="all" value="0" />
         <enum name="baseline" value="1" />
@@ -32,4 +32,5 @@
         <attr name="rfs_hidingEnabled" format="boolean" />
         <attr name="rfs_touchTargetWidth" format="dimension" />
     </declare-styleable>
+
 </resources>

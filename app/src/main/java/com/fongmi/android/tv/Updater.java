@@ -38,11 +38,11 @@ public class Updater implements Download.Callback, UpdateListener {
     }
 
     private String getJson() {
-        return Github.getJson(BuildConfig.FLAVOR);
+        return Github.getJson(BuildConfig.UI_CHANNEL);
     }
 
     private String getApk() {
-        return Github.getApk(BuildConfig.FLAVOR + "-" + (android.os.Process.is64Bit() ? "arm64_v8a" : "armeabi_v7a"));
+        return Github.getApk(BuildConfig.UI_CHANNEL + "-" + (android.os.Process.is64Bit() ? "arm64_v8a" : "armeabi_v7a"));
     }
 
     public Updater force() {

@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+
 
     <!-- App -->
     <string name="app_keep">我的收藏</string>
@@ -17,13 +19,13 @@
     <string name="menu_reset">重設</string>
 
     <!-- Vod -->
-    <string name="vod_home">推薦</string>
+    
 
     <!-- Detail -->
     <string name="detail_flag">線路</string>
     <string name="detail_episode">選集</string>
     <string name="detail_quality">畫質</string>
-    <string name="detail_content">簡介</string>
+    
     <string name="detail_search">快搜「<xliff:g name="name">%s</xliff:g>」</string>
 
     <!-- Device -->
@@ -207,6 +209,7 @@
         <item>全屏</item>
         <item>標準</item>
     </string-array>
+
 
 
 </resources>

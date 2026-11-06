@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
 
     <style name="Theme.Base" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <item name="android:statusBarColor">@color/transparent</item>
@@ -471,6 +473,7 @@
         <item name="thumbTint">@color/music_switch_thumb</item>
         <item name="trackTint">@color/music_switch_track</item>
     </style>
+
 
 
 </resources>

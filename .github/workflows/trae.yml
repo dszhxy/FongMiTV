@@ -20,14 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: mobile-arm64_v8a
-            task: assembleMobileArm64_v8aRelease
-          - name: mobile-armeabi_v7a
-            task: assembleMobileArmeabi_v7aRelease
-          - name: leanback-arm64_v8a
-            task: assembleLeanbackArm64_v8aRelease
-          - name: leanback-armeabi_v7a
-            task: assembleLeanbackArmeabi_v7aRelease
+          - name: arm64_v8a
+            task: assembleArm64_v8aRelease
+          - name: armeabi_v7a
+            task: assembleArmeabi_v7aRelease
     steps:
       - name: 拉取源码
         uses: actions/checkout@v4
@@ -93,8 +89,7 @@ jobs:
             trae 分支自动打包
 
             包含：
-            - Mobile ARM64 / ARMv7
-            - Leanback ARM64 / ARMv7
+            - 统一版 ARM64 / ARMv7（手机 / 电视界面运行时切换）
           prerelease: true
           files: |
             apk/**/*.apk

@@ -84,7 +84,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
-        mBinding.aboutText.setText(BuildConfig.FLAVOR_mode);
+        mBinding.aboutText.setText((com.fongmi.android.tv.ui.UiMode.isLeanback() ? "leanback" : "mobile"));
         mBinding.proxyText.setText(TextUtils.isEmpty(Setting.getProxy()) ? getString(R.string.setting_proxy_none) : Setting.getProxy());
         mBinding.backupText.setText((backup = ResUtil.getStringArray(R.array.select_backup))[Setting.getBackupMode()]);
     }
@@ -251,7 +251,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     }
 
     private void onAbout(View view) {
-        mBinding.aboutText.setText(BuildConfig.FLAVOR_mode);
+        mBinding.aboutText.setText((com.fongmi.android.tv.ui.UiMode.isLeanback() ? "leanback" : "mobile"));
     }
 
     private void setWallDefault(View view) {
