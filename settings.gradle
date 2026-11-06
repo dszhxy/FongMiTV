@@ -32,4 +32,5 @@ include ':app'
 include ':catvod'
 include ':chaquo'
 include ':quickjs'
+include ':thunder'
 rootProject.name = "TV"
