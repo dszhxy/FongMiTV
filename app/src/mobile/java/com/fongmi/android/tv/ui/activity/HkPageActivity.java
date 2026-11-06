@@ -579,31 +579,29 @@ public class HkPageActivity extends BaseActivity {
             if (clip == null || clip.getItemCount() == 0) return;
             CharSequence text = clip.getItemAt(0).coerceToText(this);
             if (TextUtils.isEmpty(text)) return;
-            String code = extractCloudCode(text.toString());
-            if (code == null) return;
-            // 同一口令只提示一次
+            // 剪贴板可能一次贴了多个小程序（口令之间夹「小程序：xxx」说明行），批量识别整批
+            List<String> codes = HkRuleManager.findAllCloudCodes(text.toString());
+            if (codes.isEmpty()) return;
+            String clipKey = TextUtils.join("\n", codes);
+            // 同一批口令只提示一次
             SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
-            if (code.equals(sp.getString(KEY_LAST_CLIP, ""))) return;
-            sp.edit().putString(KEY_LAST_CLIP, code).apply();
+            if (clipKey.equals(sp.getString(KEY_LAST_CLIP, ""))) return;
+            sp.edit().putString(KEY_LAST_CLIP, clipKey).apply();
+            String message = codes.size() == 1
+                    ? "剪贴板中有海阔云口令，是否立即导入？\n\n" + codes.get(0)
+                    : "剪贴板中有 " + codes.size() + " 个海阔云口令，是否全部导入？\n\n" + TextUtils.join("\n", codes);
             new HkDialogs(this)
-                    .setTitle("检测到云口令")
-                    .setMessage("剪贴板中有海阔云口令，是否立即导入？\n\n" + code)
-                    .setPositiveButton("导入", (d, w) -> importByCloudCode(code))
+                    .setTitle(codes.size() == 1 ? "检测到云口令" : "检测到多个云口令")
+                    .setMessage(message)
+                    .setPositiveButton("导入", (d, w) -> {
+                        if (codes.size() == 1) importByCloudCode(codes.get(0));
+                        else importCloudCodesBatch(codes);
+                    })
                     .setNegativeButton("取消", null)
                     .show();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /** 从文本中提取云口令（云1~云10 开头，取连续的一段）。 */
-    private static String extractCloudCode(String text) {
-        if (TextUtils.isEmpty(text)) return null;
-        // 按空白切分，找第一段云口令
-        for (String part : text.trim().split("\\s+")) {
-            if (HkRuleManager.isCloudCode(part)) return part;
-        }
-        return null;
     }
 
     private void showView(int v) {
@@ -1656,8 +1654,12 @@ public class HkPageActivity extends BaseActivity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(20), dp(8), dp(20), 0);
         EditText et = new EditText(this);
-        et.setHint("粘贴云口令，如：云6oooole/apidb/xxxx");
-        et.setSingleLine(true);
+        // 支持一次粘贴多个口令（每行一个 / 中间夹「小程序：xxx」说明行也能识别）
+        et.setHint("粘贴云口令，如：云6oooole/apidb/xxxx\n可一次粘贴多个，每行一个");
+        et.setSingleLine(false);
+        et.setMinLines(2);
+        et.setMaxLines(5);
+        et.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
         et.setTextColor(0xFFF2F4F8);
         et.setHintTextColor(0xFF9AA1B0);
         if (!TextUtils.isEmpty(preset)) et.setText(preset);
@@ -1678,9 +1680,31 @@ public class HkPageActivity extends BaseActivity {
         new HkDialogs(this)
                 .setTitle("从云口令导入")
                 .setView(box)
-                .setPositiveButton("导入", (d, w) -> importByCloudCode(et.getText().toString(), etPwd.getText().toString().trim(), false))
+                .setPositiveButton("导入", (d, w) -> importCloudCodeInput(
+                        et.getText().toString(), etPwd.getText().toString().trim(), false))
                 .setNegativeButton("取消", null)
                 .show();
+    }
+
+    /**
+     * 导入框文本统一入口：识别全部云口令——只有一个走单条导入（保留「口令后跟密码」的原解析口径），
+     * 多个走批量导入（一次解析完只弹一次分组选择器）。
+     */
+    private void importCloudCodeInput(String text, String password, boolean prompted) {
+        if (TextUtils.isEmpty(text)) {
+            Notify.show("口令为空");
+            return;
+        }
+        List<String> codes = HkRuleManager.findAllCloudCodes(text);
+        if (codes.isEmpty()) {
+            Notify.show("没识别到小程序口令");
+            return;
+        }
+        if (codes.size() > 1) {
+            importCloudCodesBatch(codes);
+            return;
+        }
+        importByCloudCode(text, password, prompted);
     }
 
     /** 云口令导入：云端解析 → 弹分组选择器 → 落盘（忽略规则自带的野分组名）。 */
