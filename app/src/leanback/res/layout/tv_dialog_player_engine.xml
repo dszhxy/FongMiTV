@@ -30,7 +30,7 @@
             android:contentDescription="@string/player_debug"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:src="@drawable/ic_action_debug" />
+            android:src="@drawable/tv_ic_action_debug" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

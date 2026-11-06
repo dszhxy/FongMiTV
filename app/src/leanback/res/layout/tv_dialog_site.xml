@@ -33,7 +33,7 @@
             android:textColor="@color/white"
             android:textColorHint="@color/text"
             android:textSize="16sp"
-            app:drawableStartCompat="@drawable/ic_site_search" />
+            app:drawableStartCompat="@drawable/tv_ic_site_search" />
 
         <View
             android:id="@+id/actionGap"
@@ -63,7 +63,7 @@
             android:paddingBottom="4dp"
             app:maxHeight="344dp"
             tools:itemCount="5"
-            tools:listitem="@layout/adapter_site" />
+            tools:listitem="@layout/tv_adapter_site" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/action"
@@ -98,7 +98,7 @@
                 android:nextFocusUp="@id/config"
                 android:nextFocusDown="@id/change"
                 android:padding="8dp"
-                android:src="@drawable/ic_site_search"
+                android:src="@drawable/tv_ic_site_search"
                 app:tint="@color/site_action_icon" />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -112,7 +112,7 @@
                 android:nextFocusUp="@id/search"
                 android:nextFocusDown="@id/select"
                 android:padding="8dp"
-                android:src="@drawable/ic_site_change"
+                android:src="@drawable/tv_ic_site_change"
                 app:tint="@color/site_action_icon" />
 
             <androidx.appcompat.widget.AppCompatImageView

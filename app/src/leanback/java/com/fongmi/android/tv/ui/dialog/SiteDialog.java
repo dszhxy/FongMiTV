@@ -22,7 +22,7 @@ import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Site;
-import com.fongmi.android.tv.databinding.DialogSiteBinding;
+import com.fongmi.android.tv.databinding.TvDialogSiteBinding;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.SiteListener;
 import com.fongmi.android.tv.ui.adapter.SiteAdapter;
@@ -42,7 +42,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     private static final int INITIAL_BATCH = 48;
 
     private RecyclerView.ItemDecoration decoration;
-    private DialogSiteBinding binding;
+    private TvDialogSiteBinding binding;
     private FragmentActivity activity;
     private Dialog directDialog;
     private SiteListener listener;
@@ -85,7 +85,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogSiteBinding.inflate(getLayoutInflater());
+        return binding = TvDialogSiteBinding.inflate(getLayoutInflater());
     }
 
     @Override
@@ -107,7 +107,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     private void showDirect(FragmentActivity activity) {
         long start = System.currentTimeMillis();
         log("inflate start");
-        binding = DialogSiteBinding.inflate(activity.getLayoutInflater());
+        binding = TvDialogSiteBinding.inflate(activity.getLayoutInflater());
         log("inflate end cost=%sms", cost(start));
         long dialogStart = System.currentTimeMillis();
         directDialog = new Dialog(activity);

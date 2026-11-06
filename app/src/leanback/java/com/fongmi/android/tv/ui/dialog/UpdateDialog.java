@@ -5,7 +5,7 @@ import android.view.View;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.databinding.DialogUpdateBinding;
+import com.fongmi.android.tv.databinding.TvDialogUpdateBinding;
 import com.fongmi.android.tv.impl.UpdateListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -13,7 +13,7 @@ import java.util.Locale;
 
 public class UpdateDialog extends BaseAlertDialog {
 
-    private DialogUpdateBinding binding;
+    private TvDialogUpdateBinding binding;
     private UpdateListener listener;
     private String title;
     private String desc;
@@ -44,7 +44,7 @@ public class UpdateDialog extends BaseAlertDialog {
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogUpdateBinding.inflate(getLayoutInflater());
+        return binding = TvDialogUpdateBinding.inflate(getLayoutInflater());
     }
 
     @Override

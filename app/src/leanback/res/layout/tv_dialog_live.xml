@@ -12,4 +12,4 @@
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     app:maxHeight="296dp"
     tools:itemCount="5"
-    tools:listitem="@layout/adapter_live" />
+    tools:listitem="@layout/tv_adapter_live" />

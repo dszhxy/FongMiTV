@@ -11,7 +11,7 @@ import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Keep;
-import com.fongmi.android.tv.databinding.ActivityKeepBinding;
+import com.fongmi.android.tv.databinding.TvActivityKeepBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.ui.adapter.KeepAdapter;
@@ -24,7 +24,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickListener {
 
-    private ActivityKeepBinding mBinding;
+    private TvActivityKeepBinding mBinding;
     private KeepAdapter mAdapter;
 
     public static void start(Activity activity) {
@@ -33,7 +33,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
 
     @Override
     protected ViewBinding getBinding() {
-        return mBinding = ActivityKeepBinding.inflate(getLayoutInflater());
+        return mBinding = TvActivityKeepBinding.inflate(getLayoutInflater());
     }
 
     @Override

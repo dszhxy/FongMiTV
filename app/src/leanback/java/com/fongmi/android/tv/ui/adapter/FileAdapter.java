@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.R;
-import com.fongmi.android.tv.databinding.AdapterFileBinding;
+import com.fongmi.android.tv.databinding.TvAdapterFileBinding;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterFileBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterFileBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -55,9 +55,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterFileBinding binding;
+        private final TvAdapterFileBinding binding;
 
-        ViewHolder(@NonNull AdapterFileBinding binding) {
+        ViewHolder(@NonNull TvAdapterFileBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

@@ -24,13 +24,13 @@
 
         <include
             android:id="@+id/widget"
-            layout="@layout/view_widget_live"
+            layout="@layout/tv_view_widget_live"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         <include
             android:id="@+id/control"
-            layout="@layout/view_control_live"
+            layout="@layout/tv_view_control_live"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
@@ -38,7 +38,7 @@
 
         <include
             android:id="@+id/progress"
-            layout="@layout/view_progress"
+            layout="@layout/tv_view_progress"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
@@ -61,7 +61,7 @@
             android:clipToPadding="false"
             android:padding="12dp"
             tools:itemCount="5"
-            tools:listitem="@layout/adapter_group" />
+            tools:listitem="@layout/tv_adapter_group" />
 
         <com.fongmi.android.tv.ui.custom.CustomLiveListView
             android:id="@+id/channel"
@@ -72,7 +72,7 @@
             android:clipToPadding="false"
             android:padding="12dp"
             tools:itemCount="5"
-            tools:listitem="@layout/adapter_channel" />
+            tools:listitem="@layout/tv_adapter_channel" />
 
         <com.fongmi.android.tv.ui.custom.CustomLiveListView
             android:id="@+id/epgData"
@@ -82,7 +82,7 @@
             android:clipToPadding="false"
             android:padding="12dp"
             tools:itemCount="5"
-            tools:listitem="@layout/adapter_epg_data" />
+            tools:listitem="@layout/tv_adapter_epg_data" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </FrameLayout>

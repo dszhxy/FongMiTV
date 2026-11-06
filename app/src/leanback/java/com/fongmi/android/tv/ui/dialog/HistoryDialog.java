@@ -7,7 +7,7 @@ import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.bean.Config;
-import com.fongmi.android.tv.databinding.DialogHistoryBinding;
+import com.fongmi.android.tv.databinding.TvDialogHistoryBinding;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.ui.adapter.ConfigAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
@@ -15,7 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class HistoryDialog extends BaseAlertDialog implements ConfigAdapter.OnClickListener {
 
-    private DialogHistoryBinding binding;
+    private TvDialogHistoryBinding binding;
     private ConfigAdapter adapter;
     private ConfigListener listener;
     private boolean readOnly;
@@ -57,7 +57,7 @@ public class HistoryDialog extends BaseAlertDialog implements ConfigAdapter.OnCl
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogHistoryBinding.inflate(getLayoutInflater());
+        return binding = TvDialogHistoryBinding.inflate(getLayoutInflater());
     }
 
     @Override

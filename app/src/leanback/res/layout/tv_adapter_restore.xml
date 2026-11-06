@@ -18,7 +18,7 @@
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="18sp"
-        tools:text="https://fongmi.github.io/cat.json" />
+        tools:text="2024-12-26.tv" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/delete"
@@ -29,6 +29,6 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:padding="8dp"
-        android:src="@drawable/ic_setting_delete" />
+        android:src="@drawable/tv_ic_setting_delete" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -16,7 +16,7 @@ import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.bean.Config;
-import com.fongmi.android.tv.databinding.DialogConfigBinding;
+import com.fongmi.android.tv.databinding.TvDialogConfigBinding;
 import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.server.Server;
@@ -33,7 +33,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 public class ConfigDialog extends BaseAlertDialog {
 
-    private DialogConfigBinding binding;
+    private TvDialogConfigBinding binding;
     private boolean append = true;
     private boolean edit;
     private String url;
@@ -69,7 +69,7 @@ public class ConfigDialog extends BaseAlertDialog {
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogConfigBinding.inflate(getLayoutInflater());
+        return binding = TvDialogConfigBinding.inflate(getLayoutInflater());
     }
 
     @Override

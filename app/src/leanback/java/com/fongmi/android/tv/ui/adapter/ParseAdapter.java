@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Parse;
-import com.fongmi.android.tv.databinding.AdapterParseBinding;
+import com.fongmi.android.tv.databinding.TvAdapterParseBinding;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class ParseAdapter extends RecyclerView.Adapter<ParseAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterParseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterParseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -53,9 +53,9 @@ public class ParseAdapter extends RecyclerView.Adapter<ParseAdapter.ViewHolder> 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterParseBinding binding;
+        private final TvAdapterParseBinding binding;
 
-        ViewHolder(@NonNull AdapterParseBinding binding) {
+        ViewHolder(@NonNull TvAdapterParseBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

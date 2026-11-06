@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.bean.EpgData;
-import com.fongmi.android.tv.databinding.AdapterEpgDataBinding;
+import com.fongmi.android.tv.databinding.TvAdapterEpgDataBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ public class EpgDataAdapter extends RecyclerView.Adapter<EpgDataAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterEpgDataBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterEpgDataBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -74,9 +74,9 @@ public class EpgDataAdapter extends RecyclerView.Adapter<EpgDataAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterEpgDataBinding binding;
+        private final TvAdapterEpgDataBinding binding;
 
-        ViewHolder(@NonNull AdapterEpgDataBinding binding) {
+        ViewHolder(@NonNull TvAdapterEpgDataBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

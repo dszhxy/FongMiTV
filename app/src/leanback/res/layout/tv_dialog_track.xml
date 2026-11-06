@@ -20,9 +20,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/danmaku_select"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:text="選擇字幕" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/search"
@@ -31,25 +31,30 @@
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:focusable="true"
-            android:src="@drawable/ic_action_search"
-            android:visibility="gone" />
+            android:src="@drawable/tv_ic_action_search"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/choose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:focusable="true"
-            android:src="@drawable/ic_action_choose" />
+            android:src="@drawable/tv_ic_action_choose"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/setting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:focusable="true"
-            android:src="@drawable/ic_danmaku_setting" />
+            android:src="@drawable/tv_ic_action_setting"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -65,6 +70,6 @@
         android:paddingBottom="24dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:maxHeight="204dp"
-        tools:listitem="@layout/adapter_danmaku" />
+        tools:listitem="@layout/tv_adapter_track" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -5,7 +5,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.bean.Live;
-import com.fongmi.android.tv.databinding.DialogLiveBinding;
+import com.fongmi.android.tv.databinding.TvDialogLiveBinding;
 import com.fongmi.android.tv.impl.LiveListener;
 import com.fongmi.android.tv.ui.adapter.LiveAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
@@ -13,7 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class LiveDialog extends BaseAlertDialog implements LiveAdapter.OnClickListener {
 
-    private DialogLiveBinding binding;
+    private TvDialogLiveBinding binding;
     private LiveAdapter adapter;
     private boolean action;
 
@@ -32,7 +32,7 @@ public class LiveDialog extends BaseAlertDialog implements LiveAdapter.OnClickLi
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogLiveBinding.inflate(getLayoutInflater());
+        return binding = TvDialogLiveBinding.inflate(getLayoutInflater());
     }
 
     @Override

@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
-import com.fongmi.android.tv.databinding.DialogSpeedBinding;
+import com.fongmi.android.tv.databinding.TvDialogSpeedBinding;
 import com.fongmi.android.tv.setting.PreloadSetting;
 import com.fongmi.android.tv.ui.activity.SettingPreloadActivity;
 import com.fongmi.android.tv.utils.FileUtil;
@@ -20,7 +20,7 @@ public class PreloadDialog extends BaseAlertDialog {
     public static final int SIZE = 1;
     public static final int TIME = 2;
 
-    private DialogSpeedBinding binding;
+    private TvDialogSpeedBinding binding;
     private int type;
 
     public static void show(FragmentActivity activity, int type) {
@@ -33,7 +33,7 @@ public class PreloadDialog extends BaseAlertDialog {
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogSpeedBinding.inflate(getLayoutInflater());
+        return binding = TvDialogSpeedBinding.inflate(getLayoutInflater());
     }
 
     @Override

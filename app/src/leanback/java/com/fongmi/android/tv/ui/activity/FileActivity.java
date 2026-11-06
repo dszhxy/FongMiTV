@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.databinding.ActivityFileBinding;
+import com.fongmi.android.tv.databinding.TvActivityFileBinding;
 import com.fongmi.android.tv.ui.adapter.FileAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.utils.PermissionUtil;
@@ -17,7 +17,7 @@ import java.io.File;
 
 public class FileActivity extends BaseActivity implements FileAdapter.OnClickListener {
 
-    private ActivityFileBinding mBinding;
+    private TvActivityFileBinding mBinding;
     private FileAdapter mAdapter;
     private File dir;
 
@@ -27,7 +27,7 @@ public class FileActivity extends BaseActivity implements FileAdapter.OnClickLis
 
     @Override
     protected ViewBinding getBinding() {
-        return mBinding = ActivityFileBinding.inflate(getLayoutInflater());
+        return mBinding = TvActivityFileBinding.inflate(getLayoutInflater());
     }
 
     @Override

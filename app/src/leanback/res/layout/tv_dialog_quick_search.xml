@@ -51,7 +51,7 @@
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="1"
             tools:itemCount="6"
-            tools:listitem="@layout/adapter_quick"
+            tools:listitem="@layout/tv_adapter_quick"
             tools:visibility="visible" />
 
     </FrameLayout>

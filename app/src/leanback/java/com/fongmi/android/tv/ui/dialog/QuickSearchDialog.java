@@ -18,7 +18,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Vod;
-import com.fongmi.android.tv.databinding.DialogQuickSearchBinding;
+import com.fongmi.android.tv.databinding.TvDialogQuickSearchBinding;
 import com.fongmi.android.tv.ui.adapter.QuickAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -32,7 +32,7 @@ public class QuickSearchDialog extends BaseAlertDialog implements QuickAdapter.O
     private static final int RENDER_BATCH_SIZE = 8;
 
     private final List<Vod> pending;
-    private DialogQuickSearchBinding binding;
+    private TvDialogQuickSearchBinding binding;
     private QuickAdapter.OnClickListener listener;
     private DialogInterface.OnDismissListener dismissListener;
     private QuickAdapter adapter;
@@ -86,7 +86,7 @@ public class QuickSearchDialog extends BaseAlertDialog implements QuickAdapter.O
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogQuickSearchBinding.inflate(getLayoutInflater());
+        return binding = TvDialogQuickSearchBinding.inflate(getLayoutInflater());
     }
 
     @Override

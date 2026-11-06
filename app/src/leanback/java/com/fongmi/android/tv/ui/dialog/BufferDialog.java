@@ -3,7 +3,7 @@ package com.fongmi.android.tv.ui.dialog;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.databinding.DialogBufferBinding;
+import com.fongmi.android.tv.databinding.TvDialogBufferBinding;
 import com.fongmi.android.tv.impl.BufferListener;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.utils.KeyUtil;
@@ -12,7 +12,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class BufferDialog extends BaseAlertDialog {
 
-    private DialogBufferBinding binding;
+    private TvDialogBufferBinding binding;
 
     public static void show(FragmentActivity activity) {
         new BufferDialog().show(activity.getSupportFragmentManager(), null);
@@ -20,7 +20,7 @@ public class BufferDialog extends BaseAlertDialog {
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogBufferBinding.inflate(getLayoutInflater());
+        return binding = TvDialogBufferBinding.inflate(getLayoutInflater());
     }
 
     @Override

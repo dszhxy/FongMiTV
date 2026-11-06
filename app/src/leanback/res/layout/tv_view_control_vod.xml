@@ -18,7 +18,7 @@
 
     <include
         android:id="@+id/action"
-        layout="@layout/view_control_vod_action"
+        layout="@layout/tv_view_control_vod_action"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

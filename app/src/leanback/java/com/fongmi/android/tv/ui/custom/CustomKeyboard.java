@@ -1,20 +1,20 @@
 package com.fongmi.android.tv.ui.custom;
 
 import com.fongmi.android.tv.R;
-import com.fongmi.android.tv.databinding.ActivitySearchBinding;
+import com.fongmi.android.tv.databinding.TvActivitySearchBinding;
 import com.fongmi.android.tv.ui.adapter.KeyboardAdapter;
 
 public class CustomKeyboard implements KeyboardAdapter.OnClickListener {
 
-    private final ActivitySearchBinding binding;
+    private final TvActivitySearchBinding binding;
     private final Callback callback;
     private KeyboardAdapter adapter;
 
-    public static void init(Callback callback, ActivitySearchBinding binding) {
+    public static void init(Callback callback, TvActivitySearchBinding binding) {
         new CustomKeyboard(callback, binding).initView();
     }
 
-    public CustomKeyboard(Callback callback, ActivitySearchBinding binding) {
+    public CustomKeyboard(Callback callback, TvActivitySearchBinding binding) {
         this.callback = callback;
         this.binding = binding;
     }

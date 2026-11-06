@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Flag;
-import com.fongmi.android.tv.databinding.AdapterFlagBinding;
+import com.fongmi.android.tv.databinding.TvAdapterFlagBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +62,7 @@ public class FlagAdapter extends RecyclerView.Adapter<FlagAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterFlagBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterFlagBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -81,9 +81,9 @@ public class FlagAdapter extends RecyclerView.Adapter<FlagAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterFlagBinding binding;
+        private final TvAdapterFlagBinding binding;
 
-        ViewHolder(@NonNull AdapterFlagBinding binding) {
+        ViewHolder(@NonNull TvAdapterFlagBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

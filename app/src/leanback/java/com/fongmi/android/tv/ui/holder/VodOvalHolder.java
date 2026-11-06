@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.fongmi.android.tv.bean.Vod;
-import com.fongmi.android.tv.databinding.AdapterVodOvalBinding;
+import com.fongmi.android.tv.databinding.TvAdapterVodOvalBinding;
 import com.fongmi.android.tv.ui.base.BaseVodHolder;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ImgUtil;
@@ -12,9 +12,9 @@ import com.fongmi.android.tv.utils.ImgUtil;
 public class VodOvalHolder extends BaseVodHolder {
 
     private final VodPresenter.OnClickListener listener;
-    private final AdapterVodOvalBinding binding;
+    private final TvAdapterVodOvalBinding binding;
 
-    public VodOvalHolder(@NonNull AdapterVodOvalBinding binding, VodPresenter.OnClickListener listener) {
+    public VodOvalHolder(@NonNull TvAdapterVodOvalBinding binding, VodPresenter.OnClickListener listener) {
         super(binding.getRoot());
         this.binding = binding;
         this.listener = listener;

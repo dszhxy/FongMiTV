@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.bean.Result;
-import com.fongmi.android.tv.databinding.AdapterQualityBinding;
+import com.fongmi.android.tv.databinding.TvAdapterQualityBinding;
 
 public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHolder> {
 
@@ -42,7 +42,7 @@ public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterQualityBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterQualityBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -61,9 +61,9 @@ public class QualityAdapter extends RecyclerView.Adapter<QualityAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterQualityBinding binding;
+        private final TvAdapterQualityBinding binding;
 
-        ViewHolder(@NonNull AdapterQualityBinding binding) {
+        ViewHolder(@NonNull TvAdapterQualityBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

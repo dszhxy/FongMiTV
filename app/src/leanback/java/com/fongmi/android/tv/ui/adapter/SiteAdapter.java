@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Site;
-import com.fongmi.android.tv.databinding.AdapterSiteBinding;
+import com.fongmi.android.tv.databinding.TvAdapterSiteBinding;
 import com.fongmi.android.tv.databinding.AdapterSiteSwitchBinding;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.setting.SiteHealthStore;
@@ -123,7 +123,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        return viewType == TYPE_ACTION ? new ViewHolder(AdapterSiteBinding.inflate(inflater, parent, false)) : new ViewHolder(AdapterSiteSwitchBinding.inflate(inflater, parent, false));
+        return viewType == TYPE_ACTION ? new ViewHolder(TvAdapterSiteBinding.inflate(inflater, parent, false)) : new ViewHolder(AdapterSiteSwitchBinding.inflate(inflater, parent, false));
     }
 
     @Override
@@ -180,11 +180,11 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterSiteBinding actionBinding;
+        private final TvAdapterSiteBinding actionBinding;
         private final AdapterSiteSwitchBinding switchBinding;
         private Site item;
 
-        ViewHolder(@NonNull AdapterSiteBinding binding) {
+        ViewHolder(@NonNull TvAdapterSiteBinding binding) {
             super(binding.getRoot());
             this.actionBinding = binding;
             this.switchBinding = null;

@@ -16,7 +16,7 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Word;
-import com.fongmi.android.tv.databinding.ActivitySearchBinding;
+import com.fongmi.android.tv.databinding.TvActivitySearchBinding;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.adapter.HotWordAdapter;
@@ -47,7 +47,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     private static final int HOT_LIMIT = 10;
 
-    private ActivitySearchBinding mBinding;
+    private TvActivitySearchBinding mBinding;
     private RecordAdapter mRecordAdapter;
     private WordAdapter mWordAdapter;
     private HotWordAdapter mHotTvAdapter;
@@ -109,7 +109,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     protected ViewBinding getBinding() {
-        return mBinding = ActivitySearchBinding.inflate(getLayoutInflater());
+        return mBinding = TvActivitySearchBinding.inflate(getLayoutInflater());
     }
 
     @Override

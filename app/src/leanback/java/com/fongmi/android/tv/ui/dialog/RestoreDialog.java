@@ -3,7 +3,7 @@ package com.fongmi.android.tv.ui.dialog;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.databinding.DialogRestoreBinding;
+import com.fongmi.android.tv.databinding.TvDialogRestoreBinding;
 import com.fongmi.android.tv.db.BackupManager;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.ui.adapter.RestoreAdapter;
@@ -14,7 +14,7 @@ import java.io.File;
 
 public class RestoreDialog extends BaseAlertDialog implements RestoreAdapter.OnClickListener {
 
-    private DialogRestoreBinding binding;
+    private TvDialogRestoreBinding binding;
     private RestoreAdapter adapter;
     private Callback callback;
 
@@ -33,7 +33,7 @@ public class RestoreDialog extends BaseAlertDialog implements RestoreAdapter.OnC
 
     @Override
     protected ViewBinding getBinding() {
-        return binding = DialogRestoreBinding.inflate(getLayoutInflater());
+        return binding = TvDialogRestoreBinding.inflate(getLayoutInflater());
     }
 
     @Override

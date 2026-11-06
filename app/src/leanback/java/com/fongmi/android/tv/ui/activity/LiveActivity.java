@@ -34,7 +34,7 @@ import com.fongmi.android.tv.bean.Group;
 import com.fongmi.android.tv.bean.Keep;
 import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.bean.Result;
-import com.fongmi.android.tv.databinding.ActivityLiveBinding;
+import com.fongmi.android.tv.databinding.TvActivityLiveBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigListener;
@@ -79,7 +79,7 @@ import java.util.List;
 
 public class LiveActivity extends PlaybackActivity implements GroupAdapter.OnClickListener, ChannelAdapter.OnClickListener, EpgDataAdapter.OnClickListener, CustomKeyDownLive.Listener, CustomLiveListView.Callback, PassListener, ConfigListener, LiveListener, LivePlaybackHost {
 
-    private ActivityLiveBinding mBinding;
+    private TvActivityLiveBinding mBinding;
     private LiveViewModel mViewModel;
     private LivePlaybackController mLive;
     private GroupAdapter mGroupAdapter;
@@ -123,7 +123,7 @@ public class LiveActivity extends PlaybackActivity implements GroupAdapter.OnCli
 
     @Override
     protected ViewBinding getBinding() {
-        return mBinding = ActivityLiveBinding.inflate(getLayoutInflater());
+        return mBinding = TvActivityLiveBinding.inflate(getLayoutInflater());
     }
 
     @Override

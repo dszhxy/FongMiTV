@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.leanback.widget.Presenter;
 
 import com.fongmi.android.tv.bean.Value;
-import com.fongmi.android.tv.databinding.AdapterFilterBinding;
+import com.fongmi.android.tv.databinding.TvAdapterFilterBinding;
 
 public class FilterPresenter extends Presenter {
 
@@ -29,7 +29,7 @@ public class FilterPresenter extends Presenter {
     @NonNull
     @Override
     public Presenter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
-        return new ViewHolder(AdapterFilterBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterFilterBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -47,9 +47,9 @@ public class FilterPresenter extends Presenter {
 
     public static class ViewHolder extends Presenter.ViewHolder {
 
-        private final AdapterFilterBinding binding;
+        private final TvAdapterFilterBinding binding;
 
-        public ViewHolder(@NonNull AdapterFilterBinding binding) {
+        public ViewHolder(@NonNull TvAdapterFilterBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

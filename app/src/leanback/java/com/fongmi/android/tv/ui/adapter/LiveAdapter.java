@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.bean.Live;
-import com.fongmi.android.tv.databinding.AdapterLiveBinding;
+import com.fongmi.android.tv.databinding.TvAdapterLiveBinding;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class LiveAdapter extends RecyclerView.Adapter<LiveAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterLiveBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterLiveBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -70,9 +70,9 @@ public class LiveAdapter extends RecyclerView.Adapter<LiveAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterLiveBinding binding;
+        private final TvAdapterLiveBinding binding;
 
-        public ViewHolder(@NonNull AdapterLiveBinding binding) {
+        public ViewHolder(@NonNull TvAdapterLiveBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fongmi.android.tv.databinding.AdapterRestoreBinding;
+import com.fongmi.android.tv.databinding.TvAdapterRestoreBinding;
 import com.fongmi.android.tv.db.BackupManager;
 import com.github.catvod.utils.Path;
 
@@ -54,7 +54,7 @@ public class RestoreAdapter extends RecyclerView.Adapter<RestoreAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterRestoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterRestoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -67,9 +67,9 @@ public class RestoreAdapter extends RecyclerView.Adapter<RestoreAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterRestoreBinding binding;
+        private final TvAdapterRestoreBinding binding;
 
-        public ViewHolder(@NonNull AdapterRestoreBinding binding) {
+        public ViewHolder(@NonNull TvAdapterRestoreBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

@@ -30,13 +30,13 @@
 
         <include
             android:id="@+id/widget"
-            layout="@layout/view_widget_vod"
+            layout="@layout/tv_view_widget_vod"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         <include
             android:id="@+id/control"
-            layout="@layout/view_control_vod"
+            layout="@layout/tv_view_control_vod"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
@@ -44,7 +44,7 @@
 
         <include
             android:id="@+id/progress"
-            layout="@layout/view_progress"
+            layout="@layout/tv_view_progress"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

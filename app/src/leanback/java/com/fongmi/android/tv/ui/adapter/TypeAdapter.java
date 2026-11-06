@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Cache;
 import com.fongmi.android.tv.bean.Class;
-import com.fongmi.android.tv.databinding.AdapterTypeBinding;
+import com.fongmi.android.tv.databinding.TvAdapterTypeBinding;
 import com.fongmi.android.tv.utils.ResUtil;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterTypeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterTypeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -73,9 +73,9 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterTypeBinding binding;
+        private final TvAdapterTypeBinding binding;
 
-        ViewHolder(@NonNull AdapterTypeBinding binding) {
+        ViewHolder(@NonNull TvAdapterTypeBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

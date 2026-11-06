@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.App;
-import com.fongmi.android.tv.databinding.AdapterSearchRecordBinding;
+import com.fongmi.android.tv.databinding.TvAdapterSearchRecordBinding;
 import com.fongmi.android.tv.setting.Setting;
 import com.google.gson.reflect.TypeToken;
 
@@ -58,7 +58,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterSearchRecordBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterSearchRecordBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -70,9 +70,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
 
-        private final AdapterSearchRecordBinding binding;
+        private final TvAdapterSearchRecordBinding binding;
 
-        public ViewHolder(@NonNull AdapterSearchRecordBinding binding) {
+        public ViewHolder(@NonNull TvAdapterSearchRecordBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
             itemView.setOnLongClickListener(this);

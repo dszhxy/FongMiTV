@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.bean.Config;
-import com.fongmi.android.tv.databinding.AdapterConfigBinding;
+import com.fongmi.android.tv.databinding.TvAdapterConfigBinding;
 
 import java.util.List;
 
@@ -63,7 +63,7 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(AdapterConfigBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(TvAdapterConfigBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -77,9 +77,9 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final AdapterConfigBinding binding;
+        private final TvAdapterConfigBinding binding;
 
-        public ViewHolder(@NonNull AdapterConfigBinding binding) {
+        public ViewHolder(@NonNull TvAdapterConfigBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
