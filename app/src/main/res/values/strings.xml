@@ -712,4 +712,22 @@
     <string name="search_loading">Loading</string>
     <string name="search_progress">Searching %1$d/%2$d</string>
     <string name="search_no_result">No result</string>
+
+    <string name="lut_missing">Preset missing</string>
+    <string name="lut_summary">%1$s · %2$d%%</string>
+    <string name="play_lut">LUT</string>
+    <string name="lut_all">All</string>
+    <string name="lut_close">Close</string>
+    <string name="lut_directory">Folder</string>
+    <string name="lut_empty_favorites">No favorite LUT presets</string>
+    <string name="lut_empty_presets">No LUT presets</string>
+    <string name="lut_favorite">Favorite</string>
+    <string name="lut_favorited">Added to favorites</string>
+    <string name="lut_local">Local</string>
+    <string name="lut_original">Original</string>
+    <string name="lut_preview_delay_value">%1$ds</string>
+    <string name="lut_reset">Reset</string>
+    <string name="lut_unfavorited">Removed from favorites</string>
+    <string name="player_lut">LUT color</string>
+    <string name="lut_title_value">%1$s · %2$s</string>
 </resources>

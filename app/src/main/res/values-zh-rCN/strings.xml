@@ -703,4 +703,22 @@
 
     <string name="play_search">搜索</string>
     <string name="danmaku_api_invalid">弹幕 API 地址无效</string>
+
+    <string name="lut_missing">预设不存在</string>
+    <string name="lut_summary">%1$s · %2$d%%</string>
+    <string name="play_lut">LUT</string>
+    <string name="lut_all">全部</string>
+    <string name="lut_close">关闭</string>
+    <string name="lut_directory">目录</string>
+    <string name="lut_empty_favorites">暂无收藏 LUT</string>
+    <string name="lut_empty_presets">暂无 LUT 预设</string>
+    <string name="lut_favorite">收藏</string>
+    <string name="lut_favorited">已加入收藏</string>
+    <string name="lut_local">本地</string>
+    <string name="lut_original">原色</string>
+    <string name="lut_preview_delay_value">%1$d秒</string>
+    <string name="lut_reset">重置</string>
+    <string name="lut_unfavorited">已取消收藏</string>
+    <string name="player_lut">LUT 调色</string>
+    <string name="lut_title_value">%1$s · %2$s</string>
 </resources>
