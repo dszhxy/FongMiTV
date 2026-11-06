@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Theme.Base" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.Tv.Base" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/white</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowTranslucentStatus">true</item>
@@ -8,15 +8,15 @@
         <item name="android:windowAnimationStyle">@style/NoAnim</item>
     </style>
 
-    <style name="Theme.Splash" parent="Theme.SplashScreen">
-        <item name="postSplashScreenTheme">@style/Theme.App</item>
+    <style name="Theme.Tv.Splash" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.Tv.App</item>
         <item name="windowSplashScreenBackground">#141218</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
     </style>
 
-    <style name="Theme.App" parent="Theme.Base" />
+    <style name="Theme.Tv.App" parent="Theme.Tv.Base" />
 
-    <style name="Theme.Crash" parent="Theme.Base">
+    <style name="Theme.Tv.Crash" parent="Theme.Tv.Base">
         <item name="android:windowBackground">@color/grey_800</item>
         <item name="android:windowDisablePreview">true</item>
     </style>
@@ -35,7 +35,7 @@
         <item name="android:shadowRadius">2</item>
     </style>
 
-    <style name="Control">
+    <style name="Tv.Control">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/selector_chip</item>

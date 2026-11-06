@@ -32,7 +32,7 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/Theme.Splash">
+            android:theme="@style/Theme.Tv.Splash">
 
             <meta-data
                 android:name="android.app.searchable"
