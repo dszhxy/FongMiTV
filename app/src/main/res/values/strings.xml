@@ -775,6 +775,4 @@
     <string name="setting_proxy_ui_mode">Edit</string>
     <string name="setting_shell_proxy_config">Proxy</string>
     <string name="setting_custom_csp_sort_drag">Drag to sort</string>
-    <string name="setting_proxy_rule_use_default">Default proxy · %1$s</string>
-    <string name="setting_proxy_rule_use_default_empty">Uses default proxy (not set)</string>
 </resources>
