@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.hk.HkHttpParser;
 import com.fongmi.android.tv.utils.ToastUtil;
 import com.google.gson.Gson;
