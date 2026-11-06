@@ -16,4 +16,9 @@
     <declare-styleable name="AlignTextView">
         <attr name="align" />
     </declare-styleable>
+
+    <declare-styleable name="CustomNestedScrollView">
+        <attr name="android:minHeight" />
+        <attr name="maxHeight" />
+    </declare-styleable>
 </resources>
