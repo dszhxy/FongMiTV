@@ -432,7 +432,17 @@ public class VodPlaybackController {
     private void detailLoaded(Vod item) {
         VodPlayRequest activeRequest = state.getActiveRequest();
         History history = applyDetail(item);
-        if (directSession) return;
+        if (directSession) {
+            // 直连会话：只画选集 UI，不跑 restoreDetail/seamless 自动点火
+            if (state.hasFlags()) {
+                Flag first = state.getFlag();
+                for (Flag flag : state.getFlags()) flag.setSelected(first);
+                host.renderFlagSelection(first);
+                host.renderEpisodes(first.getEpisodes());
+                host.renderQualityVisible(false);
+            }
+            return;
+        }
         if (state.hasFlags()) restoreDetail(activeRequest, history);
         else fallbackPolicy.emptyFlag();
     }

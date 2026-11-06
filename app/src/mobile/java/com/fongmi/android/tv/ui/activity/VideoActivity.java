@@ -1313,12 +1313,14 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         vod.setName(getName());
         vod.setPic(getPic());
         vod.setFlags(flags);
-        // 对齐 xingchen：直连会话只画详情/选集，不跑 restoreDetail/seamless 自动点火，全程只发一次解析请求
+        // 直连会话：只画详情/选集，不跑 restoreDetail/seamless 自动点火，全程只发一次解析请求
+        // 注意：detailLoaded 的 directSession 分支已修复，会主动渲染第一路选集
         mVod.beginDirectSession();
         try {
             mVod.onDetailResult(new VodDetailResult(getKey(), getId(), Result.vod(vod)));
-            if (flags.size() > 1) mVod.selectFlag(active);
-            // xingchen 直连固定播 intent 里的 getId()：按 URL 命中选集，命中不了才退回 idx
+            // 多线路或选中的不是第一路时，显式切到目标线路
+            if (flags.size() > 1 || selectedFlag > 0) mVod.selectFlag(active);
+            // 直连固定播 intent 里的 getId()：按 URL 命中选集，命中不了才退回 idx
             int target = -1;
             for (int i = 0; i < active.getEpisodes().size(); i++) {
                 if (TextUtils.equals(active.getEpisodes().get(i).getUrl(), getId())) {
