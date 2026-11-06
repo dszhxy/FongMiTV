@@ -832,17 +832,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private void shareShortDrama() {
         PlayerManager player = player();
         if (player == null || TextUtils.isEmpty(player.getUrl())) return;
-        try {
-            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            if (cm != null) {
-                android.content.ClipData clip = android.content.ClipData.newPlainText(getName(), player.getUrl());
-                cm.setPrimaryClip(clip);
-                ToastUtil.show(this, "播放链接已复制");
-            }
-        } catch (Throwable ignored) {
-            // 兜底：系统分享
-            onShare(getName(), player.getUrl(), player.getHeaders());
-        }
+        onShare(getName(), player.getUrl(), player.getHeaders());
     }
 
     /** 锁定态：只留解锁按钮，其余短剧 UI 全部收起（抖音式防误触）。 */
