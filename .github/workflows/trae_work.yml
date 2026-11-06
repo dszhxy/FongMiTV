@@ -9,6 +9,7 @@ on:
       - trae_work
       # 重构分支：仅触发编译验证（不发布 Release，见下方 release 的 if 条件）
       - refactor/cleanup
+      - refactor/unified-ui
   workflow_dispatch:
 
 concurrency:
