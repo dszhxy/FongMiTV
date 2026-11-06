@@ -760,4 +760,21 @@
     <string name="setting_proxy_test_no_rule">No matched proxy rule</string>
     <string name="setting_proxy_test_success">Proxy test passed: %1$s</string>
     <string name="setting_proxy_recognize_done">Detected %1$d proxy rules</string>
+
+    <string name="setting_delete">Delete</string>
+    <string name="setting_proxy_add_rule">Add rule</string>
+    <string name="setting_proxy_default_url">Default proxy URL</string>
+    <string name="setting_proxy_hosts">Matched hosts</string>
+    <string name="setting_proxy_recognize">Auto detect</string>
+    <string name="setting_proxy_recognize_hint">Paste full config, proxy snippet, rule array, or one rule object</string>
+    <string name="setting_proxy_rule_url">Proxy URL</string>
+    <string name="setting_proxy_rules_hint">Raw JSON: {&quot;proxy&quot;:[{&quot;hosts&quot;:[&quot;example.com&quot;],&quot;urls&quot;:[&quot;socks5://127.0.0.1:1080&quot;]}]}</string>
+    <string name="setting_proxy_suggest">Auto suggest</string>
+    <string name="setting_proxy_test">Test proxy</string>
+    <string name="setting_proxy_text_mode">Text</string>
+    <string name="setting_proxy_ui_mode">Edit</string>
+    <string name="setting_shell_proxy_config">Proxy</string>
+    <string name="setting_custom_csp_sort_drag">Drag to sort</string>
+    <string name="setting_proxy_rule_use_default">Default proxy · %1$s</string>
+    <string name="setting_proxy_rule_use_default_empty">Uses default proxy (not set)</string>
 </resources>
