@@ -22,6 +22,9 @@ public class Setting {
     private static final int MAX_SYNC_MODE = 2;
     private static final int MIN_FLAG = 0;
     private static final int MAX_FLAG = 1;
+    // 弹窗风格：0=经典深色 1=纯白Material 2=暗色模式 3=iOS风格 4=霓虹渐变
+    private static final int MIN_DIALOG_STYLE = 0;
+    private static final int MAX_DIALOG_STYLE = 4;
 
     public static String getSwitch(boolean value) {
         return ResUtil.getString(value ? R.string.setting_on : R.string.setting_off);
@@ -137,6 +140,14 @@ public class Setting {
 
     public static void putLanguage(String language) {
         Prefers.put("language", language);
+    }
+
+    public static int getDialogStyle() {
+        return Prefers.getInt("dialog_style", 0);
+    }
+
+    public static void putDialogStyle(int style) {
+        Prefers.put("dialog_style", style);
     }
 
     public static Context wrapLocale(Context context) {

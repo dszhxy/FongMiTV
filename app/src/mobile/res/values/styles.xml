@@ -251,6 +251,112 @@
 
     
     
+    <!-- ========== 弹窗风格 1: 纯白 Material3 ========== -->
+    <style name="XingChen.DialogEditText.White" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_dialog_input_white</item>
+        <item name="android:textColor">#101216</item>
+        <item name="android:textColorHint">#9AA0A6</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="ThemeOverlay.FongMi.Dialog.White" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="dialogCornerRadius">20dp</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_white</item>
+        <item name="android:textColor">#101216</item>
+        <item name="android:textColorPrimary">#101216</item>
+        <item name="android:textColorSecondary">#5F6368</item>
+        <item name="android:textColorAlertDialogListItem">#101216</item>
+        <item name="textColorAlertDialogListItem">#101216</item>
+        <item name="colorPrimary">?attr/colorPrimary</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.White</item>
+        <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
+    </style>
+
+    
+    
+    <!-- ========== 弹窗风格 2: 暗色模式 (AMOLED) ========== -->
+    <style name="XingChen.DialogEditText.Amoled" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_dialog_input_amoled</item>
+        <item name="android:textColor">#F0F0F0</item>
+        <item name="android:textColorHint">#555555</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="ThemeOverlay.FongMi.Dialog.Amoled" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">20dp</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_dark_amoled</item>
+        <item name="android:textColor">#F0F0F0</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#888888</item>
+        <item name="colorOnSurface">#F0F0F0</item>
+        <item name="android:textColorAlertDialogListItem">#F0F0F0</item>
+        <item name="textColorAlertDialogListItem">#F0F0F0</item>
+        <item name="android:colorAccent">#4A9EFF</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.Amoled</item>
+        <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
+    </style>
+
+    
+    
+    <!-- ========== 弹窗风格 3: iOS 风格 ========== -->
+    <style name="XingChen.DialogEditText.IOS" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_dialog_input_ios</item>
+        <item name="android:textColor">#1C1C1E</item>
+        <item name="android:textColorHint">#8E8E93</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="ThemeOverlay.FongMi.Dialog.IOS" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">24dp</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_ios</item>
+        <item name="android:textColor">#1C1C1E</item>
+        <item name="android:textColorPrimary">#1C1C1E</item>
+        <item name="android:textColorSecondary">#8E8E93</item>
+        <item name="android:textColorAlertDialogListItem">#007AFF</item>
+        <item name="textColorAlertDialogListItem">#007AFF</item>
+        <item name="android:colorAccent">#007AFF</item>
+        <item name="buttonBarPositiveButtonStyle">@style/IOSDialogButton.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/IOSDialogButton.Negative</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.IOS</item>
+        <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
+    </style>
+
+    <style name="IOSDialogButton.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">#007AFF</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+
+    <style name="IOSDialogButton.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">#007AFF</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+
+    
+    
+    <!-- ========== 弹窗风格 4: 霓虹渐变 ========== -->
+    <style name="XingChen.DialogEditText.Neon" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_dialog_input_neon</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#666688</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="ThemeOverlay.FongMi.Dialog.Neon" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="dialogCornerRadius">20dp</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_neon</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorPrimary">#00D4FF</item>
+        <item name="android:textColorSecondary">#AAAAFF</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="android:textColorAlertDialogListItem">#00D4FF</item>
+        <item name="textColorAlertDialogListItem">#00D4FF</item>
+        <item name="android:colorAccent">#FF006E</item>
+        <item name="android:editTextStyle">@style/XingChen.DialogEditText.Neon</item>
+        <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
+    </style>
+
+    
+    
     <style name="HkDialogFade">
         <item name="android:windowEnterAnimation">@anim/hk_dialog_fade_in</item>
         <item name="android:windowExitAnimation">@anim/hk_dialog_fade_out</item>

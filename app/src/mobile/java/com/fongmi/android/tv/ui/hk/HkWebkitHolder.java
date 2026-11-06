@@ -413,6 +413,60 @@ public class HkWebkitHolder implements HkWebViewHelper.ServiceWorkerInterceptor 
         try { webView.evaluateJavascript(CAPTCHA_FIX_JS, null); } catch (Throwable ignored) {}
     }
 
+    /**
+     * 给小程序页面注入对应风格的CSS，让页面与App弹窗风格统一
+     * 0=经典深色 1=纯白Material 2=暗色模式 3=iOS风格 4=霓虹渐变
+     */
+    public static void injectPageStyle(android.webkit.WebView webView) {
+        if (webView == null) return;
+        try {
+            int style = com.fongmi.android.tv.setting.Setting.getDialogStyle();
+            String css = getPageStyleCss(style);
+            String js = "(function(){var s=document.createElement('style');s.textContent='" + css.replace("'", "\'").replace("
+", " ") + "';document.head.appendChild(s);})();";
+            webView.evaluateJavascript(js, null);
+        } catch (Throwable ignored) {}
+    }
+
+    private static String getPageStyleCss(int style) {
+        switch (style) {
+            case 1: // 纯白Material
+                return "body{background:#fff!important;color:#101216!important;font-family:system-ui,-apple-system,sans-serif!important;}"
+                        + "input,textarea,select{background:#f5f5f5!important;border:1px solid #e0e0e0!important;border-radius:10px!important;padding:10px!important;color:#101216!important;}"
+                        + "button{background:#6750a4!important;color:#fff!important;border-radius:20px!important;padding:10px 24px!important;border:none!important;font-weight:500!important;}"
+                        + ".card,.box,.container{background:#fff!important;border-radius:16px!important;box-shadow:0 2px 8px rgba(0,0,0,0.08)!important;}"
+                        + "a{color:#6750a4!important;}";
+            case 2: // 暗色模式
+                return "body{background:#0a0a0a!important;color:#f0f0f0!important;font-family:system-ui,sans-serif!important;}"
+                        + "input,textarea,select{background:#1a1a1a!important;border:1px solid #333!important;border-radius:10px!important;padding:10px!important;color:#f0f0f0!important;}"
+                        + "button{background:#4a9eff!important;color:#fff!important;border-radius:20px!important;padding:10px 24px!important;border:none!important;font-weight:500!important;}"
+                        + ".card,.box,.container{background:#121212!important;border-radius:16px!important;border:1px solid #2a2a2a!important;}"
+                        + "a{color:#4a9eff!important;}";
+            case 3: // iOS风格
+                return "body{background:#f2f2f7!important;color:#1c1c1e!important;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif!important;}"
+                        + "input,textarea,select{background:#e8e8ed!important;border:none!important;border-radius:12px!important;padding:12px!important;color:#1c1c1e!important;}"
+                        + "button{background:transparent!important;color:#007aff!important;border-radius:12px!important;padding:12px 24px!important;border:1px solid #d1d1d6!important;font-weight:400!important;font-size:17px!important;}"
+                        + "button[type=submit],.btn-primary{background:#007aff!important;color:#fff!important;border:none!important;}"
+                        + ".card,.box,.container{background:rgba(255,255,255,0.95)!important;border-radius:20px!important;backdrop-filter:blur(20px)!important;}"
+                        + "a{color:#007aff!important;}";
+            case 4: // 霓虹渐变
+                return "body{background:#0a0a1a!important;color:#fff!important;font-family:system-ui,sans-serif!important;}"
+                        + "input,textarea,select{background:#1a1a2e!important;border:1px solid #00d4ff66!important;border-radius:10px!important;padding:10px!important;color:#fff!important;}"
+                        + "input:focus,textarea:focus,select:focus{border-color:#00d4ff!important;box-shadow:0 0 8px #00d4ff44!important;}"
+                        + "button{background:linear-gradient(45deg,#00d4ff,#7b61ff)!important;color:#fff!important;border-radius:20px!important;padding:10px 24px!important;border:none!important;font-weight:600!important;}"
+                        + ".card,.box,.container{background:rgba(18,18,26,0.9)!important;border-radius:16px!important;border:1px solid transparent!important;background-clip:padding-box!important;position:relative!important;}"
+                        + "a{color:#00d4ff!important;}"
+                        + "hr{border-color:#2a2a4a!important;}";
+            case 0:
+            default: // 经典深色 - 保持原海阔深色风格
+                return "body{background:#1a1a1a!important;color:#f2f4f8!important;font-family:system-ui,sans-serif!important;}"
+                        + "input,textarea,select{background:#2a2a2a!important;border:1px solid #3a3a3a!important;border-radius:8px!important;padding:10px!important;color:#f2f4f8!important;}"
+                        + "button{background:#d9a420!important;color:#fff!important;border-radius:8px!important;padding:10px 20px!important;border:none!important;font-weight:500!important;}"
+                        + ".card,.box,.container{background:rgba(30,30,30,0.95)!important;border-radius:16px!important;backdrop-filter:blur(20px)!important;}"
+                        + "a{color:#d9a420!important;}";
+        }
+    }
+
     /** 照 ArticleWebkitHolder.loadAllJs：JsPluginHelper.loadMyJs（接缝） + AdBlockModel.getBlockJs（接缝）注入。 */
     private void loadAllJs(WebView view, String url, boolean onPageEnd) {
         Context context = reference == null ? null : reference.get();
@@ -481,6 +535,8 @@ public class HkWebkitHolder implements HkWebViewHelper.ServiceWorkerInterceptor 
             if (x5Extra != null && HkStringUtil.isNotEmpty(x5Extra.getJs())) {
                 view.evaluateJavascript(x5Extra.getJs(), null);
             }
+            // 注入页面风格CSS，与App弹窗风格统一
+            injectPageStyle(view);
             if (finishPageConsumer != null) finishPageConsumer.accept(url);
             super.onPageFinished(view, url);
         }

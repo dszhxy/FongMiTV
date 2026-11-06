@@ -26,7 +26,22 @@ import com.fongmi.android.tv.R;
 public class HkDialogs extends AlertDialog.Builder {
 
     public HkDialogs(@NonNull Context context) {
-        super(context, R.style.ThemeOverlay_XingChen_GlassDialog_Dark);
+        super(context, getDialogStyleTheme());
+    }
+
+    /**
+     * 根据用户设置的弹窗风格返回对应主题ResId
+     * 0=经典深色 1=纯白Material 2=暗色模式 3=iOS风格 4=霓虹渐变
+     */
+    private static int getDialogStyleTheme() {
+        switch (com.fongmi.android.tv.setting.Setting.getDialogStyle()) {
+            case 1: return R.style.ThemeOverlay_FongMi_Dialog_White;
+            case 2: return R.style.ThemeOverlay_FongMi_Dialog_Amoled;
+            case 3: return R.style.ThemeOverlay_FongMi_Dialog_IOS;
+            case 4: return R.style.ThemeOverlay_FongMi_Dialog_Neon;
+            case 0:
+            default: return R.style.ThemeOverlay_XingChen_GlassDialog_Dark;
+        }
     }
 
     /** 宿主 Activity 已结束/已销毁时返回 true：此时再 show 弹窗会抛 BadToken/状态异常，调用方应直接放弃。 */

@@ -54,6 +54,7 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     protected void initView() {
         mBinding.languageText.setText(getLanguageName());
         mBinding.themeColorText.setText(getThemeColorName(Setting.getThemeColor()));
+        mBinding.dialogStyleText.setText(getDialogStyleName());
         sizes = ResUtil.getStringArray(R.array.select_size);
         mBinding.coverText.setText(sizes[PlayerSetting.getSize()]);
         mBinding.coverRatioText.setText(RATIO_NAMES[PlayerSetting.getCoverRatio()]);
@@ -68,6 +69,7 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     protected void initEvent() {
         mBinding.language.setOnClickListener(this::setLanguage);
         mBinding.themeColor.setOnClickListener(this::setThemeColor);
+        mBinding.dialogStyle.setOnClickListener(this::setDialogStyle);
         mBinding.wallDefault.setOnClickListener(this::setWallDefault);
         mBinding.wallLocal.setOnClickListener(this::setWallLocal);
         mBinding.wallUrl.setOnClickListener(this::setWallUrl);
@@ -188,6 +190,25 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
 
     private void setThemeColor(View view) {
         ThemeDialog.show(this);
+    }
+
+    private static final String[] DIALOG_STYLE_NAMES = {"经典深色", "纯白 Material", "暗色模式", "iOS 风格", "霓虹渐变"};
+
+    private void setDialogStyle(View view) {
+        int current = Setting.getDialogStyle();
+        new MaterialAlertDialogBuilder(requireActivity()).setTitle("选择弹窗风格").setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(DIALOG_STYLE_NAMES, current, (dialog, which) -> {
+            Setting.putDialogStyle(which);
+            mBinding.dialogStyleText.setText(DIALOG_STYLE_NAMES[which]);
+            dialog.dismiss();
+            // 重启Activity以应用新风格
+            requireActivity().recreate();
+        }).show();
+    }
+
+    private String getDialogStyleName() {
+        int style = Setting.getDialogStyle();
+        if (style >= 0 && style < DIALOG_STYLE_NAMES.length) return DIALOG_STYLE_NAMES[style];
+        return DIALOG_STYLE_NAMES[0];
     }
 
     @Override
