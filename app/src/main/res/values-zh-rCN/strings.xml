@@ -700,4 +700,7 @@
 <string name="mpv_config_url">URL mpv.conf</string>
 <string name="mpv_config_url_invalid">mpv.conf URL 无效</string>
 <string name="mpv_config_write_failed">无法写入 MPV 配置文件</string>
+
+    <string name="play_search">搜索</string>
+    <string name="danmaku_api_invalid">弹幕 API 地址无效</string>
 </resources>

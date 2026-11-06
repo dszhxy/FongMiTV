@@ -705,4 +705,11 @@
 <string name="mpv_config_url">URL mpv.conf</string>
 <string name="mpv_config_url_invalid">Invalid mpv.conf URL</string>
 <string name="mpv_config_write_failed">Unable to write the MPV config file</string>
+
+    <string name="play_search">Search</string>
+    <string name="danmaku_api_invalid">Invalid danmaku API URL</string>
+
+    <string name="search_loading">Loading</string>
+    <string name="search_progress">Searching %1$d/%2$d</string>
+    <string name="search_no_result">No result</string>
 </resources>

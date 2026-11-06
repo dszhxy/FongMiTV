@@ -13,8 +13,11 @@ import androidx.activity.ComponentDialog;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Util;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -38,8 +41,15 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
         dialog.setOnShowListener(d -> setSheet(dialog));
         Window window = dialog.getWindow();
         if (window == null) return dialog;
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        if (Util.isFullscreen(getActivity())) window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (stableOverlay()) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            window.setDimAmount(0f);
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+            WindowCompat.setDecorFitsSystemWindows(window, true);
+        } else {
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            if (Util.isFullscreen(getActivity())) window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         return dialog;
     }
 
@@ -74,11 +84,31 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
         return 0;
     }
 
+    protected boolean transparent() {
+        return false;
+    }
+
+    protected boolean stableOverlay() {
+        return false;
+    }
+
     private void setSheet(BottomSheetDialog dialog) {
+        if (!isAdded() || getContext() == null) return;
+        setBehavior(dialog);
+    }
+
+    protected void setBehavior(BottomSheetDialog dialog) {
         FrameLayout sheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         if (sheet == null) return;
         setHeight(sheet, getMaxHeight());
-        setBehavior(sheet);
+        applySheetBehavior(sheet);
+        if (transparent()) {
+            int color = ResUtil.getColor(R.color.transparent);
+            sheet.setBackgroundColor(color);
+            if (sheet.getParent() instanceof View) ((View) sheet.getParent()).setBackgroundColor(color);
+            Window window = dialog.getWindow();
+            if (window != null) window.setBackgroundDrawableResource(android.R.color.transparent);
+        }
     }
 
     private void setHeight(FrameLayout sheet, int maxHeight) {
@@ -88,7 +118,7 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
         sheet.setLayoutParams(params);
     }
 
-    private void setBehavior(FrameLayout sheet) {
+    private void applySheetBehavior(FrameLayout sheet) {
         BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(sheet);
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         behavior.setSkipCollapsed(true);

@@ -104,6 +104,7 @@ import com.fongmi.android.tv.ui.dialog.EpisodeGridDialog;
 import com.fongmi.android.tv.ui.dialog.EpisodeListDialog;
 import com.fongmi.android.tv.ui.dialog.InfoDialog;
 import com.fongmi.android.tv.ui.dialog.ParseDialog;
+import com.fongmi.android.tv.ui.dialog.QuickSearchDialog;
 import com.fongmi.android.tv.ui.dialog.PlayerEngineDialog;
 import com.fongmi.android.tv.ui.dialog.ReceiveDialog;
 import com.fongmi.android.tv.ui.dialog.SpeedSettingDialog;
@@ -146,6 +147,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private EpisodeAdapter mEpisodeAdapter;
     private QualityAdapter mQualityAdapter;
     private QuickAdapter mQuickAdapter;
+    private QuickSearchDialog mQuickSearchDialog;
+    private String mQuickSearchKeyword;
     private ViewGroup.LayoutParams mFrameParams;
     private ValueAnimator mAnimator;
     private CustomKeyDown mKeyDown;
@@ -1106,6 +1109,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     public void renderSources(List<Vod> items) {
         mQuickAdapter.addAll(items);
         mBinding.quick.setVisibility(mQuickAdapter.isEmpty() ? View.GONE : View.VISIBLE);
+        if (isQuickSearchVisible()) mQuickSearchDialog.addAll(items);
     }
 
     @Override
@@ -1456,7 +1460,28 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private void onName() {
         String name = mBinding.name.getText().toString();
         Notify.show(getString(R.string.detail_search, name));
+        showQuickSearch(name);
         mVod.search(name);
+    }
+
+    private void showQuickSearch(String keyword) {
+        mQuickSearchKeyword = TextUtils.isEmpty(mQuickSearchKeyword) ? keyword : mQuickSearchKeyword;
+        mQuickSearchDialog = QuickSearchDialog.create()
+                .title(getString(R.string.detail_search, mQuickSearchKeyword))
+                .keyword(mQuickSearchKeyword)
+                .listener(this)
+                .searchListener(this::onQuickSearch)
+                .items(mQuickAdapter.getItems());
+        mQuickSearchDialog.show(this);
+    }
+
+    private void onQuickSearch(String keyword) {
+        mQuickSearchKeyword = keyword;
+        mVod.search(keyword);
+    }
+
+    private boolean isQuickSearchVisible() {
+        return mQuickSearchDialog != null && mQuickSearchDialog.isActive();
     }
 
     private void onDownload() {
@@ -1693,7 +1718,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void onEpisodes() {
-        EpisodeListDialog.create().shortDrama(mShortDramaMode).episodes(mEpisodeAdapter.getItems()).show(this);
+        EpisodeListDialog.create().flags(mFlagAdapter.getItems()).reverse(mHistory.isRevSort()).show(this);
     }
 
     private void onPlayer() {

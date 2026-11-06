@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.bean.Episode;
+import com.fongmi.android.tv.utils.EpisodeTitleCompact;
 import com.fongmi.android.tv.databinding.AdapterEpisodeGridBinding;
 import com.fongmi.android.tv.databinding.AdapterEpisodeHoriBinding;
 import com.fongmi.android.tv.ui.base.BaseEpisodeHolder;
@@ -41,6 +42,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
     public void addAll(List<Episode> items) {
         mItems.clear();
         mItems.addAll(items);
+        EpisodeTitleCompact.apply(items);
         notifyDataSetChanged();
     }
 

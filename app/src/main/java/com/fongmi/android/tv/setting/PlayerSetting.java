@@ -141,6 +141,14 @@ public class PlayerSetting {
         Prefers.put("scale", Math.clamp(scale, MIN_SCALE, MAX_SCALE));
     }
 
+
+    public static int getEpisodeColumn() {
+        return Math.min(Math.max(Prefers.getInt("episode_column", 2), 1), 2);
+    }
+
+    public static void putEpisodeColumn(int column) {
+        Prefers.put("episode_column", column == 1 ? 1 : 2);
+    }
     public static int getBackground() {
         return Math.clamp(Prefers.getInt("background", 2), MIN_BACKGROUND, MAX_BACKGROUND);
     }
