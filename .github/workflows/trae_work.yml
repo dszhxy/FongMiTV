@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - trae_work
+      # 重构分支：仅触发编译验证（不发布 Release，见下方 release 的 if 条件）
+      - refactor/cleanup
   workflow_dispatch:
 
 concurrency:
@@ -68,6 +70,8 @@ jobs:
 
   release:
     needs: build
+    # 仅 trae_work 发布 Release；refactor/cleanup 只做编译验证，不产生发布包
+    if: github.ref == 'refs/heads/trae_work'
     runs-on: ubuntu-latest
     steps:
       - name: 下载全部 APK
