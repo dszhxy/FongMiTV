@@ -25,7 +25,7 @@
             android:layout_marginEnd="12dp"
             android:src="@drawable/ic_logo" />
 
-        <com.fongmi.android.tv.ui.custom.CustomTitleView
+        <com.fongmi.android.tv.ui.leanback.
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

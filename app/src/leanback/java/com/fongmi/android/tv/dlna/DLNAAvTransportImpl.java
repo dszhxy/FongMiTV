@@ -7,7 +7,7 @@ import androidx.media3.common.Player;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.player.PlayerManager;
-import com.fongmi.android.tv.ui.activity.CastActivity;
+import com.fongmi.android.tv.ui.leanback.activity.CastActivity;
 import com.google.gson.reflect.TypeToken;
 
 import org.jupnp.model.types.UnsignedIntegerFourBytes;
