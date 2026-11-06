@@ -13,7 +13,7 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.ActivityPushBinding;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.ui.leanback.base.BaseActivity;
-import com.fongmi.android.tv.utils.QRCode;
+import com.fongmi.android.tv.ui.leanback.utils.QRCode;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Sniffer;
 import com.fongmi.android.tv.utils.Util;

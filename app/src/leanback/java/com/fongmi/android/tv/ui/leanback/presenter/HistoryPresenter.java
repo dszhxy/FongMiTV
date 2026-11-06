@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.leanback.widget.Presenter;
 
 import com.bumptech.glide.Glide;
-import com.fongmi.android.tv.Product;
+import com.fongmi.android.tv.ui.leanback.Product;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.databinding.TvAdapterVodBinding;
 import com.fongmi.android.tv.utils.ImgUtil;

@@ -1,4 +1,4 @@
-package com.fongmi.android.tv.utils;
+package com.fongmi.android.tv.ui.leanback.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

@@ -14,7 +14,7 @@ import com.fongmi.android.tv.impl.UaListener;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.leanback.custom.CustomTextListener;
-import com.fongmi.android.tv.utils.QRCode;
+import com.fongmi.android.tv.ui.leanback.utils.QRCode;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.github.catvod.utils.Util;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

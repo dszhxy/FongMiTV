@@ -1,4 +1,4 @@
-package com.fongmi.android.tv;
+package com.fongmi.android.tv.ui.leanback;
 
 import com.fongmi.android.tv.bean.Style;
 import com.fongmi.android.tv.setting.PlayerSetting;

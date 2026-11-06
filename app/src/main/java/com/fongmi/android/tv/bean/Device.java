@@ -10,7 +10,7 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.fongmi.android.tv.App;
-import com.fongmi.android.tv.Product;
+import com.fongmi.android.tv.ui.UiMode;
 import com.fongmi.android.tv.db.AppDatabase;
 import com.fongmi.android.tv.impl.Diffable;
 import com.fongmi.android.tv.server.Server;
@@ -61,7 +61,7 @@ public class Device implements Diffable<Device>, Comparable<Device> {
         device.setUuid(Util.getAndroidId());
         device.setName(Util.getDeviceName());
         device.setIp(Server.get().getAddress());
-        device.setType(Product.getDeviceType());
+        device.setType(UiMode.isLeanback() ? 0 : 1);
         return device;
     }
 
