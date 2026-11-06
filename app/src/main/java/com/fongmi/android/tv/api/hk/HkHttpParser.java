@@ -6,7 +6,6 @@ import android.util.Log;
 import com.fongmi.android.tv.api.hk.util.HkCodeUtil;
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -18,11 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * 直接移植自海阔 8.83 {@code com.example.hikerview.service.parser.HttpParser}（do not rewrite）。

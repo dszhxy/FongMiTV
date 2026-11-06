@@ -20,12 +20,10 @@ import com.fongmi.android.tv.ui.activity.FileActivity;
 import com.fongmi.android.tv.ui.activity.HistoryActivity;
 import com.fongmi.android.tv.ui.activity.HkFavoriteActivity;
 import com.fongmi.android.tv.ui.activity.HkPageActivity;
-import com.fongmi.android.tv.ui.activity.KeepActivity;
 
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.function.Consumer;
 
 import android.util.Log;

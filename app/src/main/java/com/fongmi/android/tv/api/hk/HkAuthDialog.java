@@ -1,7 +1,6 @@
 package com.fongmi.android.tv.api.hk;
 
 import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
 import android.text.TextUtils;
 import com.fongmi.android.tv.ui.hk.HkDialogs;
 

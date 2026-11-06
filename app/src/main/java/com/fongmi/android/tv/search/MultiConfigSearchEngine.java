@@ -11,7 +11,6 @@ import com.fongmi.android.tv.utils.Task;
 import com.github.catvod.net.OkHttp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;

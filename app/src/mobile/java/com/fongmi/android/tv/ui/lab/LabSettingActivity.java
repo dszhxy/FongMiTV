@@ -13,7 +13,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fongmi.android.tv.ui.activity.LabActivity;
-import com.fongmi.android.tv.ui.activity.PythonPackagesActivity;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.R;
 

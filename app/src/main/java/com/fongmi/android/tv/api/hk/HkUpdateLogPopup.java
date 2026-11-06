@@ -2,7 +2,6 @@ package com.fongmi.android.tv.api.hk;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;

@@ -7,7 +7,6 @@ import android.view.View;
 
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.ai.asr.AiAsrController;
 import com.fongmi.android.tv.ai.asr.AiAsrEngine;
 import com.fongmi.android.tv.ai.asr.AiAsrModelManager;
 import com.fongmi.android.tv.ai.asr.AiAsrPluginManager;

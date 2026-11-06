@@ -25,7 +25,6 @@ import com.fongmi.android.tv.setting.SubtitleSetting;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.github.catvod.crawler.SpiderDebug;
 
-import java.util.Map;
 
 import is.xyz.mpv.MPVLib;
 

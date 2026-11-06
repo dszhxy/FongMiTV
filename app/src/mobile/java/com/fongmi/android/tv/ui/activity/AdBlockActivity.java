@@ -1,11 +1,9 @@
 package com.fongmi.android.tv.ui.activity;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;

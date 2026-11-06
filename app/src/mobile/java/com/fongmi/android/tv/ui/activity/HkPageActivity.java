@@ -56,14 +56,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.SiteApi;
 import com.fongmi.android.tv.api.hk.HkDetail;
 import com.fongmi.android.tv.api.hk.HkDetailItem;
-import com.fongmi.android.tv.api.hk.HkErrorUtil;
 import com.fongmi.android.tv.api.hk.HkFavoriteStore;
 import com.fongmi.android.tv.api.hk.HkItem;
 import com.fongmi.android.tv.api.hk.HkJsRuntime;
@@ -99,10 +97,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.fongmi.android.tv.ui.hk.HkDetailBridge;
 import com.fongmi.android.tv.ui.hk.HkDialogs;

@@ -1,8 +1,6 @@
 package com.fongmi.android.tv.ui.hk;
 
 import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -13,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.hk.HkHttpParser;
 import com.fongmi.android.tv.utils.ToastUtil;
 import com.google.gson.Gson;

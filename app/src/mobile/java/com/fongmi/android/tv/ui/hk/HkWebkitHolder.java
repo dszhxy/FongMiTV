@@ -1,7 +1,6 @@
 package com.fongmi.android.tv.ui.hk;
 
 import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
@@ -10,7 +9,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;

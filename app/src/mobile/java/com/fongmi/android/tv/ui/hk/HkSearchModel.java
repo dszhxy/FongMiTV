@@ -3,7 +3,6 @@ package com.fongmi.android.tv.ui.hk;
 import com.fongmi.android.tv.api.hk.HkCommonParser;
 import com.fongmi.android.tv.clash.ReadingProxyGate;
 import com.fongmi.android.tv.api.hk.HkHttpParser;
-import com.fongmi.android.tv.api.hk.HkJsRuntime;
 import com.fongmi.android.tv.api.hk.HkSearchEngine;
 import com.fongmi.android.tv.api.hk.SearchResult;
 import com.fongmi.android.tv.utils.Task;
