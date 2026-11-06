@@ -75,6 +75,18 @@ public class OkHttp {
         return get().selector = new OkProxySelector();
     }
 
+    public static void closeIdleConnections() {
+        new Thread(OkHttp::evictIdleConnections, "okhttp-evict-idle").start();
+    }
+
+    private static synchronized void evictIdleConnections() {
+        try {
+            if (get().client != null) get().client.connectionPool().evictAll();
+            if (get().player != null) get().player.connectionPool().evictAll();
+        } catch (Throwable ignored) {
+        }
+    }
+
     public static synchronized void setProxy(String proxy) {
         selector().setProxy(proxy);
         get().client = null;

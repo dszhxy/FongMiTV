@@ -62,6 +62,10 @@ public class OkProxySelector extends ProxySelector {
         proxy.clear();
     }
 
+    public synchronized void remove(String name) {
+        proxy.removeIf(item -> item.getName().equals(name));
+    }
+
     public List<Proxy> getProxy() {
         return proxy;
     }

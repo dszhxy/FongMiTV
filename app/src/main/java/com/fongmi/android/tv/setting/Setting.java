@@ -54,6 +54,44 @@ public class Setting {
         Prefers.put("proxy", proxy);
     }
 
+    public static boolean isShellProxy() {
+        return Prefers.getBoolean("shell_proxy");
+    }
+
+    public static void putShellProxy(boolean shellProxy) {
+        Prefers.put("shell_proxy", shellProxy);
+        ProxySetting.apply();
+    }
+
+    public static String getShellProxyRules() {
+        return Prefers.getString("shell_proxy_rules");
+    }
+
+    public static void putShellProxyRules(String rules) {
+        Prefers.put("shell_proxy_rules", rules);
+    }
+
+    public static void putShellProxyConfig(String url, String rules) {
+        Prefers.put("shell_proxy_url", url);
+        Prefers.put("shell_proxy_rules", rules);
+    }
+
+    public static String getShellProxyUrl() {
+        return Prefers.getString("shell_proxy_url");
+    }
+
+    public static void putShellProxyUrl(String url) {
+        Prefers.put("shell_proxy_url", url);
+    }
+
+    public static String getShellProxyHosts() {
+        return Prefers.getString("shell_proxy_hosts");
+    }
+
+    public static void putShellProxyHosts(String hosts) {
+        Prefers.put("shell_proxy_hosts", hosts);
+    }
+
     public static boolean isCompactEpisodeTitle() {
         return Prefers.getBoolean("compact_episode_title");
     }

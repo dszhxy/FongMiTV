@@ -71,6 +71,9 @@ public class Site implements Parcelable {
     @SerializedName("playUrl")
     private String playUrl;
 
+    @SerializedName(value = "homePage", alternate = {"home_page", "webHome", "web_home"})
+    private String homePage;
+
     @Ignore
     @SerializedName("type")
     private Integer type;
@@ -211,6 +214,14 @@ public class Site implements Parcelable {
 
     public String getPlayUrl() {
         return TextUtils.isEmpty(playUrl) ? "" : playUrl;
+    }
+
+    public String getHomePage() {
+        return TextUtils.isEmpty(homePage) ? "" : homePage;
+    }
+
+    public void setHomePage(String homePage) {
+        this.homePage = homePage;
     }
 
     public Integer getType() {
