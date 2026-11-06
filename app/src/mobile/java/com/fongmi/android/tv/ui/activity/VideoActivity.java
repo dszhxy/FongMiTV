@@ -2094,11 +2094,6 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
             mBinding.osd.setVisibility(View.GONE);
             return;
         }
-        // 短剧模式：不显示屏显（分辨率/时间/标题等 OSD 信息）
-        if (mShortDramaMode) {
-            mBinding.osd.setVisibility(View.GONE);
-            return;
-        }
         long position = Math.max(0, player().getPosition());
         long duration = player().getDuration();
         String title = mBinding.name.getText().toString();
