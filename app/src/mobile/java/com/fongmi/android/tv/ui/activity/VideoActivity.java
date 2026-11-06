@@ -759,7 +759,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位。 */
-    /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位；边界时给提示。 */
+    /** 翻页手势未切集时回弹到 0，宿主播放器 translationY 复位。 */
     @Override
     public void onPageDragEnd(boolean committed) {
         if (mBinding != null) mBinding.player.setTranslationY(0f);
@@ -767,17 +767,6 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         if (mSdNext != null) mSdNext.setVisibility(View.GONE);
         hideSdPreviewLabel(mSdPrevLabel);
         hideSdPreviewLabel(mSdNextLabel);
-        // 未切集且在边界：弹 toast 提示
-        if (!committed && mShortDramaMode && mEpisodeAdapter != null) {
-            int pos = mEpisodeAdapter.getPosition();
-            int count = mEpisodeAdapter.getItemCount();
-            if (pos >= count - 1 && !canPageDown()) {
-                ToastUtil.show(this, "已经是最后一集了");
-            }
-            else if (pos <= 0 && !canPageUp()) {
-                ToastUtil.show(this, "已经是第一集了");
-            }
-        }
     }
 
     // ===== 短剧专用 UI：抖音式竖屏播放器 =====
