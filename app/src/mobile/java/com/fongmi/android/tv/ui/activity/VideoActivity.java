@@ -396,6 +396,20 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     @Override
+    /** 播放器详情页信息密集，行高/间距是固定 dp；跟随系统超大字体会让所有 sp 文字互相压叠。
+     *  这里只在本页把 fontScale 上限压到 1.0，其它页面仍完整保留用户的字体设置。 */
+    @Override
+    public android.content.res.Resources getResources() {
+        android.content.res.Resources res = super.getResources();
+        float scale = com.fongmi.android.tv.setting.Setting.getFontScale();
+        if (scale > 1.0f) {
+            android.content.res.Configuration cfg = new android.content.res.Configuration(res.getConfiguration());
+            cfg.fontScale = 1.0f;
+            res.updateConfiguration(cfg, res.getDisplayMetrics());
+        }
+        return res;
+    }
+
     protected ViewBinding getBinding() {
         return mBinding = ActivityVideoBinding.inflate(getLayoutInflater());
     }
@@ -480,7 +494,6 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         showProgress();
         setAnimator();
         checkId();
-        applyDetailFontScale();
     }
 
     @Override

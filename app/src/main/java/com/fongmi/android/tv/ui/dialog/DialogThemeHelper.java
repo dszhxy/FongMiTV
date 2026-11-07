@@ -23,6 +23,7 @@ public final class DialogThemeHelper {
             case 1: return R.style.ThemeOverlay_DialogStyle_White;
             case 2: return R.style.ThemeOverlay_DialogStyle_Amoled;
             case 4: return R.style.ThemeOverlay_DialogStyle_Neon;
+            case 5: return R.style.ThemeOverlay_DialogStyle_Raw;
             case 3:
             default: return R.style.ThemeOverlay_DialogStyle_IOS;
         }
@@ -35,6 +36,7 @@ public final class DialogThemeHelper {
             case 1: return R.style.Theme_App_DialogWhite;
             case 2: return R.style.Theme_App_DialogAmoled;
             case 4: return R.style.Theme_App_DialogNeon;
+            case 5: return R.style.Theme_App_DialogRaw;
             case 3:
             default: return R.style.Theme_App_DialogIOS;
         }
@@ -47,6 +49,7 @@ public final class DialogThemeHelper {
             case 1: return R.style.ThemeOverlay_DialogPopup_White;
             case 2: return R.style.ThemeOverlay_DialogPopup_Amoled;
             case 4: return R.style.ThemeOverlay_DialogPopup_Neon;
+            case 5: return R.style.ThemeOverlay_DialogPopup_Raw;
             case 3:
             default: return R.style.ThemeOverlay_DialogPopup_IOS;
         }
@@ -59,6 +62,7 @@ public final class DialogThemeHelper {
             case 1: return R.style.ThemeOverlay_FongMi_Dialog_White;
             case 2: return R.style.ThemeOverlay_FongMi_Dialog_Amoled;
             case 4: return R.style.ThemeOverlay_FongMi_Dialog_Neon;
+            case 5: return R.style.ThemeOverlay_Dialog_Raw;
             case 3:
             default: return R.style.ThemeOverlay_FongMi_Dialog_IOS;
         }
@@ -71,6 +75,7 @@ public final class DialogThemeHelper {
             case 1: return R.style.Theme_App_DialogWhite_Translucent;
             case 2: return R.style.Theme_App_DialogAmoled_Translucent;
             case 4: return R.style.Theme_App_DialogNeon_Translucent;
+            case 5: return R.style.Theme_App_DialogRaw_Translucent;
             case 3:
             default: return R.style.Theme_App_DialogIOS_Translucent;
         }

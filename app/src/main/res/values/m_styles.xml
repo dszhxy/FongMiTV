@@ -111,52 +111,52 @@
 
     <style name="Unified.DialogButton.Classic" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/bg_unified_dialog_btn_classic</item>
-        <item name="android:textColor">#FFFFFFFF</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/btn_text_classic</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <style name="Unified.DialogButton.White" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/bg_unified_dialog_btn_white</item>
-        <item name="android:textColor">#FFFFFFFF</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/btn_text_white</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <style name="Unified.DialogButton.Amoled" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/bg_unified_dialog_btn_amoled</item>
-        <item name="android:textColor">#FF0A0A0A</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/btn_text_amoled</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <style name="Unified.DialogButton.IOS" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/bg_unified_dialog_btn_ios</item>
-        <item name="android:textColor">#FFFFFFFF</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/btn_text_ios</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <style name="Unified.DialogButton.Neon" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/bg_unified_dialog_btn_neon</item>
-        <item name="android:textColor">#FFFFFFFF</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/btn_text_neon</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingStart">18dp</item>
-        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <!-- ========== 5种弹窗风格的App主题变体 ==========
@@ -459,8 +459,8 @@
         <item name="android:textColorSecondary">#A8B0C0</item>
         
         <item name="colorOnSurface">#F2F4F8</item>
-        <item name="android:textColorAlertDialogListItem">#F2F4F8</item>
-        <item name="textColorAlertDialogListItem">#F2F4F8</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#D9A420</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.Dark</item>
 
@@ -504,8 +504,8 @@
         <item name="android:textColor">#101216</item>
         <item name="android:textColorPrimary">#101216</item>
         <item name="android:textColorSecondary">#1E2126</item>
-        <item name="android:textColorAlertDialogListItem">#101216</item>
-        <item name="textColorAlertDialogListItem">#101216</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#D9A420</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.HkLight</item>
     </style>
@@ -526,8 +526,8 @@
         <item name="android:textColor">#101216</item>
         <item name="android:textColorPrimary">#101216</item>
         <item name="android:textColorSecondary">#5F6368</item>
-        <item name="android:textColorAlertDialogListItem">#101216</item>
-        <item name="textColorAlertDialogListItem">#101216</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#6750A4</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.White</item>
         <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
@@ -579,8 +579,8 @@
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="android:textColorSecondary">#888888</item>
         <item name="colorOnSurface">#F0F0F0</item>
-        <item name="android:textColorAlertDialogListItem">#F0F0F0</item>
-        <item name="textColorAlertDialogListItem">#F0F0F0</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#4A9EFF</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.Amoled</item>
         <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
@@ -637,8 +637,8 @@
         <item name="android:textColor">#1C1C1E</item>
         <item name="android:textColorPrimary">#1C1C1E</item>
         <item name="android:textColorSecondary">#8E8E93</item>
-        <item name="android:textColorAlertDialogListItem">#007AFF</item>
-        <item name="textColorAlertDialogListItem">#007AFF</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#007AFF</item>
         <item name="colorPrimary">#007AFF</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.IOS</item>
@@ -685,8 +685,8 @@
         <item name="android:textColorPrimary">#00D4FF</item>
         <item name="android:textColorSecondary">#AAAAFF</item>
         <item name="colorOnSurface">#FFFFFF</item>
-        <item name="android:textColorAlertDialogListItem">#00D4FF</item>
-        <item name="textColorAlertDialogListItem">#00D4FF</item>
+        <item name="android:textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
+        <item name="textColorAlertDialogListItem">?attr/dialogTextPrimary</item>
         <item name="android:colorAccent">#FF006E</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.Neon</item>
         <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
@@ -858,6 +858,7 @@
         <item name="android:textColorPrimary">#F2F4F8</item>
         <item name="android:textColorSecondary">#A8B0C0</item>
         <item name="colorSurface">#1A1D24</item>
+        <item name="colorSurfaceContainerHigh">#1A1D24</item>
         <item name="colorOnSurface">#F2F4F8</item>
     </style>
     <style name="ThemeOverlay_DialogPopup_White" parent="ThemeOverlay.Material3.Light">
@@ -865,6 +866,7 @@
         <item name="android:textColorPrimary">#101216</item>
         <item name="android:textColorSecondary">#5F6368</item>
         <item name="colorSurface">#FFFFFF</item>
+        <item name="colorSurfaceContainerHigh">#FFFFFF</item>
         <item name="colorOnSurface">#101216</item>
     </style>
     <style name="ThemeOverlay_DialogPopup_Amoled" parent="ThemeOverlay.Material3.Light">
@@ -872,6 +874,7 @@
         <item name="android:textColorPrimary">#F0F0F0</item>
         <item name="android:textColorSecondary">#9A9A9A</item>
         <item name="colorSurface">#0A0A0A</item>
+        <item name="colorSurfaceContainerHigh">#0A0A0A</item>
         <item name="colorOnSurface">#F0F0F0</item>
     </style>
     <style name="ThemeOverlay_DialogPopup_IOS" parent="ThemeOverlay.Material3.Light">
@@ -879,6 +882,7 @@
         <item name="android:textColorPrimary">#1C1C1E</item>
         <item name="android:textColorSecondary">#6D6D72</item>
         <item name="colorSurface">#F2F2F7</item>
+        <item name="colorSurfaceContainerHigh">#F2F2F7</item>
         <item name="colorOnSurface">#1C1C1E</item>
     </style>
     <style name="ThemeOverlay_DialogPopup_Neon" parent="ThemeOverlay.Material3.Light">
@@ -886,7 +890,53 @@
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="android:textColorSecondary">#B8C4E8</item>
         <item name="colorSurface">#101A33</item>
+        <item name="colorSurfaceContainerHigh">#101A33</item>
         <item name="colorOnSurface">#FFFFFF</item>
+    </style>
+
+
+    <!-- ===== 原始风格 style=5：系统默认 M3 外观，不叠加自定义按钮样式 ===== -->
+    <style name="ThemeOverlay_DialogStyle_Raw" />
+
+    <style name="Theme.App.DialogRaw" parent="Theme.App">
+        <item name="dialogSurface">@drawable/bg_dialog_raw</item>
+        <item name="dialogTextPrimary">#FF1B1B1F</item>
+        <item name="dialogTextSecondary">#FF49454F</item>
+        <item name="dialogTextHint">#FF79747E</item>
+        <item name="dialogAccent">#FF6750A4</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_white</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#FFF7F2FA</item>
+    </style>
+
+    <style name="Theme.App.DialogRaw.Translucent" parent="Theme.App.DialogRaw">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <style name="ThemeOverlay_Dialog_Raw" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="dialogSurface">@drawable/bg_dialog_raw</item>
+        <item name="dialogTextPrimary">#FF1B1B1F</item>
+        <item name="dialogTextSecondary">#FF49454F</item>
+        <item name="dialogTextHint">#FF79747E</item>
+        <item name="dialogAccent">#FF6750A4</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_white</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#FFF7F2FA</item>
+    </style>
+
+    <style name="ThemeOverlay_DialogPopup_Raw" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_raw</item>
+        <item name="android:textColorPrimary">#1B1B1F</item>
+        <item name="android:textColorSecondary">#49454F</item>
+        <item name="colorSurface">#F7F2FA</item>
+        <item name="colorSurfaceContainerHigh">#F7F2FA</item>
+        <item name="colorOnSurface">#1B1B1F</item>
     </style>
 
 </resources>

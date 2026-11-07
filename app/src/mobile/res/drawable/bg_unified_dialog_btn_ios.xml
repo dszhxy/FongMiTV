@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#007AFF" />
-    <corners android:radius="20dp" />
-</shape>
+<!-- ios：常态实心；按下=描边+同色文字（按下色与弹窗边框色不同） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <stroke android:width="2dp" android:color="#34C759" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#0A5BD3" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</selector>

@@ -78,15 +78,15 @@ public final class DialogStylePickerDialog {
     }
 
     /** 与 Setting.getDialogStyle() 的 0~4 一一对应 */
-    private static final String[] NAMES = {"经典深色", "纯白 Material", "暗色模式", "iOS 风格", "霓虹渐变"};
+    private static final String[] NAMES = {"经典深色", "纯白 Material", "暗色模式", "iOS 风格", "霓虹渐变", "原始风格"};
     // surface, primary, secondary, accent, card(按钮底), radius
-    private static final int[] SURFACE = {0xFF1A1D24, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFF2F2F7, 0xFF101A33};
-    private static final int[] PRIMARY = {0xFFF2F4F8, 0xFF101216, 0xFFF0F0F0, 0xFF1C1C1E, 0xFFFFFFFF};
-    private static final int[] SECONDARY = {0xFFA8B0C0, 0xFF5F6368, 0xFF888888, 0xFF8E8E93, 0xFFAAAAFF};
-    private static final int[] ACCENT = {0xFFD9A420, 0xFF6750A4, 0xFF4A9EFF, 0xFF007AFF, 0xFFFF006E};
-    private static final int[] RADIUS = {16, 20, 20, 24, 20};
+    private static final int[] SURFACE = {0xFF1A1D24, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFF2F2F7, 0xFF101A33, 0xFFF7F2FA};
+    private static final int[] PRIMARY = {0xFFF2F4F8, 0xFF101216, 0xFFF0F0F0, 0xFF1C1C1E, 0xFFFFFFFF, 0xFF1B1B1F};
+    private static final int[] SECONDARY = {0xFFA8B0C0, 0xFF5F6368, 0xFF888888, 0xFF8E8E93, 0xFFAAAAFF, 0xFF49454F};
+    private static final int[] ACCENT = {0xFFD9A420, 0xFF6750A4, 0xFF4A9EFF, 0xFF007AFF, 0xFFFF006E, 0xFF6750A4};
+    private static final int[] RADIUS = {16, 20, 20, 24, 20, 28};
     // 与 m_styles.xml 的 dialogOnAccent 一一对应：经典深色黄底白字
-    private static final int[] ON_ACCENT = {0xFFFFFFFF, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFFFFFFF, 0xFFFFFFFF};
+    private static final int[] ON_ACCENT = {0xFFFFFFFF, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 
     public interface Listener {
         void onPick(int style);
@@ -99,7 +99,7 @@ public final class DialogStylePickerDialog {
         int current = clamp(Setting.getDialogStyle());
         int pad = dp(activity, 14);
         int gap = dp(activity, 10);
-        int cardH = dp(activity, 96);
+        int cardH = dp(activity, 128);
 
         LinearLayout root = new LinearLayout(activity);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -133,14 +133,14 @@ public final class DialogStylePickerDialog {
             TextView title = new TextView(activity);
             title.setText(NAMES[i]);
             title.setTextColor(PRIMARY[i]);
-            title.setTextSize(15);
+            title.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, dp(activity, 14));
             title.setTypeface(null, android.graphics.Typeface.BOLD);
             card.addView(title);
 
             TextView body = new TextView(activity);
             body.setText("这是一段弹窗内容示例文字");
             body.setTextColor(SECONDARY[i]);
-            body.setTextSize(11);
+            body.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, dp(activity, 11));
             body.setPadding(0, dp(activity, 4), 0, dp(activity, 8));
             card.addView(body);
 
@@ -150,14 +150,14 @@ public final class DialogStylePickerDialog {
             TextView neg = new TextView(activity);
             neg.setText("取消");
             neg.setTextColor(ACCENT[i]);
-            neg.setTextSize(12);
-            neg.setPadding(dp(activity, 14), dp(activity, 5), dp(activity, 14), dp(activity, 5));
+            neg.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, dp(activity, 11));
+            neg.setPadding(dp(activity, 10), dp(activity, 4), dp(activity, 10), dp(activity, 4));
             buttons.addView(neg);
             TextView pos = new TextView(activity);
             pos.setText("确定");
             pos.setTextColor(ON_ACCENT[i]);
-            pos.setTextSize(12);
-            pos.setPadding(dp(activity, 14), dp(activity, 5), dp(activity, 14), dp(activity, 5));
+            pos.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, dp(activity, 11));
+            pos.setPadding(dp(activity, 10), dp(activity, 4), dp(activity, 10), dp(activity, 4));
             GradientDrawable pb = new GradientDrawable();
             pb.setColor(ACCENT[i]);
             pb.setCornerRadius(dp(activity, 14));
@@ -187,7 +187,7 @@ public final class DialogStylePickerDialog {
 
             TextView check = new TextView(activity);
             check.setText("\u2713");
-            check.setTextSize(22);
+            check.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, dp(activity, 18));
             check.setTextColor(ON_ACCENT[i]);
             check.setGravity(Gravity.CENTER);
             GradientDrawable cb = new GradientDrawable();
