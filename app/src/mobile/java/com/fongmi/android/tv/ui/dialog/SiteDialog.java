@@ -13,7 +13,6 @@ import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -199,9 +198,12 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
         button.setInsetTop(0);
         button.setInsetBottom(0);
         button.setPadding(ResUtil.dp2px(14), ResUtil.dp2px(6), ResUtil.dp2px(14), ResUtil.dp2px(6));
-        button.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_text));
+        // 上排分组标签改走语义色，和下方站点名一致，不再写死近黑色 #FF202124
+        button.setTextColor(android.content.res.ColorStateList.valueOf(
+                com.fongmi.android.tv.ui.dialog.DialogThemeHelper.primaryText(requireContext())));
         button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT));
-        button.setStrokeColor(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_stroke));
+        button.setStrokeColor(android.content.res.ColorStateList.valueOf(
+                com.fongmi.android.tv.ui.dialog.DialogThemeHelper.divider(requireContext())));
         button.setOnClickListener(v -> onGroupClick(group, button));
         return button;
     }

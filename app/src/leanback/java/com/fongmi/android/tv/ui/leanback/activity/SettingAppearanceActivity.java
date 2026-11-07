@@ -48,7 +48,7 @@ public class SettingAppearanceActivity extends BaseActivity {
 
     private void setLanguage(View view) {
         int checked = indexOf(LANGUAGES, Setting.getLanguage());
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_language).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(LANGUAGE_NAMES, checked, (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.setting_language).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(LANGUAGE_NAMES, checked, (dialog, which) -> {
             Setting.putLanguage(LANGUAGES[which]);
             dialog.dismiss();
             recreate();
@@ -57,7 +57,7 @@ public class SettingAppearanceActivity extends BaseActivity {
 
     private void setThemeColor(View view) {
         int checked = findIndex(THEME_COLORS, Setting.getThemeColor());
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_theme_color).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(getThemeColorNames(), checked, (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.setting_theme_color).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(getThemeColorNames(), checked, (dialog, which) -> {
             Setting.putThemeColor(THEME_COLORS[which]);
             mBinding.themeColorText.setText(getThemeColorName(THEME_COLORS[which]));
             dialog.dismiss();

@@ -75,11 +75,11 @@ public class SettingPersonalActivity extends BaseActivity {
     }
 
     private void onReset(View view) {
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.dialog_reset_app).setMessage(R.string.dialog_reset_app_data).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> new Thread(() -> Shell.exec("pm clear " + getPackageName())).start()).show();
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.dialog_reset_app).setMessage(R.string.dialog_reset_app_data).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> new Thread(() -> Shell.exec("pm clear " + getPackageName())).start()).show();
     }
 
     private void setSize(View view) {
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(size, PlayerSetting.getSize(), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.setting_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(size, PlayerSetting.getSize(), (dialog, which) -> {
             mBinding.sizeText.setText(size[which]);
             PlayerSetting.putSize(which);
             RefreshEvent.size();

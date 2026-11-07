@@ -108,7 +108,7 @@ public class PythonPackagesActivity extends BaseActivity {
     }
 
     private void onRemove(PythonPackage item) {
-        new MaterialAlertDialogBuilder(this).setMessage(getString(R.string.python_pkg_remove_confirm, item.getName())).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setMessage(getString(R.string.python_pkg_remove_confirm, item.getName())).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
             try {
                 PythonPackageManager.uninstall(item);
                 BaseLoader.get().clear();

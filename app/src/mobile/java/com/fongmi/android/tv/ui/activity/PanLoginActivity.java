@@ -92,7 +92,7 @@ public class PanLoginActivity extends BaseActivity {
             String text = result;
             runOnUiThread(() -> {
                 mBinding.status.setText(text);
-                new MaterialAlertDialogBuilder(this).setMessage(text).setPositiveButton(R.string.dialog_positive, null).show();
+                new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setMessage(text).setPositiveButton(R.string.dialog_positive, null).show();
             });
         }).start();
     }
@@ -109,6 +109,6 @@ public class PanLoginActivity extends BaseActivity {
     }
 
     private void toast(int res) {
-        new MaterialAlertDialogBuilder(this).setMessage(res).setPositiveButton(R.string.dialog_positive, null).show();
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setMessage(res).setPositiveButton(R.string.dialog_positive, null).show();
     }
 }

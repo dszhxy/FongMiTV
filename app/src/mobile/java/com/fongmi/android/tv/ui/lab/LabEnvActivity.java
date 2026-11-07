@@ -247,7 +247,7 @@ public class LabEnvActivity extends AppCompatActivity {
         edit.setHint("https://…/env-xxx.zip");
         int p = dp(20);
         edit.setPadding(p, p, p, p);
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme())
                 .setTitle("下载地址（留空用内置）")
                 .setView(edit)
                 .setNegativeButton("取消", null)

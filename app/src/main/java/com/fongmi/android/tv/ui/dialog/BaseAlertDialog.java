@@ -28,7 +28,7 @@ public abstract class BaseAlertDialog extends DialogFragment {
     }
 
     protected MaterialAlertDialogBuilder builder() {
-        return new MaterialAlertDialogBuilder(requireActivity());
+        return new MaterialAlertDialogBuilder(requireActivity(), com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme());
     }
 
     protected void initView() {

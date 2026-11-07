@@ -40,6 +40,18 @@ public final class DialogThemeHelper {
         }
     }
 
+    /** Toolbar 溢出菜单专用：只含 popup 背景 / 文字色，跟随 5 种弹窗风格，不含任何系统级主界面属性 */
+    @StyleRes public static int getPopupTheme() {
+        switch (Setting.getDialogStyle()) {
+            case 0: return R.style.ThemeOverlay_DialogPopup_Classic;
+            case 1: return R.style.ThemeOverlay_DialogPopup_White;
+            case 2: return R.style.ThemeOverlay_DialogPopup_Amoled;
+            case 4: return R.style.ThemeOverlay_DialogPopup_Neon;
+            case 3:
+            default: return R.style.ThemeOverlay_DialogPopup_IOS;
+        }
+    }
+
     /** 纯语义色 overlay：给 BottomSheet / SideSheet 用 ContextThemeWrapper 叠加 */
     @StyleRes public static int getOverlay() {
         switch (Setting.getDialogStyle()) {

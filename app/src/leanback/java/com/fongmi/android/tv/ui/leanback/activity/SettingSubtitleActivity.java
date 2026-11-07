@@ -89,7 +89,7 @@ public class SettingSubtitleActivity extends BaseActivity {
     private void setSize(View view) {
         String[] items = new String[SCALES.length];
         for (int i = 0; i < SCALES.length; i++) items[i] = formatScale(SCALES[i]);
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.subtitle_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(SCALES, SubtitleSetting.getScale()), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.subtitle_size).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(SCALES, SubtitleSetting.getScale()), (dialog, which) -> {
             SubtitleSetting.putScale(SCALES[which]);
             mBinding.subtitleSizeText.setText(items[which]);
             dialog.dismiss();
@@ -99,7 +99,7 @@ public class SettingSubtitleActivity extends BaseActivity {
     private void setPosition(View view) {
         String[] items = new String[POSITIONS.length];
         for (int i = 0; i < POSITIONS.length; i++) items[i] = formatPosition(POSITIONS[i]);
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.subtitle_position).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(POSITIONS, SubtitleSetting.getPosition()), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.subtitle_position).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(items, findNearest(POSITIONS, SubtitleSetting.getPosition()), (dialog, which) -> {
             SubtitleSetting.putPosition(POSITIONS[which]);
             mBinding.subtitlePositionText.setText(items[which]);
             dialog.dismiss();
@@ -123,7 +123,7 @@ public class SettingSubtitleActivity extends BaseActivity {
     private void setBackground(View view) {
         String[] names = new String[BACKGROUND_COLORS.length];
         for (int i = 0; i < BACKGROUND_COLORS.length; i++) names[i] = getString(getBackgroundColorName(BACKGROUND_COLORS[i]));
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.subtitle_background).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor()), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.subtitle_background).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(BACKGROUND_COLORS, SubtitleSetting.getBackgroundBaseColor()), (dialog, which) -> {
             SubtitleSetting.putBackgroundColor(BACKGROUND_COLORS[which]);
             mBinding.subtitleBackgroundText.setText(names[which]);
             dialog.dismiss();
@@ -133,7 +133,7 @@ public class SettingSubtitleActivity extends BaseActivity {
     private void showColorDialog(int title, int[] colors, int current, IntConsumer apply) {
         String[] names = new String[colors.length];
         for (int i = 0; i < colors.length; i++) names[i] = getString(getTextColorName(colors[i]));
-        new MaterialAlertDialogBuilder(this).setTitle(title).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(colors, current), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(title).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, findIndex(colors, current), (dialog, which) -> {
             apply.accept(colors[which]);
             dialog.dismiss();
         }).show();

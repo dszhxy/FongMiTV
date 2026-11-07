@@ -851,4 +851,42 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
+
+    <!-- ===== Toolbar 溢出菜单：5 种风格，背景/文字全走语义色，不再退回系统白底 ===== -->
+    <style name="ThemeOverlay_DialogPopup_Classic" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_classic</item>
+        <item name="android:textColorPrimary">#F2F4F8</item>
+        <item name="android:textColorSecondary">#A8B0C0</item>
+        <item name="colorSurface">#1A1D24</item>
+        <item name="colorOnSurface">#F2F4F8</item>
+    </style>
+    <style name="ThemeOverlay_DialogPopup_White" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_white</item>
+        <item name="android:textColorPrimary">#101216</item>
+        <item name="android:textColorSecondary">#5F6368</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#101216</item>
+    </style>
+    <style name="ThemeOverlay_DialogPopup_Amoled" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_amoled</item>
+        <item name="android:textColorPrimary">#F0F0F0</item>
+        <item name="android:textColorSecondary">#9A9A9A</item>
+        <item name="colorSurface">#0A0A0A</item>
+        <item name="colorOnSurface">#F0F0F0</item>
+    </style>
+    <style name="ThemeOverlay_DialogPopup_IOS" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_ios</item>
+        <item name="android:textColorPrimary">#1C1C1E</item>
+        <item name="android:textColorSecondary">#6D6D72</item>
+        <item name="colorSurface">#F2F2F7</item>
+        <item name="colorOnSurface">#1C1C1E</item>
+    </style>
+    <style name="ThemeOverlay_DialogPopup_Neon" parent="ThemeOverlay.Material3.Light">
+        <item name="android:popupBackground">@drawable/popup_bg_neon</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#B8C4E8</item>
+        <item name="colorSurface">#101A33</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+    </style>
+
 </resources>

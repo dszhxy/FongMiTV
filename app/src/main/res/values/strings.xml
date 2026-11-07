@@ -576,11 +576,11 @@
     <string name="script_source_py">PY</string>
     <string name="script_source_js">JS</string>
     <string name="script_source_empty">No scripts. Import them in plugin management first.</string>
-    <string name="script_source_hint">Tap to open source · Long-press to preview file content</string>
-    <string name="script_preview_close">Close</string>
+    <string name="script_source_hint">单击打开源 · 长按预览文件内容</string>
+    <string name="script_preview_close">关闭</string>
     <string name="script_preview_path">Path: %1$s</string>
-    <string name="script_preview_truncated">\n\n… Preview truncated to the first 256 KB.</string>
-    <string name="script_preview_error">Unable to read file: %1$s</string>
+    <string name="script_preview_truncated">\n\n… 仅预览前 256 KB</string>
+    <string name="script_preview_error">无法读取文件：%1$s</string>
     <string name="setting_group_tools">Common features</string>
     <string name="lab_python_version">Python 3.10 · built-in</string>
     <string name="lab_python_detail">Built-in Python 3.10 runtime with lxml, ujson, pyquery, requests, cachetools, pycryptodome and beautifulsoup4.\n\nReloading the environment clears the site and script loader so the Python runtime is re-initialized.</string>

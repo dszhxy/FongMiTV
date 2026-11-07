@@ -117,7 +117,7 @@ public final class WallPickerDialog {
             }
             root.addView(line);
         }
-        ref[0] = new MaterialAlertDialogBuilder(activity)
+        ref[0] = new MaterialAlertDialogBuilder(activity, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme())
                 .setTitle(R.string.wall_default)
                 .setView(root)
                 .setNegativeButton(R.string.dialog_negative, null)

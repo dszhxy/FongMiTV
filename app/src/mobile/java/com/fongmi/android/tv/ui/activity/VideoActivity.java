@@ -480,6 +480,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         showProgress();
         setAnimator();
         checkId();
+        applyDetailFontScale();
     }
 
     @Override
@@ -537,6 +538,35 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         lp.height = top;
         mBinding.statusBar.setLayoutParams(lp);
         return insets;
+    }
+
+    /**
+     * 详情页文字抗重叠：全局 fontScale 只放大 sp 字号，而详情区行高是固定 dp，
+     * 放大后「选集/轨道/屏显/倍速/简介」会互相压。这里把详情容器内的 TextView
+     * 字号按当前 fontScale 反向折算回 dp，使实际像素恢复到设计值。
+     * 只作用于详情容器，不影响播放器 OSD 与主界面。
+     */
+    private void applyDetailFontScale() {
+        float scale = com.fongmi.android.tv.setting.Setting.getFontScale();
+        if (scale <= 0f || Math.abs(scale - 1.0f) < 0.01f) return;
+        android.view.ViewGroup root = mBinding.getRoot().findViewById(R.id.scroll);
+        if (root == null) return;
+        int count = 0;
+        java.util.ArrayDeque<android.view.View> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            android.view.View v = queue.poll();
+            if (v instanceof android.widget.TextView) {
+                android.widget.TextView tv = (android.widget.TextView) v;
+                float px = tv.getTextSize() / scale;
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, px);
+                count++;
+            }
+            if (v instanceof android.view.ViewGroup) {
+                android.view.ViewGroup g = (android.view.ViewGroup) v;
+                for (int i = 0; i < g.getChildCount(); i++) queue.add(g.getChildAt(i));
+            }
+        }
     }
 
     private void setRecyclerView() {
@@ -1499,7 +1529,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         final String link = url;
         final String fileName = name;
         final Map<String, String> requestHeaders = headers;
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.detail_download).setMessage(getString(R.string.detail_download_confirm, fileName)).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.detail_download).setMessage(getString(R.string.detail_download_confirm, fileName)).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
             DownloadManager.get().add(link, fileName, requestHeaders);
             Notify.show(R.string.detail_download_added);
         }).show();
@@ -1636,7 +1666,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private void onScale() {
         String[] array = ResUtil.getStringArray(R.array.select_scale);
         if (mKeyDown.getScale() != 1.0f) mKeyDown.resetScale();
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.player_scale).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(array, getScale(), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.player_scale).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(array, getScale(), (dialog, which) -> {
             setScale(which);
             setR1Callback();
             dialog.dismiss();

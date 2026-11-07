@@ -109,7 +109,9 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.filter.setOnClickListener(this::onFilter);
         mBinding.filter.setOnLongClickListener(this::onLink);
         // 溢出菜单（我的收藏 / 最近观看）跟随当前弹窗风格，不再走系统默认浅色
-        mBinding.toolbar.setPopupTheme(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme());
+        // 5 个 Dialog 主题未定义 popup 属性，直接用会退回系统默认白底；
+        // 改用专门定义的 popup overlay（语义色背景 + 语义色文字），跟随当前弹窗风格。
+        mBinding.toolbar.setPopupTheme(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getPopupTheme());
         mBinding.toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
         mBinding.appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             float factor = Math.abs(verticalOffset * 1f / appBarLayout.getTotalScrollRange());
@@ -252,7 +254,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         if (count == 0) return;
         String[] names = new String[count];
         for (int i = 0; i < count; i++) names[i] = mAdapter.get(i).getTypeName();
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.type_all).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, mBinding.pager.getCurrentItem(), (dialog, which) -> {
+        new MaterialAlertDialogBuilder(requireActivity(), com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.type_all).setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(names, mBinding.pager.getCurrentItem(), (dialog, which) -> {
             dialog.dismiss();
             onItemClick(which, mAdapter.get(which));
         }).show();

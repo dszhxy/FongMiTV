@@ -74,7 +74,7 @@ public class LabActivity extends BaseActivity {
         String js = getString(R.string.setting_on);
         String local = getString(R.string.setting_on);
         String message = getString(R.string.lab_service_detail, python, js, DownloadSetting.getThreads(), local);
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.lab_service).setMessage(message).setPositiveButton(R.string.dialog_positive, null).show();
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.lab_service).setMessage(message).setPositiveButton(R.string.dialog_positive, null).show();
     }
 
     private String getInfo() {

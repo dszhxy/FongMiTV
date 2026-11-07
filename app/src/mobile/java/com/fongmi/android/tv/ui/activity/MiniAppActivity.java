@@ -89,7 +89,7 @@ public class MiniAppActivity extends BaseActivity {
         edit.setHint(R.string.mini_app_url_hint);
         edit.setText(getUrl());
         edit.setSelection(edit.getText().length());
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_mini_app).setView(edit).setNegativeButton(R.string.dialog_negative, (dialog, which) -> finish()).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setTitle(R.string.setting_mini_app).setView(edit).setNegativeButton(R.string.dialog_negative, (dialog, which) -> finish()).setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
             String url = edit.getText().toString().trim();
             if (TextUtils.isEmpty(url)) {
                 finish();

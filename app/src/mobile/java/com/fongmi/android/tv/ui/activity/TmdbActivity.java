@@ -58,6 +58,6 @@ public class TmdbActivity extends BaseActivity {
     private void onSave() {
         Prefers.put("tmdb_api_key", mBinding.apiKey.getText().toString().trim());
         Prefers.put("tmdb_language", mBinding.language.getText().toString().trim());
-        new MaterialAlertDialogBuilder(this).setMessage(R.string.tmdb_saved).setPositiveButton(R.string.dialog_positive, null).show();
+        new MaterialAlertDialogBuilder(this, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setMessage(R.string.tmdb_saved).setPositiveButton(R.string.dialog_positive, null).show();
     }
 }

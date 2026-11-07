@@ -168,8 +168,10 @@ public class SourceScriptsDialog extends Dialog {
 
     private List<File> loadScripts(boolean py) {
         Map<String, File> map = new LinkedHashMap<>();
+        // 只列用户真正导入的脚本（filesDir/plugins/{py,js}）。
+        // 不再扫 Path.py()/Path.js()：那是 getCacheDir() 下的运行期缓存，
+        // 里面是一堆 MD5 命名的临时脚本，不是用户导入的源。
         addDir(map, new File(getContext().getFilesDir(), py ? "plugins/py" : "plugins/js"), py);
-        addDir(map, py ? Path.py() : Path.js(), py);
         List<File> list = new ArrayList<>(map.values());
         list.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
         return list;

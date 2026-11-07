@@ -76,7 +76,7 @@ public class Notify {
 
     private void create(Context context) {
         ViewProgressBinding binding = ViewProgressBinding.inflate(LayoutInflater.from(context));
-        mDialog = new MaterialAlertDialogBuilder(context).setView(binding.getRoot()).create();
+        mDialog = new MaterialAlertDialogBuilder(context, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme()).setView(binding.getRoot()).create();
         mDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         mDialog.show();
     }
