@@ -218,7 +218,8 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
                 return v;
             }
         };
-        new MaterialAlertDialogBuilder(requireActivity())
+        new MaterialAlertDialogBuilder(requireActivity(),
+                com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme())
                 .setTitle(R.string.switch_line)
                 .setNegativeButton(R.string.dialog_negative, null)
                 .setSingleChoiceItems(lineAdapter, current, (dialog, which) -> {

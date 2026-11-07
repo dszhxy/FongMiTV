@@ -1779,7 +1779,19 @@ public class HkArticleFragment extends Fragment implements HkArticleListModel.Ca
         android.widget.TextView tv = new android.widget.TextView(getContext());
         tv.setText(title);
         tv.setPadding(dpToPx(24), dpToPx(18), dpToPx(24), dpToPx(18));
+        // 用纯色语义属性自绘卡片：dialogCardColor 是 format=color，不会把 drawable 当颜色解析
+        android.graphics.drawable.GradientDrawable card = new android.graphics.drawable.GradientDrawable();
+        card.setColor(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(
+                getContext(), com.fongmi.android.tv.R.attr.dialogCardColor));
+        card.setCornerRadius(dpToPx(12));
+        tv.setBackground(card);
+        tv.setTextColor(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.primaryText(getContext()));
         loadingPopup = new android.app.Dialog(getContext(), DialogThemeHelper.getTheme());
+        // 兜底：窗口背景必须透明，否则系统默认 windowBackground 会整片刷白盖住主界面
+        if (loadingPopup.getWindow() != null) {
+            loadingPopup.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
         loadingPopup.setContentView(tv);
         loadingPopup.setCancelable(false);
         if (!skipShow) loadingPopup.show();
