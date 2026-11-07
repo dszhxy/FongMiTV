@@ -1779,7 +1779,7 @@ public class HkArticleFragment extends Fragment implements HkArticleListModel.Ca
         android.widget.TextView tv = new android.widget.TextView(getContext());
         tv.setText(title);
         tv.setPadding(dpToPx(24), dpToPx(18), dpToPx(24), dpToPx(18));
-        loadingPopup = new Dialog(getContext(), DialogThemeHelper.getTheme());
+        loadingPopup = new android.app.Dialog(getContext(), DialogThemeHelper.getTheme());
         loadingPopup.setContentView(tv);
         loadingPopup.setCancelable(false);
         if (!skipShow) loadingPopup.show();

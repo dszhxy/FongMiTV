@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.custom.CustomWallView;
 import com.fongmi.android.tv.utils.Util;
