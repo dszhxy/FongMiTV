@@ -705,4 +705,9 @@
     <string name="setting_ui_mode_tv">電視</string>
     <string name="setting_signature">簽名狀態</string>
     <string name="setting_signature_value">v1 / v2 / v3</string>
+    <string name="setting_font_size">字體大小</string>
+    <string name="setting_font_size_0">小</string>
+    <string name="setting_font_size_1">標準</string>
+    <string name="setting_font_size_2">大</string>
+    <string name="setting_font_size_3">超大</string>
 </resources>

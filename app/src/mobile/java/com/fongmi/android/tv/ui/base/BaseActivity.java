@@ -1,4 +1,6 @@
 package com.fongmi.android.tv.ui.base;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -157,19 +159,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    /**
-     * 根据用户设置的弹窗风格应用对应AlertDialog主题
-     * 必须在super.onCreate之前调用
-     */
+    /** 全局统一 iOS 弹窗风格，忽略历史 per-style 设置。 */
     protected void applyDialogTheme() {
-        int style = Setting.getDialogStyle();
-        switch (style) {
-            case 1: setTheme(R.style.Theme_App_DialogWhite); break;
-            case 2: setTheme(R.style.Theme_App_DialogAmoled); break;
-            case 3: setTheme(R.style.Theme_App_DialogIOS); break;
-            case 4: setTheme(R.style.Theme_App_DialogNeon); break;
-            case 0:
-            default: setTheme(R.style.Theme_App_DialogClassic); break;
-        }
+        setTheme(R.style.Theme_App_DialogIOS);
+    }
+
+    /** 应用全局字体缩放：影响本 Activity 及所有子 View 的 sp 字号 */
+    @Override
+    public Resources getResources() {
+        Resources res = super.getResources();
+        Configuration config = new Configuration(res.getConfiguration());
+        config.fontScale = com.fongmi.android.tv.setting.Setting.getFontScale();
+        res.updateConfiguration(config, res.getDisplayMetrics());
+        return res;
     }
 }

@@ -205,10 +205,6 @@ public class AiProviderEditActivity extends BaseActivity {
                 Notify.show("Base URL 须以 http(s) 开头");
                 return null;
             }
-            if (TextUtils.isEmpty(apiKey)) {
-                Notify.show("请填写 API Key");
-                return null;
-            }
             if (TextUtils.isEmpty(model)) {
                 Notify.show("请填写模型名（可用\"获取\"按钮拉取）");
                 return null;

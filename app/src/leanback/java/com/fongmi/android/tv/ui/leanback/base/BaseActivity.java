@@ -111,7 +111,11 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     public Resources getResources() {
-        return hackResources(super.getResources());
+        Resources res = hackResources(super.getResources());
+        Configuration config = new Configuration(res.getConfiguration());
+        config.fontScale = Setting.getFontScale();
+        res.updateConfiguration(config, res.getDisplayMetrics());
+        return res;
     }
 
     @Override

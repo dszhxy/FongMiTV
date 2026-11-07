@@ -95,6 +95,7 @@ public class CustomWallView extends FrameLayout implements DefaultLifecycleObser
     private void load() {
         int wall = Setting.getWall();
         int type = Setting.getWallType();
+        if (wall == 0 && type == TYPE_RES) wall = Setting.getWallRandom();
         if (isBuiltIn(wall, type)) loadRes(WALL_PAPERS[wall]);
         else if (type == TYPE_VIDEO) loadVideo(FileUtil.getWall(wall));
         else if (type == TYPE_GIF) loadGif(FileUtil.getWall(wall));
@@ -177,6 +178,7 @@ public class CustomWallView extends FrameLayout implements DefaultLifecycleObser
     private int getWallColor() {
         int wall = Setting.getWall();
         int type = Setting.getWallType();
+        if (wall == 0 && type == TYPE_RES) wall = Setting.getWallRandom();
         if (isBuiltIn(wall, type)) return WALL_COLORS[wall];
         File file = FileUtil.getWallCache();
         return file.exists() ? paletteColor(file) : WALL_COLORS[1];

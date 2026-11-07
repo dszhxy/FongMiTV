@@ -89,6 +89,26 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         activity.finish();
     }
 
+    private void updateFontSizeText() {
+        int[] labels = {R.string.setting_font_size_0, R.string.setting_font_size_1, R.string.setting_font_size_2, R.string.setting_font_size_3};
+        mBinding.fontSizeText.setText(labels[com.fongmi.android.tv.setting.Setting.getFontScaleIndex()]);
+    }
+
+    private void showFontSizeDialog() {
+        CharSequence[] items = {getString(R.string.setting_font_size_0), getString(R.string.setting_font_size_1), getString(R.string.setting_font_size_2), getString(R.string.setting_font_size_3)};
+        int checked = com.fongmi.android.tv.setting.Setting.getFontScaleIndex();
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.setting_font_size)
+                .setSingleChoiceItems(items, checked, (d, which) -> {
+                    com.fongmi.android.tv.setting.Setting.putFontScaleIndex(which);
+                    d.dismiss();
+                    updateFontSizeText();
+                    requireActivity().recreate();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
     private HomeActivity getRoot() {
         return (HomeActivity) requireActivity();
     }
@@ -101,6 +121,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     @Override
     protected void initView() {
         initUiModeItem();
+        updateFontSizeText();
         EventBus.getDefault().register(this);
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
@@ -126,6 +147,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.fontSize.setOnClickListener(v -> showFontSizeDialog());
         mBinding.reset.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireActivity())
                 .setTitle(R.string.dialog_reset_app)
                 .setMessage(R.string.dialog_reset_app_data)

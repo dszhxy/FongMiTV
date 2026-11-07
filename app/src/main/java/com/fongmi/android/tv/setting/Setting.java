@@ -26,6 +26,29 @@ public class Setting {
     private static final int MIN_DIALOG_STYLE = 0;
     private static final int MAX_DIALOG_STYLE = 4;
 
+    /** 全局字体缩放：0.85 / 1.0 / 1.15 / 1.3，默认 1.0 */
+    public static float[] getFontScales() {
+        return new float[]{0.85f, 1.0f, 1.15f, 1.3f};
+    }
+
+    public static int getFontScaleIndex() {
+        return Math.clamp(Prefers.getInt("font_scale_index", 1), 0, getFontScales().length - 1);
+    }
+
+    public static void putFontScaleIndex(int index) {
+        Prefers.put("font_scale_index", Math.clamp(index, 0, getFontScales().length - 1));
+    }
+
+    public static float getFontScale() {
+        return getFontScales()[getFontScaleIndex()];
+    }
+
+    /** 供所有 Activity 的 getResources() 覆盖：影响所有 sp 字号 */
+    public static Configuration applyFontScale(Configuration config) {
+        config.fontScale = getFontScale();
+        return config;
+    }
+
     public static String getSwitch(boolean value) {
         return ResUtil.getString(value ? R.string.setting_on : R.string.setting_off);
     }
@@ -111,7 +134,12 @@ public class Setting {
     }
 
     public static int getWall() {
-        return Math.clamp(Prefers.getInt("wall", 1), MIN_WALL, MAX_WALL);
+        return Math.clamp(Prefers.getInt("wall", 0), MIN_WALL, MAX_WALL);
+    }
+
+    /** 内置壁纸随机：每次刷新取 1..MAX_WALL 中的随机一张，不改变用户保存的设置 */
+    public static int getWallRandom() {
+        return 1 + new java.util.Random().nextInt(Math.max(1, MAX_WALL));
     }
 
     public static void putWall(int wall) {
@@ -151,7 +179,7 @@ public class Setting {
     }
 
     public static int getDialogStyle() {
-        return Prefers.getInt("dialog_style", 0);
+        return 3; // 全局统一 iOS 弹窗风格
     }
 
     public static void putDialogStyle(int style) {

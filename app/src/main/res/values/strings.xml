@@ -717,4 +717,9 @@
     <string name="search_no_result">No result</string>
     <string name="setting_signature">Signature</string>
     <string name="setting_signature_value">v1 / v2 / v3</string>
+    <string name="setting_font_size">Font size</string>
+    <string name="setting_font_size_0">Small</string>
+    <string name="setting_font_size_1">Standard</string>
+    <string name="setting_font_size_2">Large</string>
+    <string name="setting_font_size_3">Extra large</string>
 </resources>

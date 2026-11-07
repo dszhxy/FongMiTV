@@ -84,6 +84,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
+        mBinding.uiModeText.setText(com.fongmi.android.tv.ui.UiMode.isLeanback() ? R.string.setting_ui_mode_tv : R.string.setting_ui_mode_mobile);
         mBinding.aboutText.setText((com.fongmi.android.tv.ui.UiMode.isLeanback() ? "leanback" : "mobile"));
         mBinding.proxyText.setText(TextUtils.isEmpty(Setting.getProxy()) ? getString(R.string.setting_proxy_none) : Setting.getProxy());
         mBinding.backupText.setText((backup = ResUtil.getStringArray(R.array.select_backup))[Setting.getBackupMode()]);
@@ -116,6 +117,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
         mBinding.about.setOnClickListener(this::onAbout);
+        mBinding.uiMode.setOnClickListener(this::onUiMode);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
         mBinding.vodHome.setOnClickListener(this::onVodHome);
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
@@ -341,6 +343,14 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
                 Notify.show(R.string.restore_fail);
             }
         }).show(this));
+    }
+
+    private void onUiMode(View view) {
+        boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
+        com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
+        startActivity(new Intent(this, com.fongmi.android.tv.ui.activity.LauncherActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+        finish();
     }
 
     private void initConfig() {
