@@ -41,6 +41,36 @@ public final class WallPickerDialog {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(pad, pad / 2, pad, 0);
         AlertDialog[] ref = new AlertDialog[1];
+
+        // 「随机」选项：写 wall=0，CustomWallView 每次冷启动取一张内置壁纸
+        LinearLayout randomLine = new LinearLayout(activity);
+        randomLine.setOrientation(LinearLayout.HORIZONTAL);
+        randomLine.setPadding(gap, gap, gap, 0);
+        TextView randomTv = new TextView(activity);
+        randomTv.setText(R.string.wall_random);
+        randomTv.setTextColor(android.graphics.Color.WHITE);
+        randomTv.setTextSize(15);
+        randomTv.setGravity(Gravity.CENTER);
+        randomTv.setPadding(dp(activity, 12), dp(activity, 12), dp(activity, 12), dp(activity, 12));
+        GradientDrawable randomBg = new GradientDrawable();
+        randomBg.setColor(0x66000000);
+        randomBg.setCornerRadius(dp(activity, 12));
+        randomBg.setStroke(dp(activity, 1), 0x33FFFFFF);
+        randomTv.setBackground(randomBg);
+        LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(0, dp(activity, 44), 1);
+        randomTv.setLayoutParams(rlp);
+        randomTv.setClickable(true);
+        randomTv.setOnClickListener(v -> {
+            Setting.putWall(0);
+            Setting.putWallType(0);
+            Setting.resetWallRandom();
+            com.fongmi.android.tv.event.ConfigEvent.wall();
+            if (listener != null) listener.onPick(0);
+            if (ref[0] != null) ref[0].dismiss();
+        });
+        randomLine.addView(randomTv);
+        root.addView(randomLine);
+
         for (int row = 0; row < 2; row++) {
             LinearLayout line = new LinearLayout(activity);
             line.setOrientation(LinearLayout.HORIZONTAL);

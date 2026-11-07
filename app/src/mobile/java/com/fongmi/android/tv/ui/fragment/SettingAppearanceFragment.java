@@ -88,7 +88,7 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
 
     private void setWallDefault(View view) {
         WallPickerDialog.show(requireActivity(), wall ->
-                mBinding.wallDefaultText.setText(getString(R.string.wall_builtin, wall)));
+                mBinding.wallDefaultText.setText(wall == 0 ? getString(R.string.wall_random) : getString(R.string.wall_builtin, wall)));
     }
 
     private void setWallLocal(View view) {
@@ -196,12 +196,12 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     }
 
     private void updateFontSizeText() {
-        int[] labels = {R.string.setting_font_size_0, R.string.setting_font_size_1, R.string.setting_font_size_2, R.string.setting_font_size_3};
+        int[] labels = {R.string.setting_font_size_0, R.string.setting_font_size_1, R.string.setting_font_size_2, R.string.setting_font_size_3, R.string.setting_font_size_4};
         mBinding.fontSizeText.setText(labels[Setting.getFontScaleIndex()]);
     }
 
     private void showFontSizeDialog(View view) {
-        CharSequence[] items = {getString(R.string.setting_font_size_0), getString(R.string.setting_font_size_1), getString(R.string.setting_font_size_2), getString(R.string.setting_font_size_3)};
+        CharSequence[] items = {getString(R.string.setting_font_size_0), getString(R.string.setting_font_size_1), getString(R.string.setting_font_size_2), getString(R.string.setting_font_size_3), getString(R.string.setting_font_size_4)};
         int checked = Setting.getFontScaleIndex();
         new MaterialAlertDialogBuilder(requireActivity())
                 .setTitle(R.string.setting_font_size)

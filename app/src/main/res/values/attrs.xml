@@ -25,4 +25,6 @@
     <attr name="dialogInputSurface" format="reference|color" />
     <attr name="dialogDivider" format="color" />
     <attr name="dialogCardSurface" format="reference|color" />
+    <!-- 强调色按钮上的文字色：5 风格各自适配，经典深色为黄底白字 -->
+    <attr name="dialogOnAccent" format="color" />
 </resources>

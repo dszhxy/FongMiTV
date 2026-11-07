@@ -191,7 +191,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
             Config config = configs.get(i);
             names[i] = TextUtils.isEmpty(config.getName()) ? config.getUrl() : config.getName();
         }
-        // 长配置地址用自定义条目横向滚动显示，避免被系统单行布局截断
+        // 用系统单选列表保证点击可切换；自定义条目让长地址横向滚动显示
         android.widget.ArrayAdapter<String> lineAdapter = new android.widget.ArrayAdapter<String>(requireActivity(),
                 R.layout.item_line_switch, android.R.id.text1, names) {
             @NonNull
@@ -202,7 +202,6 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
                 if (tv != null) {
                     tv.setHorizontallyScrolling(true);
                     tv.setMovementMethod(new android.text.method.ScrollingMovementMethod());
-                    tv.setChecked(position == current);
                 }
                 return v;
             }
@@ -210,7 +209,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         new MaterialAlertDialogBuilder(requireActivity())
                 .setTitle(R.string.switch_line)
                 .setNegativeButton(R.string.dialog_negative, null)
-                .setAdapter(lineAdapter, (dialog, which) -> {
+                .setSingleChoiceItems(lineAdapter, current, (dialog, which) -> {
                     dialog.dismiss();
                     if (which == current) return;
                     setConfig(configs.get(which));

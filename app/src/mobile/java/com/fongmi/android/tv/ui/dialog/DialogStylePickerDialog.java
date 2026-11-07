@@ -31,6 +31,8 @@ public final class DialogStylePickerDialog {
     private static final int[] SECONDARY = {0xFFA8B0C0, 0xFF5F6368, 0xFF888888, 0xFF8E8E93, 0xFFAAAAFF};
     private static final int[] ACCENT = {0xFFD9A420, 0xFF6750A4, 0xFF4A9EFF, 0xFF007AFF, 0xFFFF006E};
     private static final int[] RADIUS = {16, 20, 20, 24, 20};
+    // 与 m_styles.xml 的 dialogOnAccent 一一对应：经典深色黄底白字
+    private static final int[] ON_ACCENT = {0xFFFFFFFF, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFFFFFFF, 0xFFFFFFFF};
 
     public interface Listener {
         void onPick(int style);
@@ -94,7 +96,7 @@ public final class DialogStylePickerDialog {
             buttons.addView(neg);
             TextView pos = new TextView(activity);
             pos.setText("确定");
-            pos.setTextColor(Color.WHITE);
+            pos.setTextColor(ON_ACCENT[i]);
             pos.setTextSize(12);
             pos.setPadding(dp(activity, 14), dp(activity, 5), dp(activity, 14), dp(activity, 5));
             GradientDrawable pb = new GradientDrawable();
@@ -123,7 +125,7 @@ public final class DialogStylePickerDialog {
             TextView check = new TextView(activity);
             check.setText("\u2713");
             check.setTextSize(22);
-            check.setTextColor(Color.WHITE);
+            check.setTextColor(ON_ACCENT[i]);
             check.setGravity(Gravity.CENTER);
             GradientDrawable cb = new GradientDrawable();
             cb.setColor(ACCENT[i]);

@@ -26,9 +26,9 @@ public class Setting {
     private static final int MIN_DIALOG_STYLE = 0;
     private static final int MAX_DIALOG_STYLE = 4;
 
-    /** 全局字体缩放：0.85 / 1.0 / 1.15 / 1.3，默认 1.0 */
+    /** 全局字体缩放：0.85 / 1.0 / 1.15 / 1.3 / 跟随系统(-1)，默认 1.0 */
     public static float[] getFontScales() {
-        return new float[]{0.85f, 1.0f, 1.15f, 1.3f};
+        return new float[]{0.85f, 1.0f, 1.15f, 1.3f, -1f};
     }
 
     public static int getFontScaleIndex() {
@@ -40,7 +40,10 @@ public class Setting {
     }
 
     public static float getFontScale() {
-        return getFontScales()[getFontScaleIndex()];
+        float v = getFontScales()[getFontScaleIndex()];
+        // -1 = 跟随系统：返回系统原始 fontScale，BaseActivity 里不再覆盖
+        if (v < 0) return android.content.res.Resources.getSystem().getConfiguration().fontScale;
+        return v;
     }
 
     /** 供所有 Activity 的 getResources() 覆盖：影响所有 sp 字号 */
