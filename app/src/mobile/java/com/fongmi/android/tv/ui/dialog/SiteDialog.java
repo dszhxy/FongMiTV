@@ -79,7 +79,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
 
     @Override
     protected MaterialAlertDialogBuilder getBuilder() {
-        return new MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_WebHTV_LightDialog).setView(getBinding().getRoot());
+        return new MaterialAlertDialogBuilder(requireActivity(), DialogThemeHelper.getTheme()).setView(getBinding().getRoot());
     }
 
     @Override
@@ -200,7 +200,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
         button.setInsetBottom(0);
         button.setPadding(ResUtil.dp2px(14), ResUtil.dp2px(6), ResUtil.dp2px(14), ResUtil.dp2px(6));
         button.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_text));
-        button.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_bg));
+        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT));
         button.setStrokeColor(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_stroke));
         button.setOnClickListener(v -> onGroupClick(group, button));
         return button;

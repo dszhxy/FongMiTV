@@ -21,7 +21,7 @@ public abstract class BaseSideSheetDialog extends AppCompatDialogFragment {
 
     @Override
     public int getTheme() {
-        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getOverlay();
+        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getStyleOverlay();
     }
 
     protected abstract ViewBinding getBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
@@ -35,6 +35,8 @@ public abstract class BaseSideSheetDialog extends AppCompatDialogFragment {
         dialog.getBehavior().setDraggable(false);
         Window window = dialog.getWindow();
         if (window == null) return dialog;
+        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        window.setDimAmount(0.32f);
         if (Util.isFullscreen(getActivity())) window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         return dialog;
     }

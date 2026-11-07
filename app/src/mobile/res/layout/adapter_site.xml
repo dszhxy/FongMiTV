@@ -12,7 +12,7 @@
         android:layout_width="8dp"
         android:layout_height="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/shape_site_health" />
+        android:background="?attr/dialogDivider" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/text"
@@ -22,10 +22,10 @@
         android:layout_weight="1"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:textColor="@color/dialog_outlined_button_text"
+        android:textColor="?attr/dialogTextPrimary"
         android:textSize="14sp"
-        app:backgroundTint="@color/dialog_outlined_button_bg"
-        app:strokeColor="@color/dialog_outlined_button_stroke"
+        app:backgroundTint="@android:color/transparent"
+        app:strokeColor="?attr/dialogDivider"
         tools:text="泥巴" />
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -35,7 +35,7 @@
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_site_search"
-        app:tint="@color/dialog_outlined_button_text" />
+        app:tint="?attr/dialogTextSecondary" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/change"
@@ -44,6 +44,6 @@
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_site_change"
-        app:tint="@color/dialog_outlined_button_text" />
+        app:tint="?attr/dialogTextSecondary" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

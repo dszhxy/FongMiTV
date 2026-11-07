@@ -41,12 +41,16 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
         dialog.setOnShowListener(d -> setSheet(dialog));
         Window window = dialog.getWindow();
         if (window == null) return dialog;
+        // 关键：Sheet 窗口铺满全屏，背景必须透明，否则会把主界面整片刷成弹窗底色。
+        // 面板自身的颜色由 content view / semantic attrs 决定，不靠 windowBackground。
+        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
         if (stableOverlay()) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            window.setDimAmount(0f);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            window.setDimAmount(0.32f);
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             WindowCompat.setDecorFitsSystemWindows(window, true);
         } else {
+            window.setDimAmount(0.32f);
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             if (Util.isFullscreen(getActivity())) window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
@@ -99,7 +103,7 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
 
     @Override
     public int getTheme() {
-        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getOverlay();
+        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getStyleOverlay();
     }
 
     protected void setBehavior(BottomSheetDialog dialog) {
