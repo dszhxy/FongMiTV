@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/dialog_glass_dark"
+    android:background="?attr/dialogSurface"
     android:padding="16dp">
 
     <LinearLayout
@@ -17,14 +17,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="AI 助手"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/dialogTextPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
         <TextView
             android:id="@+id/tv_model"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#6B7280"
+            android:textColor="?attr/dialogTextSecondary"
             android:textSize="12sp"
             android:singleLine="true"
             android:ellipsize="end"
@@ -57,7 +57,7 @@
         android:paddingEnd="14dp"
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
-        android:textColor="#E8A33D"
+        android:textColor="?attr/dialogAccent"
         android:textSize="13sp"
         android:visibility="gone" />
 
@@ -73,7 +73,7 @@
         android:paddingEnd="14dp"
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
-        android:textColor="#E8A33D"
+        android:textColor="?attr/dialogAccent"
         android:textSize="13sp"
         android:singleLine="true"
         android:ellipsize="end"
@@ -94,8 +94,8 @@
             android:background="@drawable/xc_setcard_v2"
             android:padding="12dp"
             android:hint="输入问题…"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#9CA3AF"
+            android:textColor="?attr/dialogTextPrimary"
+            android:textColorHint="?attr/dialogTextHint"
             android:textSize="15sp"
             android:maxLines="4" />
         <TextView
@@ -119,7 +119,7 @@
             android:paddingStart="18dp"
             android:paddingEnd="18dp"
             android:text="发送"
-            android:textColor="#E8A33D"
+            android:textColor="?attr/dialogAccent"
             android:textSize="15sp"
             android:textStyle="bold"
             android:clickable="true"

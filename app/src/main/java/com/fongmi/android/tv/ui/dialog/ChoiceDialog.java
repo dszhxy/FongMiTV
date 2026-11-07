@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.dialog;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Dialog;
 import android.content.res.ColorStateList;
@@ -180,7 +181,7 @@ public final class ChoiceDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(requireContext());
+        Dialog dialog = new Dialog(requireContext(), DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(createView(LayoutInflater.from(requireContext())));
         dialog.setCanceledOnTouchOutside(true);
@@ -210,14 +211,14 @@ public final class ChoiceDialog extends DialogFragment {
         if (showCancel && !multi && items != null && items.length > 0 && negative == null) negative = getString(R.string.dialog_negative);
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundResource(R.drawable.shape_dialog_glass_white_panel);
+        root.setBackgroundResource(DialogThemeHelper.surfaceRes(requireContext()));
         int vertical = dp(24);
         int horizontal = dp(actionCount() >= 3 ? 18 : 24);
         root.setPadding(horizontal, vertical, horizontal, vertical);
 
         MaterialTextView titleView = new MaterialTextView(requireContext());
         titleView.setText(title);
-        titleView.setTextColor(Color.parseColor("#202124"));
+        titleView.setTextColor(DialogThemeHelper.primaryText(requireContext()));
         titleView.setTextSize(18);
         titleView.setGravity(Gravity.CENTER_VERTICAL);
         titleView.setSingleLine(false);
@@ -232,7 +233,7 @@ public final class ChoiceDialog extends DialogFragment {
     private void addMessage(LinearLayout root) {
         MaterialTextView messageView = new MaterialTextView(requireContext());
         messageView.setText(message);
-        messageView.setTextColor(Color.parseColor("#5F6368"));
+        messageView.setTextColor(DialogThemeHelper.secondaryText(requireContext()));
         messageView.setTextSize(14);
         messageView.setLineSpacing(dp(2), 1f);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -298,16 +299,16 @@ public final class ChoiceDialog extends DialogFragment {
 
     private void styleItem(MaterialButton button, int position) {
         if (!itemEnabled(position)) {
-            button.setTextColor(ColorStateList.valueOf(Color.parseColor("#9AA0A6")));
-            button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F1F3F4")));
-            button.setStrokeColor(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
+            button.setTextColor(ColorStateList.valueOf(DialogThemeHelper.secondaryText(requireContext())));
+            button.setBackgroundTintList(ColorStateList.valueOf(DialogThemeHelper.hintText(requireContext())));
+            button.setStrokeColor(ColorStateList.valueOf(DialogThemeHelper.divider(requireContext())));
             return;
         }
         boolean on = itemSelected(position);
         boolean focused = button.isFocused();
-        int text = focused ? Color.WHITE : on ? Color.parseColor("#174EA6") : Color.parseColor("#202124");
-        int bg = focused ? Color.parseColor("#1A73E8") : on ? Color.parseColor("#E8F0FE") : Color.WHITE;
-        int stroke = focused ? Color.parseColor("#174EA6") : on ? Color.parseColor("#8AB4F8") : Color.parseColor("#DADCE0");
+        int text = focused ? DialogThemeHelper.accent(requireContext()) : on ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.primaryText(requireContext());
+        int bg = focused ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.cardSurfaceRes(requireContext()) != 0 ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.primaryText(requireContext());
+        int stroke = focused ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.divider(requireContext());
         button.setTextColor(ColorStateList.valueOf(text));
         button.setBackgroundTintList(ColorStateList.valueOf(bg));
         button.setStrokeColor(ColorStateList.valueOf(stroke));
@@ -402,9 +403,9 @@ public final class ChoiceDialog extends DialogFragment {
         button.setCornerRadius(dp(6));
         button.setFocusable(true);
         button.setFocusableInTouchMode(Util.isLeanback());
-        button.setTextColor(ContextCompat.getColorStateList(requireContext(), primary ? R.color.dialog_primary_button_text : R.color.dialog_outlined_button_text));
-        button.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), primary ? R.color.dialog_primary_button_bg : R.color.dialog_outlined_button_bg));
-        button.setStrokeColor(ContextCompat.getColorStateList(requireContext(), R.color.dialog_outlined_button_stroke));
+        button.setTextColor(android.content.res.ColorStateList.valueOf(primary ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.primaryText(requireContext())));
+        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(primary ? DialogThemeHelper.accent(requireContext()) : DialogThemeHelper.divider(requireContext())));
+        button.setStrokeColor(android.content.res.ColorStateList.valueOf(DialogThemeHelper.divider(requireContext())));
         button.setStrokeWidth(primary ? 0 : dp(1));
         button.setOnClickListener(listener);
         LinearLayout.LayoutParams params = compact ? new LinearLayout.LayoutParams(0, dp(40), 1) : new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40));

@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.api.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 import com.fongmi.android.tv.utils.ToastUtil;
 
 import android.app.Activity;
@@ -202,7 +203,7 @@ public class HkErrorUtil {
         @NonNull
         @Override
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-            Dialog dialog = new Dialog(requireContext());
+            Dialog dialog = new Dialog(requireContext(), DialogThemeHelper.getTheme());
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_hk_error_bottom, null);
             dialog.setContentView(view);

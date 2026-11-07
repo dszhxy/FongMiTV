@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Activity;
 import android.content.Context;
@@ -167,7 +168,7 @@ public class HkListActivity extends AppCompatActivity
                 root.addView(box, new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-                hkLoadingDialog = new android.app.Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
+                hkLoadingDialog = new android.app.Dialog(this, DialogThemeHelper.getTranslucentTheme());
                 hkLoadingDialog.setContentView(root);
                 hkLoadingDialog.setCancelable(true);
                 hkLoadingDialog.setCanceledOnTouchOutside(true);

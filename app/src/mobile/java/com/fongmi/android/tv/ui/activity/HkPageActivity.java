@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.activity;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 import com.fongmi.android.tv.utils.ToastUtil;
 
 import android.app.Activity;
@@ -3015,7 +3016,7 @@ public class HkPageActivity extends BaseActivity {
         final String oldTitle = rule.getTitle();
         final Map<String, EditText> fields = new HashMap<>();
 
-        final Dialog dialog = new Dialog(this);
+        final Dialog dialog = new Dialog(this, DialogThemeHelper.getTheme());
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(0x00000000);
@@ -3358,7 +3359,7 @@ public class HkPageActivity extends BaseActivity {
                 root.addView(box, new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-                hkLoadingDialog = new android.app.Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
+                hkLoadingDialog = new android.app.Dialog(this, DialogThemeHelper.getTranslucentTheme());
                 hkLoadingDialog.setContentView(root);
                 // 对齐 XPopup 默认：dismissOnTouchOutside/dismissOnBackPressed 均为 true
                 hkLoadingDialog.setCancelable(true);

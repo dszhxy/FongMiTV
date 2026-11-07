@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.leanback.dialog;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Dialog;
 import android.graphics.Color;
@@ -97,7 +98,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(requireActivity());
+        Dialog dialog = new Dialog(requireActivity(), DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(getBinding().getRoot());
         initView();
@@ -111,7 +112,7 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
         binding = TvDialogSiteBinding.inflate(activity.getLayoutInflater());
         log("inflate end cost=%sms", cost(start));
         long dialogStart = System.currentTimeMillis();
-        directDialog = new Dialog(activity);
+        directDialog = new Dialog(activity, DialogThemeHelper.getTheme());
         directDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         directDialog.setContentView(binding.getRoot());
         log("dialog content ready cost=%sms total=%sms", cost(dialogStart), cost());

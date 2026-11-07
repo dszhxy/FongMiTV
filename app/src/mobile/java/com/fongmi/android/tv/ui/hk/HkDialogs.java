@@ -124,25 +124,21 @@ public class HkDialogs extends AlertDialog.Builder {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         HkDialogs b = new HkDialogs(context);
+        final android.content.Context themed = new android.view.ContextThemeWrapper(context, com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme());
         if (title != null) b.setTitle(title);
         if (negativeText != null) b.setNegativeButton(negativeText, (d, w) -> d.dismiss());
         final AlertDialog[] holder = new AlertDialog[1];
         AlertDialog dialog = b.setView(scroll).create();
         holder[0] = dialog;
         for (int i = 0; i < items.length; i++) {
-            TextView tv = new TextView(context);
+            TextView tv = new TextView(themed);
             tv.setText(items[i]);
-            int s2 = com.fongmi.android.tv.setting.Setting.getDialogStyle();
-            boolean lightBg = (s2 == 1 || s2 == 3);
             tv.setTextColor(i == selectedIndex
-                    ? (lightBg ? 0xFF6750A4 : 0xFFD9A420)
-                    : (lightBg ? 0xFF101216 : 0xFFE8E8F0));
+                    ? com.fongmi.android.tv.ui.dialog.DialogThemeHelper.accent(themed)
+                    : com.fongmi.android.tv.ui.dialog.DialogThemeHelper.primaryText(themed));
             tv.setTextSize(16);
             tv.setGravity(Gravity.CENTER);
-            int s = com.fongmi.android.tv.setting.Setting.getDialogStyle();
-            tv.setBackgroundResource(s == 1 || s == 3 ? R.drawable.dialog_option_card_light
-                    : s == 0 ? R.drawable.dialog_option_card_dark
-                    : R.drawable.dialog_option_card_dark); // 暗色/霓虹都用深色卡片
+            tv.setBackgroundResource(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.cardSurfaceRes(themed));
             tv.setPadding(dp16, dp14, dp16, dp14);
             final int which = i;
             tv.setOnClickListener(v -> {

@@ -97,6 +97,11 @@ public abstract class BaseBottomSheetDialog extends BottomSheetDialogFragment {
         setBehavior(dialog);
     }
 
+    @Override
+    public int getTheme() {
+        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getOverlay();
+    }
+
     protected void setBehavior(BottomSheetDialog dialog) {
         FrameLayout sheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         if (sheet == null) return;

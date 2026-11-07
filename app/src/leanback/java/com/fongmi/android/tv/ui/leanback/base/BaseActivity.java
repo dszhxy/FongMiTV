@@ -39,6 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applyDialogTheme();
         enableDynamicColor();
         super.onCreate(savedInstanceState);
         setContentView(getBinding().getRoot());
@@ -54,6 +55,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.setContentView(view);
         if (!customWall()) return;
         ((ViewGroup) findViewById(android.R.id.content)).addView(new CustomWallView(this, null), 0, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+    }
+
+    /** 按用户选择的弹窗风格应用主题（电视端与手机端统一） */
+    protected void applyDialogTheme() {
+        switch (com.fongmi.android.tv.setting.Setting.getDialogStyle()) {
+            case 0: setTheme(R.style.Theme_App_DialogClassic); break;
+            case 1: setTheme(R.style.Theme_App_DialogWhite); break;
+            case 2: setTheme(R.style.Theme_App_DialogAmoled); break;
+            case 4: setTheme(R.style.Theme_App_DialogNeon); break;
+            case 3:
+            default: setTheme(R.style.Theme_App_DialogIOS); break;
+        }
     }
 
     protected FragmentActivity getActivity() {

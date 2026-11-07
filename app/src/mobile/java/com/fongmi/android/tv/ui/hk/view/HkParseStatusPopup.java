@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.hk.view;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -88,7 +89,7 @@ public class HkParseStatusPopup {
         adapter = new HkParseStatusAdapter(context, sources);
         recyclerView.setAdapter(adapter);
 
-        dialog = new Dialog(context);
+        dialog = new Dialog(context, DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(root);
         Window window = dialog.getWindow();

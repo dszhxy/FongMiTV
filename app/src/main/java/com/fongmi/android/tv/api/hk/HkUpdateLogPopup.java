@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.api.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -35,7 +36,7 @@ public class HkUpdateLogPopup {
         List<VersionLog> logs = parse(jsonData);
         if (logs.isEmpty()) return;
 
-        Dialog dialog = new Dialog(activity);
+        Dialog dialog = new Dialog(activity, DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         View view = LayoutInflater.from(activity).inflate(R.layout.dialog_hk_update_log, null);
         dialog.setContentView(view);
@@ -57,7 +58,7 @@ public class HkUpdateLogPopup {
             TextView titleView = new TextView(activity);
             titleView.setText(log.title);
             titleView.setTextSize(16);
-            titleView.setTextColor(0xFFF2F4F8);
+            titleView.setTextColor(DialogThemeHelper.primaryText(activity));
             titleView.getPaint().setFakeBoldText(true);
             LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -69,7 +70,7 @@ public class HkUpdateLogPopup {
                 TextView recordView = new TextView(activity);
                 recordView.setText("• " + record);
                 recordView.setTextSize(14);
-                recordView.setTextColor(0xFFA8B0C0);
+                recordView.setTextColor(DialogThemeHelper.secondaryText(activity));
                 recordView.setLineSpacing(dp(2), 1.0f);
                 LinearLayout.LayoutParams recordLp = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);

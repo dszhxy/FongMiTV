@@ -19,6 +19,11 @@ import com.google.android.material.sidesheet.SideSheetDialog;
 
 public abstract class BaseSideSheetDialog extends AppCompatDialogFragment {
 
+    @Override
+    public int getTheme() {
+        return com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getOverlay();
+    }
+
     protected abstract ViewBinding getBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
 
     protected abstract int getWidth();

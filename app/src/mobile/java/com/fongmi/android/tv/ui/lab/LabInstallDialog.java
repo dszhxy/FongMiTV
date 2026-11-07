@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.lab;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -31,7 +32,7 @@ public final class LabInstallDialog {
 
     /** 基础深底 Dialog：透明窗＋居中面板 */
     private static Dialog base(Activity a) {
-        Dialog d = new Dialog(a);
+        Dialog d = new Dialog(a, DialogThemeHelper.getTheme());
         d.requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window w = d.getWindow();
         if (w != null) {

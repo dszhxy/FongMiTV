@@ -16,4 +16,13 @@
     <declare-styleable name="AlignTextView">
         <attr name="align" />
     </declare-styleable>
+    <!-- ========== 统一弹窗语义色：5 种风格各自赋值，所有弹窗(含自绘裸 Dialog)引用 ========== -->
+    <attr name="dialogSurface" format="reference|color" />
+    <attr name="dialogTextPrimary" format="color" />
+    <attr name="dialogTextSecondary" format="color" />
+    <attr name="dialogTextHint" format="color" />
+    <attr name="dialogAccent" format="color" />
+    <attr name="dialogInputSurface" format="reference|color" />
+    <attr name="dialogDivider" format="color" />
+    <attr name="dialogCardSurface" format="reference|color" />
 </resources>

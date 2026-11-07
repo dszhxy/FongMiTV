@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
@@ -1778,7 +1779,7 @@ public class HkArticleFragment extends Fragment implements HkArticleListModel.Ca
         android.widget.TextView tv = new android.widget.TextView(getContext());
         tv.setText(title);
         tv.setPadding(dpToPx(24), dpToPx(18), dpToPx(24), dpToPx(18));
-        loadingPopup = new android.app.Dialog(getContext());
+        loadingPopup = new Dialog(getContext(), DialogThemeHelper.getTheme());
         loadingPopup.setContentView(tv);
         loadingPopup.setCancelable(false);
         if (!skipShow) loadingPopup.show();

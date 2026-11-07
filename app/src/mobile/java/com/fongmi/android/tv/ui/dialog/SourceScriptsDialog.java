@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.dialog;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -41,7 +42,7 @@ public class SourceScriptsDialog extends Dialog {
     }
 
     public SourceScriptsDialog(@NonNull Context context, OnScriptSelectListener listener) {
-        super(context, android.R.style.Theme_Translucent_NoTitleBar);
+        super(context, DialogThemeHelper.getTheme());
         this.listener = listener;
         setCanceledOnTouchOutside(true);
         setCancelable(true);

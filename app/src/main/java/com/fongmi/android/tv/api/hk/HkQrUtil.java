@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.api.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 import com.fongmi.android.tv.utils.ToastUtil;
 
 import android.app.Activity;
@@ -53,19 +54,19 @@ public class HkQrUtil {
 
     /** 8.83 的 XPopup asConfirm("扫描结果", 内容, "取消", "复制") 对齐。 */
     private static void showResultDialog(Activity activity, String content) {
-        Dialog dialog = new Dialog(activity);
+        Dialog dialog = new Dialog(activity, DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         LinearLayout root = new LinearLayout(activity);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundResource(R.drawable.dialog_glass_dark);
+        root.setBackgroundResource(DialogThemeHelper.surfaceRes(activity));
         int pad = dp(activity, 16);
         root.setPadding(pad, pad, pad, pad / 2);
 
         TextView titleView = new TextView(activity);
         titleView.setText("扫描结果");
         titleView.setTextSize(17);
-        titleView.setTextColor(0xFFF2F4F8);
+        titleView.setTextColor(DialogThemeHelper.primaryText(activity));
         titleView.getPaint().setFakeBoldText(true);
         titleView.setGravity(Gravity.CENTER);
         root.addView(titleView, new LinearLayout.LayoutParams(
@@ -75,7 +76,7 @@ public class HkQrUtil {
         TextView contentView = new TextView(activity);
         contentView.setText(content);
         contentView.setTextSize(15);
-        contentView.setTextColor(0xFFA8B0C0);
+        contentView.setTextColor(DialogThemeHelper.secondaryText(activity));
         contentView.setTextIsSelectable(true);
         int cp = dp(activity, 4);
         contentView.setPadding(cp, dp(activity, 12), cp, dp(activity, 12));
@@ -86,7 +87,7 @@ public class HkQrUtil {
         root.addView(scrollView, slp);
 
         View divider = new View(activity);
-        divider.setBackgroundColor(0x33FFFFFF);
+        divider.setBackgroundColor(DialogThemeHelper.divider(activity));
         root.addView(divider, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1));
 
@@ -97,7 +98,7 @@ public class HkQrUtil {
         TextView btnCancel = new TextView(activity);
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTextColor(0xFFF2F4F8);
+        btnCancel.setTextColor(DialogThemeHelper.primaryText(activity));
         btnCancel.setGravity(Gravity.CENTER);
         btnCancel.setBackgroundResource(android.R.drawable.list_selector_background);
         int bp = dp(activity, 12);
@@ -108,7 +109,7 @@ public class HkQrUtil {
         TextView btnCopy = new TextView(activity);
         btnCopy.setText("复制");
         btnCopy.setTextSize(16);
-        btnCopy.setTextColor(0xFFF2F4F8);
+        btnCopy.setTextColor(DialogThemeHelper.accent(activity));
         btnCopy.setGravity(Gravity.CENTER);
         btnCopy.setBackgroundResource(android.R.drawable.list_selector_background);
         btnCopy.setPadding(bp * 2, bp, bp * 2, bp);

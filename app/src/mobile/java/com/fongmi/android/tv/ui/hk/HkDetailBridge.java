@@ -1,4 +1,5 @@
 package com.fongmi.android.tv.ui.hk;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 import android.app.Activity;
 import androidx.appcompat.app.AlertDialog;
@@ -1041,7 +1042,7 @@ public class HkDetailBridge implements HkArticleFragment.DetailBridge {
 
     /** 原版 CustomBottomRecyclerViewPopup 的等价实现：底部滑出、标题 + 网格列表（span = col>0?col:3）。 */
     private void showBottomList(Activity activity, String title, SelectExtra extra, SelectTwo two) {
-        Dialog dialog = new Dialog(activity);
+        Dialog dialog = new Dialog(activity, DialogThemeHelper.getTheme());
         LinearLayout root = new LinearLayout(activity);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackground(androidx.core.content.ContextCompat.getDrawable(activity, R.drawable.bg_round_all));
@@ -1086,7 +1087,7 @@ public class HkDetailBridge implements HkArticleFragment.DetailBridge {
      * 条目对应 SelectExtra.mockBookmarks() 的 Bookmark{title, dir=false, url="select://"+title, icon}。
      */
     private void showBookmarkGrid(Activity activity, String title, SelectExtra extra, SelectTwo two) {
-        Dialog dialog = new Dialog(activity);
+        Dialog dialog = new Dialog(activity, DialogThemeHelper.getTheme());
         LinearLayout root = new LinearLayout(activity);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackground(androidx.core.content.ContextCompat.getDrawable(activity, R.drawable.bg_round_all));
