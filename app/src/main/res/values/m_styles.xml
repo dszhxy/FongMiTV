@@ -19,26 +19,126 @@
     <style name="Theme.App.DialogClassic" parent="Theme.App">
         <item name="alertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/dialog_glass_dark</item>
+        <item name="dialogTextPrimary">#F2F4F8</item>
+        <item name="dialogTextSecondary">#A8B0C0</item>
+        <item name="dialogTextHint">#7A8290</item>
+        <item name="dialogAccent">#D9A420</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+        <item name="colorSurface">#1A1D24</item>
+        <item name="colorSurfaceVariant">#1A1D24</item>
+        <item name="colorOnSurface">#F2F4F8</item>
+        <item name="colorOnSurfaceVariant">#F2F4F8</item>
+        <item name="colorPrimary">#D9A420</item>
+        <item name="colorOnPrimary">#1A1D24</item>
+        <item name="android:windowBackground">@drawable/dialog_glass_dark</item>
+        <item name="android:textColorPrimary">#F2F4F8</item>
+        <item name="android:textColorSecondary">#A8B0C0</item>
+        <item name="android:colorAccent">#D9A420</item>
 </style>
 
     <style name="Theme.App.DialogWhite" parent="Theme.App">
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_white</item>
+        <item name="dialogTextPrimary">#101216</item>
+        <item name="dialogTextSecondary">#5F6368</item>
+        <item name="dialogTextHint">#9AA0A6</item>
+        <item name="dialogAccent">#6750A4</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_white</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorSurfaceVariant">#FFFFFF</item>
+        <item name="colorOnSurface">#101216</item>
+        <item name="colorOnSurfaceVariant">#101216</item>
+        <item name="colorPrimary">#6750A4</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_white</item>
+        <item name="android:textColorPrimary">#101216</item>
+        <item name="android:textColorSecondary">#5F6368</item>
+        <item name="android:colorAccent">#6750A4</item>
 </style>
 
     <style name="Theme.App.DialogAmoled" parent="Theme.App">
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_dark_amoled</item>
+        <item name="dialogTextPrimary">#F0F0F0</item>
+        <item name="dialogTextSecondary">#888888</item>
+        <item name="dialogTextHint">#666666</item>
+        <item name="dialogAccent">#4A9EFF</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_amoled</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+        <item name="colorSurface">#0A0A0A</item>
+        <item name="colorSurfaceVariant">#0A0A0A</item>
+        <item name="colorOnSurface">#F0F0F0</item>
+        <item name="colorOnSurfaceVariant">#F0F0F0</item>
+        <item name="colorPrimary">#4A9EFF</item>
+        <item name="colorOnPrimary">#0A0A0A</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_dark_amoled</item>
+        <item name="android:textColorPrimary">#F0F0F0</item>
+        <item name="android:textColorSecondary">#888888</item>
+        <item name="android:colorAccent">#4A9EFF</item>
 </style>
 
     <style name="Theme.App.DialogIOS" parent="Theme.App">
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_ios</item>
+        <item name="dialogTextPrimary">#1C1C1E</item>
+        <item name="dialogTextSecondary">#8E8E93</item>
+        <item name="dialogTextHint">#B0B0B5</item>
+        <item name="dialogAccent">#007AFF</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_ios</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+        <item name="colorSurface">#F2F2F7</item>
+        <item name="colorSurfaceVariant">#F2F2F7</item>
+        <item name="colorOnSurface">#1C1C1E</item>
+        <item name="colorOnSurfaceVariant">#1C1C1E</item>
+        <item name="colorPrimary">#007AFF</item>
+        <item name="colorOnPrimary">#F2F2F7</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_ios</item>
+        <item name="android:textColorPrimary">#1C1C1E</item>
+        <item name="android:textColorSecondary">#8E8E93</item>
+        <item name="android:colorAccent">#007AFF</item>
 </style>
 
     <style name="Theme.App.DialogNeon" parent="Theme.App">
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_neon</item>
+        <item name="dialogTextPrimary">#FFFFFF</item>
+        <item name="dialogTextSecondary">#AAAAFF</item>
+        <item name="dialogTextHint">#7777AA</item>
+        <item name="dialogAccent">#FF006E</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+        <item name="colorSurface">#101A33</item>
+        <item name="colorSurfaceVariant">#101A33</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="colorOnSurfaceVariant">#FFFFFF</item>
+        <item name="colorPrimary">#FF006E</item>
+        <item name="colorOnPrimary">#101A33</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_neon</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#AAAAFF</item>
+        <item name="android:colorAccent">#FF006E</item>
 </style>
 
     <!-- 实验室页面：与主 App 同源——透明底＋自定义壁纸，不再铺近黑底 -->

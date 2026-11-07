@@ -205,7 +205,7 @@ public class HkErrorUtil {
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             Dialog dialog = new Dialog(requireContext(), DialogThemeHelper.getTheme());
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_hk_error_bottom, null);
+            View view = LayoutInflater.from(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.wrap(requireContext())).inflate(R.layout.dialog_hk_error_bottom, null);
             dialog.setContentView(view);
             Window window = dialog.getWindow();
             if (window != null) {

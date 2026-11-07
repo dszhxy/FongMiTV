@@ -38,7 +38,7 @@ public class HkUpdateLogPopup {
 
         Dialog dialog = new Dialog(activity, DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_hk_update_log, null);
+        View view = LayoutInflater.from(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.wrap(activity)).inflate(R.layout.dialog_hk_update_log, null);
         dialog.setContentView(view);
         Window window = dialog.getWindow();
         if (window != null) {

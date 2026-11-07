@@ -22,6 +22,7 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseFragment;
+import com.fongmi.android.tv.ui.dialog.DialogStylePickerDialog;
 import com.fongmi.android.tv.ui.dialog.ThemeDialog;
 import com.fongmi.android.tv.ui.dialog.WallPickerDialog;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -194,8 +195,6 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
         ThemeDialog.show(this);
     }
 
-    private static final String[] DIALOG_STYLE_NAMES = {"经典深色", "纯白 Material", "暗色模式", "iOS 风格", "霓虹渐变"};
-
     private void updateFontSizeText() {
         int[] labels = {R.string.setting_font_size_0, R.string.setting_font_size_1, R.string.setting_font_size_2, R.string.setting_font_size_3};
         mBinding.fontSizeText.setText(labels[Setting.getFontScaleIndex()]);
@@ -217,20 +216,11 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     }
 
     private void setDialogStyle(View view) {
-        int current = Setting.getDialogStyle();
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle("选择弹窗风格").setNegativeButton(R.string.dialog_negative, null).setSingleChoiceItems(DIALOG_STYLE_NAMES, current, (dialog, which) -> {
-            Setting.putDialogStyle(which);
-            mBinding.dialogStyleText.setText(DIALOG_STYLE_NAMES[which]);
-            dialog.dismiss();
-            // 全局刷新主题：所有Activity都会recreate应用新风格
-            RefreshEvent.theme();
-        }).show();
+        DialogStylePickerDialog.show(requireActivity(), style ->
+                mBinding.dialogStyleText.setText(DialogStylePickerDialog.nameOf(style)));
     }
-
     private String getDialogStyleName() {
-        int style = Setting.getDialogStyle();
-        if (style >= 0 && style < DIALOG_STYLE_NAMES.length) return DIALOG_STYLE_NAMES[style];
-        return DIALOG_STYLE_NAMES[0];
+        return DialogStylePickerDialog.nameOf(Setting.getDialogStyle());
     }
 
     @Override

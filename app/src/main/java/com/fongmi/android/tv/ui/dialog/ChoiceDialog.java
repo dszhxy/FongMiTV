@@ -183,7 +183,7 @@ public final class ChoiceDialog extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         Dialog dialog = new Dialog(requireContext(), DialogThemeHelper.getTheme());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(createView(LayoutInflater.from(requireContext())));
+        dialog.setContentView(createView(LayoutInflater.from(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.wrap(requireContext()))));
         dialog.setCanceledOnTouchOutside(true);
         return dialog;
     }

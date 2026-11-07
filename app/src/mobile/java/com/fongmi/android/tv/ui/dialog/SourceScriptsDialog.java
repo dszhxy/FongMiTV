@@ -55,7 +55,7 @@ public class SourceScriptsDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_source_scripts);
+        setContentView(android.view.LayoutInflater.from(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.wrap(getContext())).inflate(R.layout.dialog_source_scripts, null));
         if (getWindow() != null) getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
         try {
             if (getWindow() != null) {

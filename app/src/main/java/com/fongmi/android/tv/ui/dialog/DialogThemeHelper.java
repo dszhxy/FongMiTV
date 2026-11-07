@@ -53,16 +53,26 @@ public final class DialogThemeHelper {
     }
 
     /** 取当前弹窗主题下的语义色（Java 代码里替代 Color.parseColor） */
+    /** 强制用当前弹窗风格主题解析，避免 Activity 主题（Theme.Splash 等）里没有语义色 */
+    private static Context themed(Context ctx) {
+        return new android.view.ContextThemeWrapper(ctx, getTheme());
+    }
+
     @ColorInt public static int resolveColor(Context ctx, @AttrRes int attr) {
         TypedValue tv = new TypedValue();
-        if (ctx.getTheme().resolveAttribute(attr, tv, true)) return tv.data;
+        if (themed(ctx).getTheme().resolveAttribute(attr, tv, true)) return tv.data;
         return 0xFF888888;
     }
 
     public static int resolveResId(Context ctx, @AttrRes int attr) {
         TypedValue tv = new TypedValue();
-        if (ctx.getTheme().resolveAttribute(attr, tv, true)) return tv.resourceId;
+        if (themed(ctx).getTheme().resolveAttribute(attr, tv, true)) return tv.resourceId;
         return 0;
+    }
+
+    /** 给自绘弹窗 inflate 布局用：返回带弹窗主题、且 ?attr 可解析的 Context */
+    public static Context wrap(Context ctx) {
+        return themed(ctx);
     }
 
     @ColorInt public static int primaryText(Context c)   { return resolveColor(c, R.attr.dialogTextPrimary); }
