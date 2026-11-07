@@ -7,6 +7,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.databinding.TvDialogUpdateBinding;
 import com.fongmi.android.tv.impl.UpdateListener;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;

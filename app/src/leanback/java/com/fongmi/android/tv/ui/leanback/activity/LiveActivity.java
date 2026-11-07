@@ -52,6 +52,7 @@ import com.fongmi.android.tv.player.extractor.Source;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.setting.LiveSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
+import com.fongmi.android.tv.ui.activity.PlaybackActivity;
 import com.fongmi.android.tv.ui.leanback.adapter.ChannelAdapter;
 import com.fongmi.android.tv.ui.leanback.adapter.EpgDataAdapter;
 import com.fongmi.android.tv.ui.leanback.adapter.GroupAdapter;

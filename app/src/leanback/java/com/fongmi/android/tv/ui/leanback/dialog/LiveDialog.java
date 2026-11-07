@@ -7,6 +7,7 @@ import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.databinding.TvDialogLiveBinding;
 import com.fongmi.android.tv.impl.LiveListener;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.adapter.LiveAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

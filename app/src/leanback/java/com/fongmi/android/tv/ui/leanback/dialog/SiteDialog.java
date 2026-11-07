@@ -25,6 +25,7 @@ import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.databinding.TvDialogSiteBinding;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.SiteListener;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.adapter.SiteAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.Notify;

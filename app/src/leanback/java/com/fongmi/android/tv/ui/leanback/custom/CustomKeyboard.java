@@ -2,6 +2,7 @@ package com.fongmi.android.tv.ui.leanback.custom;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.TvActivitySearchBinding;
+import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.ui.leanback.adapter.KeyboardAdapter;
 
 public class CustomKeyboard implements KeyboardAdapter.OnClickListener {

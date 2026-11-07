@@ -64,6 +64,7 @@ import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.setting.DanmakuSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.SpeedSetting;
+import com.fongmi.android.tv.ui.activity.PlaybackActivity;
 import com.fongmi.android.tv.ui.leanback.adapter.ArrayAdapter;
 import com.fongmi.android.tv.ui.leanback.adapter.EpisodeAdapter;
 import com.fongmi.android.tv.ui.leanback.adapter.FlagAdapter;

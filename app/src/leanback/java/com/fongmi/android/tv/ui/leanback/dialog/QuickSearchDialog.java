@@ -19,6 +19,7 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.TvDialogQuickSearchBinding;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.adapter.QuickAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.ResUtil;

@@ -9,6 +9,7 @@ import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.databinding.TvDialogHistoryBinding;
 import com.fongmi.android.tv.impl.ConfigListener;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.adapter.ConfigAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

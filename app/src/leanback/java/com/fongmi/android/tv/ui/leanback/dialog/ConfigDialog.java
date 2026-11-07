@@ -20,6 +20,7 @@ import com.fongmi.android.tv.databinding.TvDialogConfigBinding;
 import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.server.Server;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.custom.CustomTextListener;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.ui.leanback.utils.QRCode;

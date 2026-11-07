@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fongmi.android.tv.ui.adapter.BaseDiffAdapter;
 import com.fongmi.android.tv.ui.leanback.Product;
 import com.fongmi.android.tv.bean.Keep;
 import com.fongmi.android.tv.databinding.TvAdapterVodBinding;

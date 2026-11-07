@@ -15,6 +15,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.databinding.TvDialogPassBinding;
 import com.fongmi.android.tv.impl.PassListener;
+import com.fongmi.android.tv.ui.dialog.BaseBottomSheetDialog;
 import com.fongmi.android.tv.utils.ResUtil;
 
 public class PassDialog extends BaseBottomSheetDialog {

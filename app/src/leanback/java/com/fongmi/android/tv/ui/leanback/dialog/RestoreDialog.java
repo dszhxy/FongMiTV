@@ -6,6 +6,7 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.databinding.TvDialogRestoreBinding;
 import com.fongmi.android.tv.db.BackupManager;
 import com.fongmi.android.tv.impl.Callback;
+import com.fongmi.android.tv.ui.dialog.BaseAlertDialog;
 import com.fongmi.android.tv.ui.leanback.adapter.RestoreAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
