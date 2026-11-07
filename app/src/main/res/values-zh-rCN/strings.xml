@@ -3,6 +3,10 @@
     <!-- App -->
     <string name="app_name">Ys影视</string>
     <string name="setting_personal">个性设置</string>
+    <string name="setting_ui_mode">界面模式</string>
+    <string name="setting_ui_mode_mobile">手机界面</string>
+    <string name="setting_ui_mode_tv">电视界面</string>
+    <string name="setting_ui_mode_restart">已切换界面，点击重启生效</string>
 
     <!-- Live -->
     <string name="live_pass">密码</string>

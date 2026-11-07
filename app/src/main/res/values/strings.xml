@@ -2,6 +2,10 @@
 
     <!-- App -->
     <string name="app_name">Ys影视</string>
+    <string name="setting_ui_mode">UI Mode</string>
+    <string name="setting_ui_mode_mobile">Mobile UI</string>
+    <string name="setting_ui_mode_tv">TV UI</string>
+    <string name="setting_ui_mode_restart">Switched UI, tap to restart</string>
     <string name="setting_personal">Personal settings</string>
 
     <!-- Live -->

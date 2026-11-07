@@ -60,12 +60,55 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private int getDohIndex() {
         return Math.max(0, VodConfig.get().getDoh().indexOf(Doh.objectFrom(Setting.getDoh())));
     }
-
     private String[] getDohList() {
         List<String> list = new ArrayList<>();
         for (Doh item : VodConfig.get().getDoh()) list.add(item.getName());
         return list.toArray(new String[0]);
     }
+
+    /**
+     * 初始化“界面模式”设置项：在设置-数据分组里显示手机/电视切换。
+     */
+    private void initUiModeItem() {
+        updateUiModeText();
+        mBinding.uiMode.setOnClickListener(v -> showUiModeDialog());
+    }
+
+    private void updateUiModeText() {
+        mBinding.uiModeText.setText(com.fongmi.android.tv.ui.UiMode.isLeanback() ?
+                getString(R.string.setting_ui_mode_tv) : getString(R.string.setting_ui_mode_mobile));
+    }
+
+    private void showUiModeDialog() {
+        String[] items = new String[]{getString(R.string.setting_ui_mode_mobile), getString(R.string.setting_ui_mode_tv)};
+        int checked = com.fongmi.android.tv.ui.UiMode.isLeanback() ? 1 : 0;
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.setting_ui_mode)
+                .setSingleChoiceItems(items, checked, (d, which) -> {
+                    com.fongmi.android.tv.ui.UiMode.set(which == 1 ? com.fongmi.android.tv.ui.UiMode.LEANBACK : com.fongmi.android.tv.ui.UiMode.MOBILE);
+                    d.dismiss();
+                    updateUiModeText();
+                    confirmRestartForUiMode();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void confirmRestartForUiMode() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setMessage(R.string.setting_ui_mode_restart)
+                .setPositiveButton(R.string.dialog_positive, (d, w) -> restartToLauncher())
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void restartToLauncher() {
+        android.app.Activity activity = requireActivity();
+        activity.startActivity(new android.content.Intent(activity, com.fongmi.android.tv.ui.activity.LauncherActivity.class)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+        activity.finish();
+    }
+
 
     private HomeActivity getRoot() {
         return (HomeActivity) requireActivity();
@@ -78,6 +121,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     @Override
     protected void initView() {
+        initUiModeItem();
         EventBus.getDefault().register(this);
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
