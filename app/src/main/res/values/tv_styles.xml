@@ -37,7 +37,7 @@
         <item name="android:shadowRadius">2</item>
     </style>
 
-    <style name="Tv.Control">
+    <style name="TvControl">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/selector_chip</item>
