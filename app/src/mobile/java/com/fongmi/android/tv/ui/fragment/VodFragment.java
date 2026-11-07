@@ -108,6 +108,8 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.typeMore.setOnClickListener(this::onTypeAll);
         mBinding.filter.setOnClickListener(this::onFilter);
         mBinding.filter.setOnLongClickListener(this::onLink);
+        // 溢出菜单（我的收藏 / 最近观看）跟随当前弹窗风格，不再走系统默认浅色
+        mBinding.toolbar.setPopupTheme(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme());
         mBinding.toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
         mBinding.appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             float factor = Math.abs(verticalOffset * 1f / appBarLayout.getTotalScrollRange());
