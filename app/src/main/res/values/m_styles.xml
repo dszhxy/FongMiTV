@@ -34,6 +34,7 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
             <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#262A32</item>
 </style>
 
     <style name="ThemeOverlay_DialogStyle_White">
@@ -51,6 +52,7 @@
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
             <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#F5F5F7</item>
 </style>
 
     <style name="ThemeOverlay_DialogStyle_Amoled">
@@ -68,6 +70,7 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
             <item name="dialogOnAccent">#FF0A0A0A</item>
+        <item name="dialogCardColor">#141414</item>
 </style>
 
     <style name="ThemeOverlay_DialogStyle_IOS">
@@ -85,6 +88,7 @@
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
             <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#FFFFFF</item>
 </style>
 
     <style name="ThemeOverlay_DialogStyle_Neon">
@@ -102,7 +106,58 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
             <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#1B2450</item>
 </style>
+
+    <style name="Unified.DialogButton.Classic" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/bg_unified_dialog_btn_classic</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
+
+    <style name="Unified.DialogButton.White" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/bg_unified_dialog_btn_white</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
+
+    <style name="Unified.DialogButton.Amoled" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/bg_unified_dialog_btn_amoled</item>
+        <item name="android:textColor">#FF0A0A0A</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
+
+    <style name="Unified.DialogButton.IOS" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/bg_unified_dialog_btn_ios</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
+
+    <style name="Unified.DialogButton.Neon" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:background">@drawable/bg_unified_dialog_btn_neon</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+    </style>
 
     <!-- ========== 5种弹窗风格的App主题变体 ==========
          警告：这些 style 会被 BaseActivity.applyDialogTheme() 通过 setTheme() 用作【整个 Activity 主题】。
@@ -125,6 +180,7 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#262A32</item>
 </style>
 
     <style name="Theme.App.DialogWhite" parent="Theme.App">
@@ -141,6 +197,7 @@
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#F5F5F7</item>
 </style>
 
     <style name="Theme.App.DialogAmoled" parent="Theme.App">
@@ -157,6 +214,7 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
         <item name="dialogOnAccent">#FF0A0A0A</item>
+        <item name="dialogCardColor">#141414</item>
 </style>
 
     <style name="Theme.App.DialogIOS" parent="Theme.App">
@@ -173,6 +231,7 @@
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#FFFFFF</item>
 </style>
 
     <style name="Theme.App.DialogNeon" parent="Theme.App">
@@ -189,6 +248,7 @@
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
+        <item name="dialogCardColor">#1B2450</item>
 </style>
 
     <!-- 实验室页面：与主 App 同源——透明底＋自定义壁纸，不再铺近黑底 -->
@@ -413,17 +473,19 @@
         <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Classic</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Classic</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Classic</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Classic</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Classic</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Classic</item>
         <item name="colorSurface">#1A1D24</item>
         <item name="colorSurfaceVariant">#1A1D24</item>
         <item name="colorOnSurface">#F2F4F8</item>
         <item name="colorOnSurfaceVariant">#F2F4F8</item>
         <item name="colorPrimary">#D9A420</item>
+        <item name="dialogCardColor">#262A32</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
 </style>
 
     
@@ -469,12 +531,12 @@
         <item name="android:colorAccent">#6750A4</item>
         <item name="android:editTextStyle">@style/XingChen.DialogEditText.White</item>
         <item name="android:windowAnimationStyle">@style/HkDialogFade</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.White</item>
 
         <!-- 统一弹窗语义色 -->
         <item name="dialogSurface">@drawable/bg_dialog_white</item>
@@ -485,17 +547,19 @@
         <item name="dialogInputSurface">@drawable/bg_dialog_input_white</item>
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.White</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.White</item>
         <item name="colorSurface">#FFFFFF</item>
         <item name="colorSurfaceVariant">#FFFFFF</item>
         <item name="colorOnSurface">#101216</item>
         <item name="colorOnSurfaceVariant">#101216</item>
         <item name="colorPrimary">#6750A4</item>
+        <item name="dialogCardColor">#F5F5F7</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
 </style>
 
     
@@ -530,17 +594,19 @@
         <item name="dialogInputSurface">@drawable/bg_dialog_input_amoled</item>
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Amoled</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Amoled</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Amoled</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Amoled</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Amoled</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Amoled</item>
         <item name="colorSurface">#0A0A0A</item>
         <item name="colorSurfaceVariant">#0A0A0A</item>
         <item name="colorOnSurface">#F0F0F0</item>
         <item name="colorOnSurfaceVariant">#F0F0F0</item>
         <item name="colorPrimary">#4A9EFF</item>
+        <item name="dialogCardColor">#141414</item>
+        <item name="dialogOnAccent">#FF0A0A0A</item>
 </style>
 
     
@@ -587,17 +653,19 @@
         <item name="dialogInputSurface">@drawable/bg_dialog_input_ios</item>
         <item name="dialogDivider">#1F000000</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.IOS</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.IOS</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.IOS</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.IOS</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.IOS</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.IOS</item>
         <item name="colorSurface">#F2F2F7</item>
         <item name="colorSurfaceVariant">#F2F2F7</item>
         <item name="colorOnSurface">#1C1C1E</item>
         <item name="colorOnSurfaceVariant">#1C1C1E</item>
         <item name="colorPrimary">#007AFF</item>
+        <item name="dialogCardColor">#FFFFFF</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
 </style>
 
     
@@ -632,17 +700,19 @@
         <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
         <item name="dialogDivider">#33FFFFFF</item>
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
-        <item name="buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/XingChen.DialogButton.IOS</item>
-        <item name="android:buttonBarNeutralButtonStyle">@style/XingChen.DialogButton.IOS</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Neon</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Neon</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Neon</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Unified.DialogButton.Neon</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Unified.DialogButton.Neon</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Unified.DialogButton.Neon</item>
         <item name="colorSurface">#101A33</item>
         <item name="colorSurfaceVariant">#101A33</item>
         <item name="colorOnSurface">#FFFFFF</item>
         <item name="colorOnSurfaceVariant">#FFFFFF</item>
         <item name="colorPrimary">#FF006E</item>
+        <item name="dialogCardColor">#1B2450</item>
+        <item name="dialogOnAccent">#FFFFFFFF</item>
 </style>
 
     

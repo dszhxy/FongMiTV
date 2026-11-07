@@ -27,4 +27,6 @@
     <attr name="dialogCardSurface" format="reference|color" />
     <!-- 强调色按钮上的文字色：5 风格各自适配，经典深色为黄底白字 -->
     <attr name="dialogOnAccent" format="color" />
+    <!-- 纯色卡片底：给 shape 的 solid / backgroundTint 用，避免把 drawable 型 attr 当颜色 -->
+    <attr name="dialogCardColor" format="color" />
 </resources>

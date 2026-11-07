@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 切换线路条目：长地址横向滚动显示，不截断 -->
-<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 切换线路条目：根必须是 Checkable，setSingleChoiceItems 才能派发点击；
+     长地址用 setHorizontallyScrolling + ScrollingMovementMethod 横向滚动 -->
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fillViewport="true"
-    android:scrollbars="none"
-    android:overScrollMode="never">
-
-    <CheckedTextView
-        android:id="@android:id/text1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:singleLine="true"
-        android:ellipsize="none"
-        android:textColor="?attr/dialogTextPrimary"
-        android:textSize="14sp"
-        android:drawableStart="?android:attr/listChoiceIndicatorSingle"
-        android:drawablePadding="12dp" />
-</HorizontalScrollView>
+    android:minHeight="48dp"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:singleLine="true"
+    android:ellipsize="none"
+    android:textColor="?attr/dialogTextPrimary"
+    android:textSize="14sp"
+    android:drawableStart="?android:attr/listChoiceIndicatorSingle"
+    android:drawablePadding="12dp" />

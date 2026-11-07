@@ -41,7 +41,26 @@ public class ValueAdapter extends RecyclerView.Adapter<ValueAdapter.ViewHolder> 
         Value item = mItems.get(position);
         holder.binding.text.setText(item.getN());
         holder.binding.text.setSelected(item.isSelected());
+        applyStyle(holder.binding.text, item.isSelected());
         holder.binding.text.setOnClickListener(v -> onItemClick(item));
+    }
+
+    /** 选中=风格强调色实心 + dialogOnAccent 字色；未选=卡片底色 + 主字色。
+     *  用代码构造而非 selector 里写 ?attr，避免 AAPT 对 state-list 主题属性解析失败。 */
+    private void applyStyle(android.widget.TextView tv, boolean selected) {
+        android.content.Context ctx = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.wrap(tv.getContext());
+        int accent = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(ctx, com.fongmi.android.tv.R.attr.dialogAccent);
+        int onAccent = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(ctx, com.fongmi.android.tv.R.attr.dialogOnAccent);
+        int card = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(ctx, com.fongmi.android.tv.R.attr.dialogCardColor);
+        int divider = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(ctx, com.fongmi.android.tv.R.attr.dialogDivider);
+        int primary = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(ctx, com.fongmi.android.tv.R.attr.dialogTextPrimary);
+        float d = tv.getResources().getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setColor(selected ? accent : card);
+        g.setCornerRadius(16 * d);
+        if (!selected) g.setStroke(Math.max(1, (int) d), divider);
+        tv.setBackground(g);
+        tv.setTextColor(selected ? onAccent : primary);
     }
 
     private void onItemClick(Value value) {
