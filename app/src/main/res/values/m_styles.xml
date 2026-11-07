@@ -487,9 +487,6 @@
         <item name="dialogCardColor">#262A32</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
         <item name="colorSurfaceContainerHigh">#1A1D24</item>
-        <item name="colorSurfaceContainer">#1A1D24</item>
-        <item name="colorSurfaceContainerLow">#1A1D24</item>
-        <item name="colorBackground">#1A1D24</item>
 </style>
 
     
@@ -565,9 +562,6 @@
         <item name="dialogCardColor">#F5F5F7</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
         <item name="colorSurfaceContainerHigh">#FFFFFF</item>
-        <item name="colorSurfaceContainer">#FFFFFF</item>
-        <item name="colorSurfaceContainerLow">#FFFFFF</item>
-        <item name="colorBackground">#FFFFFF</item>
 </style>
 
     
@@ -616,9 +610,6 @@
         <item name="dialogCardColor">#141414</item>
         <item name="dialogOnAccent">#FF0A0A0A</item>
         <item name="colorSurfaceContainerHigh">#0A0A0A</item>
-        <item name="colorSurfaceContainer">#0A0A0A</item>
-        <item name="colorSurfaceContainerLow">#0A0A0A</item>
-        <item name="colorBackground">#0A0A0A</item>
 </style>
 
     
@@ -679,9 +670,6 @@
         <item name="dialogCardColor">#FFFFFF</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
         <item name="colorSurfaceContainerHigh">#F2F2F7</item>
-        <item name="colorSurfaceContainer">#F2F2F7</item>
-        <item name="colorSurfaceContainerLow">#F2F2F7</item>
-        <item name="colorBackground">#F2F2F7</item>
 </style>
 
     
@@ -730,9 +718,6 @@
         <item name="dialogCardColor">#1B2450</item>
         <item name="dialogOnAccent">#FFFFFFFF</item>
         <item name="colorSurfaceContainerHigh">#101A33</item>
-        <item name="colorSurfaceContainer">#101A33</item>
-        <item name="colorSurfaceContainerLow">#101A33</item>
-        <item name="colorBackground">#101A33</item>
 </style>
 
     
