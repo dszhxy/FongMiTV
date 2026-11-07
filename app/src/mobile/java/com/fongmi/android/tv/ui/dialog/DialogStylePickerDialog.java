@@ -101,8 +101,11 @@ public final class DialogStylePickerDialog {
             pb.setColor(ACCENT[i]);
             pb.setCornerRadius(dp(activity, 14));
             pos.setBackground(pb);
-            LinearLayout.LayoutParams plp = (LinearLayout.LayoutParams) pos.getLayoutParams();
+            // pos 尚未 addView，getLayoutParams() 为 null，必须显式赋值后再加入父容器
+            LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             plp.setMarginStart(dp(activity, 8));
+            pos.setLayoutParams(plp);
             buttons.addView(pos);
             card.addView(buttons);
             cell.addView(card, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -135,16 +138,20 @@ public final class DialogStylePickerDialog {
 
             cell.setOnClickListener(v -> {
                 Setting.putDialogStyle(style);
+                // 先关弹窗再 recreate，避免 Activity 重建时 dialog 窗口已失效
+                try { if (ref[0] != null) ref[0].dismiss(); } catch (Exception ignored) {}
                 if (listener != null) listener.onPick(style);
                 RefreshEvent.theme();
-                if (ref[0] != null) ref[0].dismiss();
             });
             root.addView(cell);
         }
 
+        android.widget.ScrollView scroll = new android.widget.ScrollView(activity);
+        scroll.setFillViewport(true);
+        scroll.addView(root);
         ref[0] = new MaterialAlertDialogBuilder(activity)
                 .setTitle("弹窗风格")
-                .setView(root)
+                .setView(scroll)
                 .setNegativeButton(R.string.dialog_negative, null)
                 .show();
     }

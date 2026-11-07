@@ -137,9 +137,20 @@ public class Setting {
         return Math.clamp(Prefers.getInt("wall", 0), MIN_WALL, MAX_WALL);
     }
 
-    /** 内置壁纸随机：每次刷新取 1..MAX_WALL 中的随机一张，不改变用户保存的设置 */
+    /** 进程内缓存的随机壁纸编号：每次冷启动（进程重建）换一张，
+     *  同一次使用过程中保持稳定 —— 避免进新页面 / 点模糊开关 / recreate 时反复换壁纸，
+     *  也保证 CustomWallView 的 load() 与 getWallColor() 取到同一张、取色一致。 */
+    private static int sWallRandom = 0;
+
     public static int getWallRandom() {
-        return 1 + new java.util.Random().nextInt(Math.max(1, MAX_WALL));
+        if (sWallRandom < MIN_WALL + 1 || sWallRandom > MAX_WALL)
+            sWallRandom = 1 + new java.util.Random().nextInt(Math.max(1, MAX_WALL));
+        return sWallRandom;
+    }
+
+    /** 主动重新掷一次（供「换一张」类入口调用） */
+    public static void resetWallRandom() {
+        sWallRandom = 0;
     }
 
     public static void putWall(int wall) {
