@@ -98,9 +98,6 @@ public class EnhancedActivity extends BaseActivity {
         mBinding.miniAppText.setText(MiniAppActivity.isEnabled(this) ? R.string.state_on : R.string.state_off);
         mBinding.aiText.setText(com.fongmi.android.tv.ai.AiStore.summary(this));
         mBinding.tmdbText.setText(TmdbActivity.getSummary(this));
-        String abi = Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "unknown";
-        mBinding.versionInfo.setText(String.format(Locale.US, "版本 v%s\nABI %s\n机型 %s %s\n系统 Android %s (API %d)",
-                BuildConfig.VERSION_NAME, abi, Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE, Build.VERSION.SDK_INT));
     }
 
     private int countPlugins(boolean py) {

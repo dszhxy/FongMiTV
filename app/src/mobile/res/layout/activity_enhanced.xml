@@ -492,24 +492,6 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:tag="group_header"
-                android:text="@string/lab_version"
-                android:textColor="@color/white_60"
-                android:textSize="14sp" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/versionInfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="4dp"
-                android:textColor="@color/white_40"
-                android:textSize="12sp"
-                tools:text="版本 v1.0.0\nABI arm64-v8a\n机型 Xiaomi 14\n系统 Android 14 (API 34)" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>

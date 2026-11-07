@@ -281,7 +281,7 @@
     <string name="setting_proxy_none">Not set</string>
     <string name="setting_aggregated_search">Aggregated search</string>
     <string name="setting_drpy_builtin">Built-in drpy</string>
-    <string name="setting_reset">Reset app</string>
+    <string name="setting_reset">Reset</string>
     <string name="setting_about">About</string>
     <string name="setting_theme_color">Theme color</string>
     <string name="setting_auto">Auto</string>
@@ -356,7 +356,7 @@
     <string name="dialog_import">Import</string>
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
-    <string name="dialog_reset_app">Reset app?</string>
+    <string name="dialog_reset_app">Reset?</string>
     <string name="dialog_reset_app_data">All app data will be reset, and app will be shutdown.</string>
     <string name="dialog_select_edition">Select title</string>
     <string name="dialog_select_chapter">Select chapter</string>
@@ -715,11 +715,11 @@
     <string name="search_loading">Loading</string>
     <string name="search_progress">Searching %1$d/%2$d</string>
     <string name="search_no_result">No result</string>
-    <string name="setting_signature">Signature</string>
-    <string name="setting_signature_value">v1 / v2 / v3</string>
     <string name="setting_font_size">Font size</string>
     <string name="setting_font_size_0">Small</string>
     <string name="setting_font_size_1">Standard</string>
     <string name="setting_font_size_2">Large</string>
     <string name="setting_font_size_3">Extra large</string>
+    <string name="setting_ui_mode_confirm">Switch UI?</string>
+    <string name="setting_ui_mode_confirm_msg">The app will restart to apply the new UI.</string>
 </resources>

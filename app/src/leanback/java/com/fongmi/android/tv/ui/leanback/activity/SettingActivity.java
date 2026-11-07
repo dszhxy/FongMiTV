@@ -346,11 +346,18 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     }
 
     private void onUiMode(View view) {
-        boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
-        com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
-        startActivity(new Intent(this, com.fongmi.android.tv.ui.activity.LauncherActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-        finish();
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.setting_ui_mode_confirm)
+                .setMessage(R.string.setting_ui_mode_confirm_msg)
+                .setNegativeButton(R.string.dialog_negative, null)
+                .setPositiveButton(R.string.dialog_positive, (d, w) -> {
+                    boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
+                    com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
+                    startActivity(new Intent(this, com.fongmi.android.tv.ui.activity.LauncherActivity.class)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+                    finish();
+                })
+                .show();
     }
 
     private void initConfig() {

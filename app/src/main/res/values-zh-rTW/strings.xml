@@ -277,7 +277,7 @@
     <string name="setting_proxy_none">未設定</string>
     <string name="setting_aggregated_search">聚合搜尋</string>
     <string name="setting_drpy_builtin">內建 drpy</string>
-    <string name="setting_reset">重置App</string>
+    <string name="setting_reset">重置</string>
     <string name="setting_about">關於</string>
     <string name="setting_theme_color">主題色彩</string>
     <string name="setting_auto">自動</string>
@@ -352,7 +352,7 @@
     <string name="dialog_import">匯入</string>
     <string name="dialog_positive">確定</string>
     <string name="dialog_negative">取消</string>
-    <string name="dialog_reset_app">重置App?</string>
+    <string name="dialog_reset_app">重置?</string>
     <string name="dialog_reset_app_data">所有資料將會被重置，App即將被關閉.</string>
     <string name="dialog_select_edition">選擇標題</string>
     <string name="dialog_select_chapter">選擇章節</string>
@@ -703,11 +703,11 @@
     <string name="setting_ui_mode">介面</string>
     <string name="setting_ui_mode_mobile">手機</string>
     <string name="setting_ui_mode_tv">電視</string>
-    <string name="setting_signature">簽名狀態</string>
-    <string name="setting_signature_value">v1 / v2 / v3</string>
     <string name="setting_font_size">字體大小</string>
     <string name="setting_font_size_0">小</string>
     <string name="setting_font_size_1">標準</string>
     <string name="setting_font_size_2">大</string>
     <string name="setting_font_size_3">超大</string>
+    <string name="setting_ui_mode_confirm">切換介面？</string>
+    <string name="setting_ui_mode_confirm_msg">切換後應用將重啟並進入新的介面。</string>
 </resources>

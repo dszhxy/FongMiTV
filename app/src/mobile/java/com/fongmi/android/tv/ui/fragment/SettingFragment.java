@@ -69,12 +69,17 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     /** 初始化「界面」设置项：只有两个选项，点击直接在手机 / 电视之间切换。 */
     private void initUiModeItem() {
         updateUiModeText();
-        mBinding.uiMode.setOnClickListener(v -> {
-            boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
-            com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
-            updateUiModeText();
-            restartToLauncher();
-        });
+        mBinding.uiMode.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.setting_ui_mode_confirm)
+                .setMessage(R.string.setting_ui_mode_confirm_msg)
+                .setNegativeButton(R.string.dialog_negative, null)
+                .setPositiveButton(R.string.dialog_positive, (d, w) -> {
+                    boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
+                    com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
+                    updateUiModeText();
+                    restartToLauncher();
+                })
+                .show());
     }
 
     private void updateUiModeText() {
@@ -127,6 +132,11 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.liveUrl.setText(LiveConfig.getDesc());
         mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.versionText.setText(BuildConfig.VERSION_NAME);
+        String abi = android.os.Build.SUPPORTED_ABIS.length > 0 ? android.os.Build.SUPPORTED_ABIS[0] : "unknown";
+        mBinding.versionInfo.setText(String.format(java.util.Locale.US, "%s v%s&#10;ABI %s&#10;%s %s&#10;Android %s (API %d)",
+                getString(R.string.setting_version), BuildConfig.VERSION_NAME, abi,
+                android.os.Build.MANUFACTURER, android.os.Build.MODEL,
+                android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT).replace("&#10;", "\n"));
         setOtherText();
         setCacheText();
     }
