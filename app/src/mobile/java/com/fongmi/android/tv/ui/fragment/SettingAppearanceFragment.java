@@ -55,11 +55,12 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
         mBinding.languageText.setText(getLanguageName());
         mBinding.themeColorText.setText(getThemeColorName(Setting.getThemeColor()));
         mBinding.dialogStyleText.setText(getDialogStyleName());
+        updateFontSizeText();
         sizes = ResUtil.getStringArray(R.array.select_size);
         mBinding.coverText.setText(sizes[PlayerSetting.getSize()]);
         mBinding.coverRatioText.setText(RATIO_NAMES[PlayerSetting.getCoverRatio()]);
         mBinding.coverRadiusText.setText(RADIUS_NAMES[PlayerSetting.getCoverRadius()]);
-        mBinding.wallDefaultText.setText(getString(R.string.wall_builtin, getBuiltInWall()));
+        mBinding.wallDefaultText.setText(Setting.getWall() == 0 ? getString(R.string.wall_random) : getString(R.string.wall_builtin, getBuiltInWall()));
         mBinding.wallLocalText.setText(R.string.wall_local_desc);
         mBinding.wallUrlText.setText(R.string.wall_url_desc);
         mBinding.wallBlurText.setText(Setting.isWallBlur() ? R.string.state_on : R.string.state_off);
@@ -70,6 +71,7 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
         mBinding.language.setOnClickListener(this::setLanguage);
         mBinding.themeColor.setOnClickListener(this::setThemeColor);
         mBinding.dialogStyle.setOnClickListener(this::setDialogStyle);
+        mBinding.fontSize.setOnClickListener(this::showFontSizeDialog);
         mBinding.wallDefault.setOnClickListener(this::setWallDefault);
         mBinding.wallLocal.setOnClickListener(this::setWallLocal);
         mBinding.wallUrl.setOnClickListener(this::setWallUrl);
@@ -193,6 +195,26 @@ public class SettingAppearanceFragment extends BaseFragment implements ThemeDial
     }
 
     private static final String[] DIALOG_STYLE_NAMES = {"经典深色", "纯白 Material", "暗色模式", "iOS 风格", "霓虹渐变"};
+
+    private void updateFontSizeText() {
+        int[] labels = {R.string.setting_font_size_0, R.string.setting_font_size_1, R.string.setting_font_size_2, R.string.setting_font_size_3};
+        mBinding.fontSizeText.setText(labels[Setting.getFontScaleIndex()]);
+    }
+
+    private void showFontSizeDialog(View view) {
+        CharSequence[] items = {getString(R.string.setting_font_size_0), getString(R.string.setting_font_size_1), getString(R.string.setting_font_size_2), getString(R.string.setting_font_size_3)};
+        int checked = Setting.getFontScaleIndex();
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.setting_font_size)
+                .setSingleChoiceItems(items, checked, (d, which) -> {
+                    Setting.putFontScaleIndex(which);
+                    d.dismiss();
+                    updateFontSizeText();
+                    requireActivity().recreate();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
 
     private void setDialogStyle(View view) {
         int current = Setting.getDialogStyle();

@@ -179,7 +179,7 @@ public class Setting {
     }
 
     public static int getDialogStyle() {
-        return 3; // 全局统一 iOS 弹窗风格
+        return Math.clamp(Prefers.getInt("dialog_style", 3), MIN_DIALOG_STYLE, MAX_DIALOG_STYLE);
     }
 
     public static void putDialogStyle(int style) {

@@ -722,4 +722,5 @@
     <string name="setting_font_size_3">Extra large</string>
     <string name="setting_ui_mode_confirm">Switch UI?</string>
     <string name="setting_ui_mode_confirm_msg">The app will restart to apply the new UI.</string>
+    <string name="wall_random">Random</string>
 </resources>

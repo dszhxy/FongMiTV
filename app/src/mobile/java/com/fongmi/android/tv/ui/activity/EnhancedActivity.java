@@ -18,7 +18,6 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.lab.LabRunner;
-import com.fongmi.android.tv.utils.AppResetUtil;
 import com.fongmi.android.tv.utils.GroupHeaderUtil;
 import com.fongmi.android.tv.utils.download.DownloadManager;
 import com.github.catvod.utils.Path;
@@ -70,11 +69,6 @@ public class EnhancedActivity extends BaseActivity {
         GroupHeaderUtil.apply(mBinding.getRoot());
         mBinding.ai.setOnClickListener(view -> AiSettingsActivity.start(this));
         mBinding.tmdb.setOnClickListener(view -> TmdbActivity.start(this));
-        mBinding.reset.setOnClickListener(this::onReset);
-    }
-
-    private void onReset(View view) {
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.dialog_reset_app).setMessage(R.string.dialog_reset_app_data).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> AppResetUtil.reset(getApplicationContext())).show();
     }
 
     @Override
