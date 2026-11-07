@@ -19,7 +19,7 @@
     <!-- ===== 弹窗风格 overlay：仅作用于 Dialog 的 Context，不污染 Activity 主题 =====
          警告：这些 style 只能通过 getTheme().applyStyle() 叠加到 Dialog 主题，
          或作为裸 Dialog 的构造主题；严禁 setTheme() 到 Activity。 -->
-    <style name="ThemeOverlay.DialogStyle.Classic">
+    <style name="ThemeOverlay_DialogStyle_Classic">
 
         <item name="alertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
@@ -35,7 +35,7 @@
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
     </style>
 
-    <style name="ThemeOverlay.DialogStyle.White">
+    <style name="ThemeOverlay_DialogStyle_White">
 
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
@@ -51,7 +51,7 @@
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
     </style>
 
-    <style name="ThemeOverlay.DialogStyle.Amoled">
+    <style name="ThemeOverlay_DialogStyle_Amoled">
 
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
@@ -67,7 +67,7 @@
         <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
     </style>
 
-    <style name="ThemeOverlay.DialogStyle.IOS">
+    <style name="ThemeOverlay_DialogStyle_IOS">
 
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
@@ -83,7 +83,7 @@
         <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
     </style>
 
-    <style name="ThemeOverlay.DialogStyle.Neon">
+    <style name="ThemeOverlay_DialogStyle_Neon">
 
         <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
