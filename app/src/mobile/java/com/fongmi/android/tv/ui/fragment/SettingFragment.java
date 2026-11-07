@@ -66,40 +66,20 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         return list.toArray(new String[0]);
     }
 
-    /**
-     * 初始化“界面模式”设置项：在设置-数据分组里显示手机/电视切换。
-     */
+    /** 初始化「界面」设置项：只有两个选项，点击直接在手机 / 电视之间切换。 */
     private void initUiModeItem() {
         updateUiModeText();
-        mBinding.uiMode.setOnClickListener(v -> showUiModeDialog());
+        mBinding.uiMode.setOnClickListener(v -> {
+            boolean leanback = com.fongmi.android.tv.ui.UiMode.isLeanback();
+            com.fongmi.android.tv.ui.UiMode.set(leanback ? com.fongmi.android.tv.ui.UiMode.MOBILE : com.fongmi.android.tv.ui.UiMode.LEANBACK);
+            updateUiModeText();
+            restartToLauncher();
+        });
     }
 
     private void updateUiModeText() {
         mBinding.uiModeText.setText(com.fongmi.android.tv.ui.UiMode.isLeanback() ?
                 getString(R.string.setting_ui_mode_tv) : getString(R.string.setting_ui_mode_mobile));
-    }
-
-    private void showUiModeDialog() {
-        String[] items = new String[]{getString(R.string.setting_ui_mode_mobile), getString(R.string.setting_ui_mode_tv)};
-        int checked = com.fongmi.android.tv.ui.UiMode.isLeanback() ? 1 : 0;
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.setting_ui_mode)
-                .setSingleChoiceItems(items, checked, (d, which) -> {
-                    com.fongmi.android.tv.ui.UiMode.set(which == 1 ? com.fongmi.android.tv.ui.UiMode.LEANBACK : com.fongmi.android.tv.ui.UiMode.MOBILE);
-                    d.dismiss();
-                    updateUiModeText();
-                    confirmRestartForUiMode();
-                })
-                .setNegativeButton(R.string.dialog_negative, null)
-                .show();
-    }
-
-    private void confirmRestartForUiMode() {
-        new MaterialAlertDialogBuilder(requireContext())
-                .setMessage(R.string.setting_ui_mode_restart)
-                .setPositiveButton(R.string.dialog_positive, (d, w) -> restartToLauncher())
-                .setNegativeButton(R.string.dialog_negative, null)
-                .show();
     }
 
     private void restartToLauncher() {
@@ -108,7 +88,6 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
                 .addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
         activity.finish();
     }
-
 
     private HomeActivity getRoot() {
         return (HomeActivity) requireActivity();
@@ -147,6 +126,12 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.reset.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.dialog_reset_app)
+                .setMessage(R.string.dialog_reset_app_data)
+                .setNegativeButton(R.string.dialog_negative, null)
+                .setPositiveButton(R.string.dialog_positive, (d, w) -> com.fongmi.android.tv.utils.AppResetUtil.reset(requireContext().getApplicationContext()))
+                .show());
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.proxy.setOnClickListener(this::setProxy);

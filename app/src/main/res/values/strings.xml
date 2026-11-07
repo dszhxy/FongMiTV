@@ -2,10 +2,9 @@
 
     <!-- App -->
     <string name="app_name">Ys影视</string>
-    <string name="setting_ui_mode">UI Mode</string>
-    <string name="setting_ui_mode_mobile">Mobile UI</string>
-    <string name="setting_ui_mode_tv">TV UI</string>
-    <string name="setting_ui_mode_restart">Switched UI, tap to restart</string>
+    <string name="setting_ui_mode">UI</string>
+    <string name="setting_ui_mode_mobile">Mobile</string>
+    <string name="setting_ui_mode_tv">TV</string>
     <string name="setting_personal">Personal settings</string>
 
     <!-- Live -->
@@ -716,4 +715,6 @@
     <string name="search_loading">Loading</string>
     <string name="search_progress">Searching %1$d/%2$d</string>
     <string name="search_no_result">No result</string>
+    <string name="setting_signature">Signature</string>
+    <string name="setting_signature_value">v1 / v2 / v3</string>
 </resources>

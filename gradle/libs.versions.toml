@@ -4,7 +4,7 @@ exoplayerHdrUtils = "0.4.0"
 media3 = "1.11.0-alpha01-fongmi"
 agp = "9.2.1"
 python = "17.0.0"
-minSdk = "24"
+minSdk = "21"
 targetSdk = "28"
 compileSdk = "37"
 

@@ -12,15 +12,6 @@ if (localPropsFile.exists()) {
 def hasReleaseSigning = localProps['storeFile'] && localProps['keyAlias'] && localProps['storePassword']
 def releaseKeyPassword = localProps['keyPassword'] ?: localProps['storePassword']
 
-// versionCode 随 git 提交数自动递增，每次提交/更新都会变化
-def commitCount = { ->
-    try {
-        def out = 'git rev-list --count HEAD'.execute([], rootProject.rootDir).text.trim()
-        return out.isInteger() ? out as Integer : 1
-    } catch (Exception ignored) {
-        return 1
-    }
-}()
 
 android {
     namespace = 'com.fongmi.android.tv'
@@ -30,11 +21,11 @@ android {
     ndkVersion '29.0.14206865'
 
     defaultConfig {
-        applicationId "com.fongmi.android.ys"
+        applicationId "com.ysbox.app"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
-        versionCode commitCount
-        versionName "0.0.1.${commitCount}"
+        versionCode 100
+        versionName "1.0.0"
         buildConfigField "String", "MPV_NATIVE_SOURCES", "\"mpv-jni-ffmpeg-shared-v1\""
         // 取消 mode flavor 后 BuildConfig.FLAVOR 只剩 abi，更新通道固定沿用 mobile
         buildConfigField "String", "UI_CHANNEL", "\"mobile\""
@@ -72,6 +63,9 @@ android {
 
     signingConfigs {
         release {
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
             if (hasReleaseSigning) {
                 // 优先使用 local.properties 中配置的密钥（可选）
                 storeFile file(localProps['storeFile'])

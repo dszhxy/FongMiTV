@@ -3,10 +3,9 @@
     <!-- App -->
     <string name="app_name">Ys影视</string>
     <string name="setting_personal">个性设置</string>
-    <string name="setting_ui_mode">界面模式</string>
-    <string name="setting_ui_mode_mobile">手机界面</string>
-    <string name="setting_ui_mode_tv">电视界面</string>
-    <string name="setting_ui_mode_restart">已切换界面，点击重启生效</string>
+    <string name="setting_ui_mode">界面</string>
+    <string name="setting_ui_mode_mobile">手机</string>
+    <string name="setting_ui_mode_tv">电视</string>
 
     <!-- Live -->
     <string name="live_pass">密码</string>
@@ -707,4 +706,6 @@
 
     <string name="play_search">搜索</string>
     <string name="danmaku_api_invalid">弹幕 API 地址无效</string>
+    <string name="setting_signature">签名状态</string>
+    <string name="setting_signature_value">v1 / v2 / v3</string>
 </resources>

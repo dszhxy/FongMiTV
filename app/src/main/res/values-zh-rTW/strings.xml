@@ -700,4 +700,9 @@
 <string name="mpv_config_url">URL mpv.conf</string>
 <string name="mpv_config_url_invalid">mpv.conf URL 無效</string>
 <string name="mpv_config_write_failed">無法寫入 MPV 設定檔</string>
+    <string name="setting_ui_mode">介面</string>
+    <string name="setting_ui_mode_mobile">手機</string>
+    <string name="setting_ui_mode_tv">電視</string>
+    <string name="setting_signature">簽名狀態</string>
+    <string name="setting_signature_value">v1 / v2 / v3</string>
 </resources>

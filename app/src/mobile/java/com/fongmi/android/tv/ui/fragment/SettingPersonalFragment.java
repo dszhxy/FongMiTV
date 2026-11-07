@@ -15,7 +15,6 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseFragment;
-import com.fongmi.android.tv.utils.AppResetUtil;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -48,7 +47,6 @@ public class SettingPersonalFragment extends BaseFragment {
         mBinding.drpy.setOnClickListener(this::setDrpy);
         mBinding.adblock.setOnClickListener(this::setAdblock);
         mBinding.aggregatedSearch.setOnClickListener(this::setAggregatedSearch);
-        mBinding.reset.setOnClickListener(this::onReset);
         mBinding.size.setOnClickListener(this::setSize);
     }
 
@@ -77,10 +75,6 @@ public class SettingPersonalFragment extends BaseFragment {
         Setting.putAggregatedSearch(!Setting.isAggregatedSearch());
         mBinding.aggregatedSearchText.setText(Setting.getSwitch(Setting.isAggregatedSearch()));
         RefreshEvent.home();
-    }
-
-    private void onReset(View view) {
-        new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.dialog_reset_app).setMessage(R.string.dialog_reset_app_data).setNegativeButton(R.string.dialog_negative, null).setPositiveButton(R.string.dialog_positive, (dialog, which) -> AppResetUtil.reset(requireContext().getApplicationContext())).show();
     }
 
     private void setSize(View view) {
