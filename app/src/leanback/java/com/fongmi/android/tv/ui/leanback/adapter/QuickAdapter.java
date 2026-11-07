@@ -17,7 +17,9 @@ public class QuickAdapter extends RecyclerView.Adapter<QuickAdapter.ViewHolder> 
 
     private final OnClickListener mListener;
     private final List<Vod> mItems;
-    private final int width;
+    private int width;
+    private int nextFocusUp = -1;
+    private int nextFocusDown = -1;
 
     public QuickAdapter(OnClickListener listener) {
         mListener = listener;
@@ -48,6 +50,20 @@ public class QuickAdapter extends RecyclerView.Adapter<QuickAdapter.ViewHolder> 
 
     public boolean isEmpty() {
         return getItemCount() == 0;
+    }
+
+    /** 允许调用方按弹窗宽度覆盖默认列宽。 */
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
+     * 兼容调用方对焦点导航的设定。leanback 网格由 VerticalGridView 统一管理焦点，
+     * 这里仅记录值，实际导航交给父容器。
+     */
+    public void setNextFocus(int nextFocusUp, int nextFocusDown) {
+        this.nextFocusUp = nextFocusUp;
+        this.nextFocusDown = nextFocusDown;
     }
 
     @Override

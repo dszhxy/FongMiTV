@@ -28,6 +28,7 @@ import androidx.media3.ui.PlayerSeekView;
 import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.TimeBar;
 import androidx.media3.ui.danmaku.DanmakuConfig;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Result;
@@ -664,5 +665,13 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         private void dispatch() {
             if (pending) deliver(pendingValue);
         }
+    }
+
+    /**
+     * 与 leanback 版 BaseActivity 同名语义：容器重建后统一切回主线程刷新列表。
+     * 电视端的 LiveActivity / VideoActivity 经由 PlaybackActivity 继承使用。
+     */
+    protected void notifyItemChanged(android.view.View view, RecyclerView.Adapter<?> adapter) {
+        view.post(adapter::notifyDataSetChanged);
     }
 }
