@@ -6,6 +6,7 @@
     android:fillViewport="true"
     android:paddingStart="8dp"
     android:paddingEnd="8dp"
+    android:background="@drawable/bg_control_action_scrim"
     android:scrollbars="none">
 
     <androidx.appcompat.widget.LinearLayoutCompat

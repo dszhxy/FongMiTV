@@ -168,6 +168,16 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
         holder.binding.text.setEnabled(on);
         holder.binding.text.setFocusable(on);
         holder.binding.text.setSelected(block ? blocked : on && item.isSelected());
+        // 选中/按下：描边与文字都变强调色（此前 stroke 固定为 divider，选中无任何视觉变化）
+        android.content.Context ctx = holder.binding.text.getContext();
+        int accent = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.accent(ctx);
+        int strong = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.primaryText(ctx);
+        int div = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.divider(ctx);
+        int[][] states = {{android.R.attr.state_selected}, {android.R.attr.state_pressed}, {}};
+        holder.binding.text.setStrokeColor(new android.content.res.ColorStateList(
+                states, new int[]{accent, accent, div}));
+        holder.binding.text.setTextColor(new android.content.res.ColorStateList(
+                states, new int[]{accent, accent, strong}));
         holder.binding.text.setAlpha(block && blocked ? 0.55f : 1.0f);
         holder.binding.health.setAlpha(block && blocked ? 0.55f : 1.0f);
         holder.binding.search.setImageResource(getSearchIcon(item));

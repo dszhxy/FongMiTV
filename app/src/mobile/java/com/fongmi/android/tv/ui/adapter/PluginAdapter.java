@@ -70,6 +70,11 @@ public class PluginAdapter extends RecyclerView.Adapter<PluginAdapter.ViewHolder
         holder.binding.checkbox.setChecked(item.isSelected());
         holder.binding.checkbox.setOnCheckedChangeListener((view, checked) -> item.setSelected(checked));
         holder.binding.delete.setOnClickListener(view -> listener.onDelete(item));
+        // 长按预览源文件内容（可全选复制），与「源脚本」弹窗行为一致
+        holder.itemView.setOnLongClickListener(view -> {
+            showPreview(holder.itemView, item);
+            return true;
+        });
     }
 
     private void bindHealth(ViewHolder holder, Plugin item) {
@@ -104,5 +109,47 @@ public class PluginAdapter extends RecyclerView.Adapter<PluginAdapter.ViewHolder
             super(binding.getRoot());
             this.binding = binding;
         }
+    }
+
+    /** 长按预览：最多读 256KB，弹窗内可全选复制 */
+    private void showPreview(android.view.View anchor, Plugin item) {
+        java.io.File f = new java.io.File(item.getPath());
+        if (f == null || !f.exists()) {
+            android.widget.Toast.makeText(anchor.getContext(), "文件不存在", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String text;
+        try {
+            byte[] all = com.github.catvod.utils.Path.readToByte(f);
+            int max = 256 * 1024;
+            if (all.length > max) {
+                text = new String(all, 0, max, "UTF-8") + "\n\n… 仅预览前 256 KB";
+            } else {
+                text = new String(all, "UTF-8");
+            }
+        } catch (Exception e) {
+            text = "无法读取文件：" + e.getMessage();
+        }
+        final String content = text;
+        android.widget.TextView tv = new android.widget.TextView(anchor.getContext());
+        tv.setText(content);
+        tv.setTextIsSelectable(true);
+        tv.setTextSize(12);
+        int p = (int) (12 * anchor.getResources().getDisplayMetrics().density);
+        tv.setPadding(p, p, p, p);
+        android.widget.ScrollView sv = new android.widget.ScrollView(anchor.getContext());
+        sv.addView(tv);
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+                anchor.getContext(), com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getTheme())
+                .setTitle(f.getName())
+                .setView(sv)
+                .setPositiveButton("复制全部", (d, w) -> {
+                    android.content.ClipboardManager cm =
+                            (android.content.ClipboardManager) anchor.getContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                    if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("script", content));
+                    android.widget.Toast.makeText(anchor.getContext(), "已复制", android.widget.Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(com.fongmi.android.tv.R.string.dialog_negative, null)
+                .show();
     }
 }

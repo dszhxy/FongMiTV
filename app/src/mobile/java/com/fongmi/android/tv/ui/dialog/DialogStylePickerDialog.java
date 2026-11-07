@@ -86,6 +86,8 @@ public final class DialogStylePickerDialog {
     private static final int[] ACCENT = {0xFFD9A420, 0xFF6750A4, 0xFF4A9EFF, 0xFF007AFF, 0xFFFF006E, 0xFF6750A4};
     private static final int[] RADIUS = {16, 20, 20, 24, 20, 28};
     // 与 m_styles.xml 的 dialogOnAccent 一一对应：经典深色黄底白字
+    /** 弹窗边框色：与 dialogSurface drawable 的 stroke 一致 */
+    private static final int[] BORDER = {0xFFD9A420, 0xFF6750A4, 0xFF4A9EFF, 0xFF007AFF, 0xFFFF006E, 0x00000000};
     private static final int[] ON_ACCENT = {0xFFFFFFFF, 0xFFFFFFFF, 0xFF0A0A0A, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 
     public interface Listener {
@@ -124,7 +126,8 @@ public final class DialogStylePickerDialog {
                 GradientDrawable bg = new GradientDrawable();
                 bg.setColor(SURFACE[i]);
                 bg.setCornerRadius(dp(activity, RADIUS[i]));
-                bg.setStroke(dp(activity, 1), blend(SURFACE[i], PRIMARY[i], 0.25f));
+                // 与真实弹窗一致的可见边框（此前 1dp + 25% 混合几乎看不见，只有霓虹有边框）
+                bg.setStroke(dp(activity, 2), BORDER[i]);
                 card.setBackground(bg);
             }
             int cpad = dp(activity, 12);
