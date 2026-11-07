@@ -200,8 +200,12 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
                 android.view.View v = super.getView(position, convertView, parent);
                 android.widget.CheckedTextView tv = v.findViewById(android.R.id.text1);
                 if (tv != null) {
-                    tv.setHorizontallyScrolling(true);
-                    tv.setMovementMethod(new android.text.method.ScrollingMovementMethod());
+                    // 重要：不要 setMovementMethod，它会消费触摸导致 AdapterView 收不到点击。
+                    // 长地址改用多行 + 按字符换行完整显示。
+                    tv.setSingleLine(false);
+                    tv.setMaxLines(4);
+                    tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                    tv.setHorizontallyScrolling(false);
                 }
                 return v;
             }

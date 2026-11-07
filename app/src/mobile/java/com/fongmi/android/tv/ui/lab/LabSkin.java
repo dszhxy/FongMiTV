@@ -14,6 +14,7 @@ import androidx.activity.SystemBarStyle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fongmi.android.tv.ui.custom.CustomWallView;
+import com.fongmi.android.tv.ui.dialog.DialogThemeHelper;
 
 /**
  * 实验室 UI 设计语言：与 Trae 主 App 一致——半透明卡面＋浅色字（shape_item 同口径）。
@@ -74,6 +75,19 @@ public final class LabSkin {
     /** 弹窗报错 */
     public static final int DLG_ERR = 0xFFD32F2F;
 
+    /** 弹窗语义色统一入口：所有实验室弹窗（安装/变量/运行中/服务）都走这里 */
+    private static int dlg(Context c, int attr, int fallback) {
+        int v = com.fongmi.android.tv.ui.dialog.DialogThemeHelper.resolveColor(c, attr);
+        return v == 0xFF888888 ? fallback : v;
+    }
+    public static int dlgText(Context c)    { return dlg(c, com.fongmi.android.tv.R.attr.dialogTextPrimary, DLG_TEXT); }
+    public static int dlgTextDim(Context c) { return dlg(c, com.fongmi.android.tv.R.attr.dialogTextSecondary, DLG_TEXT_DIM); }
+    public static int dlgHint(Context c)    { return dlg(c, com.fongmi.android.tv.R.attr.dialogTextHint, DLG_HINT); }
+    public static int dlgAccent(Context c)  { return dlg(c, com.fongmi.android.tv.R.attr.dialogAccent, YELLOW); }
+    public static int dlgOnAccent(Context c){ return dlg(c, com.fongmi.android.tv.R.attr.dialogOnAccent, 0xFFFFFFFF); }
+    public static int dlgCard(Context c)    { return dlg(c, com.fongmi.android.tv.R.attr.dialogCardColor, 0xFFFFFFFF); }
+    public static int dlgDivider(Context c) { return dlg(c, com.fongmi.android.tv.R.attr.dialogDivider, 0x1F000000); }
+
     public interface BoolConsumer {
         void accept(boolean on);
     }
@@ -95,33 +109,34 @@ public final class LabSkin {
     /** 弹窗面板：与主 App 的 dialog_glass 同口径（白玻璃、深色字、圆角 20dp） */
     public static GradientDrawable dialogPanel(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0xF2FFFFFF);
+        d.setColor(dlgCard(c));
         d.setCornerRadius(dp(c, 20));
-        d.setStroke(dp(c, 1), 0x1F000000);
+        d.setStroke(dp(c, 1), dlgDivider(c));
         return d;
     }
 
     /** 弹窗选项卡：白面板上的浅灰独立卡 */
     public static GradientDrawable dialogOption(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x0F000000);
+        d.setColor(dlgCard(c));
         d.setCornerRadius(dp(c, 16));
-        d.setStroke(dp(c, 1), 0x12000000);
+        d.setStroke(dp(c, 1), dlgDivider(c));
         return d;
     }
 
     /** 弹窗中性钮 */
     public static GradientDrawable dialogNeutral(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x14000000);
+        d.setColor(dlgCard(c));
         d.setCornerRadius(dp(c, 18));
+        d.setStroke(dp(c, 1), dlgDivider(c));
         return d;
     }
 
     /** 进度轨道 */
     public static GradientDrawable progressTrack(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x24FFFFFF);
+        d.setColor(dlgDivider(c));
         d.setCornerRadius(dp(c, 999));
         return d;
     }
@@ -129,7 +144,7 @@ public final class LabSkin {
     /** 进度黄条（稿 .fill） */
     public static GradientDrawable progressFill(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(YELLOW);
+        d.setColor(dlgAccent(c));
         d.setCornerRadius(dp(c, 999));
         return d;
     }
@@ -216,9 +231,9 @@ public final class LabSkin {
     /** 输入框 */
     public static GradientDrawable darkInput(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x1A000000);
+        d.setColor(dlgCard(c));
         d.setCornerRadius(dp(c, 14));
-        d.setStroke(dp(c, 2), 0x38FFFFFF);
+        d.setStroke(dp(c, 2), dlgDivider(c));
         return d;
     }
 
@@ -333,7 +348,7 @@ public final class LabSkin {
     /** 黄色主钮（只做点缀） */
     public static GradientDrawable buttonYellow(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(YELLOW);
+        d.setColor(dlgAccent(c));
         d.setCornerRadius(dp(c, 999));
         return d;
     }
@@ -341,8 +356,9 @@ public final class LabSkin {
     /** 灰色次钮 */
     public static GradientDrawable buttonGray(Context c) {
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0x1FFFFFFF);
+        d.setColor(dlgCard(c));
         d.setCornerRadius(dp(c, 999));
+        d.setStroke(dp(c, 1), dlgDivider(c));
         return d;
     }
 

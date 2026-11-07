@@ -319,7 +319,7 @@ public class LabServiceActivity extends AppCompatActivity {
         b.setTextSize(16);
         b.getPaint().setFakeBoldText(true);
         b.setGravity(Gravity.CENTER);
-        b.setTextColor(LabSkin.ON_YELLOW);
+        b.setTextColor(LabSkin.dlgOnAccent(activity));
         b.setBackground(LabSkin.buttonYellow(this));
         b.setPadding(0, dp(14), 0, dp(14));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -546,7 +546,7 @@ public class LabServiceActivity extends AppCompatActivity {
             go.setTextColor(LabSkin.TEXT_ON_DARK);
             go.setBackground(LabSkin.dialogNeutral(this));
         } else {
-            go.setTextColor(LabSkin.ON_YELLOW);
+            go.setTextColor(LabSkin.dlgOnAccent(activity));
             go.setBackground(LabSkin.capsuleYellow(this));
         }
         go.setPadding(dp(16), dp(6), dp(16), dp(6));

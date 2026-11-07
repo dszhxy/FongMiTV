@@ -188,7 +188,7 @@ public class LabTerminalActivity extends AppCompatActivity {
         TextView send = new TextView(this);
         send.setText("发送");
         send.setTextSize(15);
-        send.setTextColor(LabSkin.ON_YELLOW);
+        send.setTextColor(LabSkin.dlgOnAccent(activity));
         send.setBackground(LabSkin.buttonYellow(this));
         send.setPadding(dp(16), dp(10), dp(16), dp(10));
         send.setOnClickListener(v -> runInput());

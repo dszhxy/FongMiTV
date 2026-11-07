@@ -59,16 +59,18 @@ public class SourceScriptsDialog extends Dialog {
         if (getWindow() != null) getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
         try {
             if (getWindow() != null) {
-                getWindow().setGravity(android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL);
+                // 窗口居中、宽度留白、高度自适应；透明底避免整屏刷白
+                getWindow().setGravity(android.view.Gravity.CENTER);
+                getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
                 android.view.WindowManager.LayoutParams lp = getWindow().getAttributes();
-                lp.width = android.view.WindowManager.LayoutParams.MATCH_PARENT;
-                lp.height = android.view.WindowManager.LayoutParams.MATCH_PARENT;
+                lp.width = (int) (getContext().getResources().getDisplayMetrics().widthPixels * 0.92f);
+                lp.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT;
                 lp.softInputMode = android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
                 getWindow().setAttributes(lp);
                 View content = findViewById(android.R.id.content);
                 if (content != null) {
                     float d = getContext().getResources().getDisplayMetrics().density;
-                    content.setPadding((int) (24 * d), (int) (60 * d), (int) (12 * d), 0);
+                    content.setPadding((int) (12 * d), (int) (8 * d), (int) (12 * d), (int) (8 * d));
                 }
             }
         } catch (Exception ignored) {

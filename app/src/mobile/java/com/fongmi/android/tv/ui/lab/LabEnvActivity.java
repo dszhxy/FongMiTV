@@ -175,7 +175,7 @@ public class LabEnvActivity extends AppCompatActivity {
             boolean needUpdate = LabRuntimeManager.hasUpdate(this, env);
             if (needUpdate) {
                 headAction.setText("更新");
-                headAction.setTextColor(LabSkin.ON_YELLOW);
+                headAction.setTextColor(LabSkin.dlgOnAccent(activity));
                 headAction.setBackground(LabSkin.capsuleYellow(this));
                 headAction.setPadding(dp(18), dp(6), dp(18), dp(6));
                 headAction.setOnClickListener(v -> installOnline());
@@ -204,7 +204,7 @@ public class LabEnvActivity extends AppCompatActivity {
             }
         } else {
             headAction.setText("安装");
-            headAction.setTextColor(LabSkin.ON_YELLOW);
+            headAction.setTextColor(LabSkin.dlgOnAccent(activity));
             headAction.setBackground(LabSkin.capsuleYellow(this));
             headAction.setPadding(dp(18), dp(6), dp(18), dp(6));
             headAction.setOnClickListener(v -> LabInstallDialog.showChoice(this,
@@ -340,7 +340,7 @@ public class LabEnvActivity extends AppCompatActivity {
             go.setTextColor(LabSkin.TEXT_ON_DARK);
             go.setBackground(LabSkin.rowDark(this));
         } else {
-            go.setTextColor(LabSkin.ON_YELLOW);
+            go.setTextColor(LabSkin.dlgOnAccent(activity));
             go.setBackground(LabSkin.capsuleYellow(this));
         }
         go.setPadding(0, dp(8), 0, dp(8));
