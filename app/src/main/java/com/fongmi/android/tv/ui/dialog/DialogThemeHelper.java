@@ -16,6 +16,18 @@ public final class DialogThemeHelper {
 
     private DialogThemeHelper() {}
 
+    /** 给 Activity 叠加的弹窗风格 overlay（不含任何系统级 attr，绝不污染主界面） */
+    @StyleRes public static int getStyleOverlay() {
+        switch (Setting.getDialogStyle()) {
+            case 0: return R.style.ThemeOverlay_DialogStyle_Classic;
+            case 1: return R.style.ThemeOverlay_DialogStyle_White;
+            case 2: return R.style.ThemeOverlay_DialogStyle_Amoled;
+            case 4: return R.style.ThemeOverlay_DialogStyle_Neon;
+            case 3:
+            default: return R.style.ThemeOverlay_DialogStyle_IOS;
+        }
+    }
+
     /** 普通弹窗主题（带 5 种风格的语义色与按钮样式） */
     @StyleRes public static int getTheme() {
         switch (Setting.getDialogStyle()) {

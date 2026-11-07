@@ -15,6 +15,90 @@
 
     <style name="Theme.App" parent="Theme.Base" />
 
+
+    <!-- ===== 弹窗风格 overlay：仅作用于 Dialog 的 Context，不污染 Activity 主题 =====
+         警告：这些 style 只能通过 getTheme().applyStyle() 叠加到 Dialog 主题，
+         或作为裸 Dialog 的构造主题；严禁 setTheme() 到 Activity。 -->
+    <style name="ThemeOverlay.DialogStyle.Classic">
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.XingChen.GlassDialog.Dark</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/dialog_glass_dark</item>
+        <item name="dialogTextPrimary">#F2F4F8</item>
+        <item name="dialogTextSecondary">#A8B0C0</item>
+        <item name="dialogTextHint">#7A8290</item>
+        <item name="dialogAccent">#D9A420</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+    </style>
+
+    <style name="ThemeOverlay.DialogStyle.White">
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.White</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_white</item>
+        <item name="dialogTextPrimary">#101216</item>
+        <item name="dialogTextSecondary">#5F6368</item>
+        <item name="dialogTextHint">#9AA0A6</item>
+        <item name="dialogAccent">#6750A4</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_white</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+    </style>
+
+    <style name="ThemeOverlay.DialogStyle.Amoled">
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Amoled</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_dark_amoled</item>
+        <item name="dialogTextPrimary">#F0F0F0</item>
+        <item name="dialogTextSecondary">#888888</item>
+        <item name="dialogTextHint">#666666</item>
+        <item name="dialogAccent">#4A9EFF</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_amoled</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+    </style>
+
+    <style name="ThemeOverlay.DialogStyle.IOS">
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.IOS</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_ios</item>
+        <item name="dialogTextPrimary">#1C1C1E</item>
+        <item name="dialogTextSecondary">#8E8E93</item>
+        <item name="dialogTextHint">#B0B0B5</item>
+        <item name="dialogAccent">#007AFF</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_ios</item>
+        <item name="dialogDivider">#1F000000</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_light</item>
+    </style>
+
+    <style name="ThemeOverlay.DialogStyle.Neon">
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.FongMi.Dialog.Neon</item>
+
+        <!-- 主题级语义色：保证 ?attr 在任何 inflate 场景可解析，且 Material 弹窗不再用默认白底 -->
+        <item name="dialogSurface">@drawable/bg_dialog_neon</item>
+        <item name="dialogTextPrimary">#FFFFFF</item>
+        <item name="dialogTextSecondary">#AAAAFF</item>
+        <item name="dialogTextHint">#7777AA</item>
+        <item name="dialogAccent">#FF006E</item>
+        <item name="dialogInputSurface">@drawable/bg_dialog_input_neon</item>
+        <item name="dialogDivider">#33FFFFFF</item>
+        <item name="dialogCardSurface">@drawable/dialog_option_card_dark</item>
+    </style>
+
     <!-- ========== 5种弹窗风格的App主题变体 ==========
          警告：这些 style 会被 BaseActivity.applyDialogTheme() 通过 setTheme() 用作【整个 Activity 主题】。
          因此这里【只能】放弹窗专用 attr（alertDialogTheme / materialAlertDialogTheme / dialogXxx 自定义语义色）。

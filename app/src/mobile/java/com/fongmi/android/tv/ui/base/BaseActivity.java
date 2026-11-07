@@ -159,16 +159,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    /** 按用户选择的弹窗风格应用主题（默认 iOS），所有弹窗含软件弹窗统一跟随。 */
+    /** 只把弹窗专用属性叠加进当前 Activity 主题，绝不替换 Activity 主题本身。
+     *  整体替换 Activity 主题会让主界面的窗口背景/字色/遮罩一起被弹窗风格污染。 */
     protected void applyDialogTheme() {
-        switch (com.fongmi.android.tv.setting.Setting.getDialogStyle()) {
-            case 1: setTheme(R.style.Theme_App_DialogWhite); break;
-            case 2: setTheme(R.style.Theme_App_DialogAmoled); break;
-            case 4: setTheme(R.style.Theme_App_DialogNeon); break;
-            case 0: setTheme(R.style.Theme_App_DialogClassic); break;
-            case 3:
-            default: setTheme(R.style.Theme_App_DialogIOS); break;
-        }
+        getTheme().applyStyle(com.fongmi.android.tv.ui.dialog.DialogThemeHelper.getStyleOverlay(), true);
     }
 
     /** 应用全局字体缩放：影响本 Activity 及所有子 View 的 sp 字号 */
