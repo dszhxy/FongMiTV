@@ -15,6 +15,14 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="@string/script_source_hint"
+        android:textColor="?attr/dialogTextSecondary"
+        android:textSize="12sp" />
+
     <EditText
         android:id="@+id/et_search"
         android:layout_width="match_parent"

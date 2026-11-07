@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 切换线路条目：根必须是 Checkable，setSingleChoiceItems 才能派发点击；
-     长地址用 setHorizontallyScrolling + ScrollingMovementMethod 横向滚动 -->
+     长地址用 marquee 单行横向滚动；绝不能 setMovementMethod（会吞掉列表点击） -->
 <CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/text1"
     android:layout_width="match_parent"
@@ -11,10 +11,11 @@
     android:paddingEnd="16dp"
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
-    android:singleLine="false"
-    android:maxLines="4"
-    android:breakStrategy="simple"
-    android:ellipsize="end"
+    android:singleLine="true"
+    android:ellipsize="marquee"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
     android:textColor="?attr/dialogTextPrimary"
     android:textSize="14sp"
     android:drawableStart="?android:attr/listChoiceIndicatorSingle"

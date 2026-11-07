@@ -193,7 +193,7 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
             Config config = configs.get(i);
             names[i] = TextUtils.isEmpty(config.getName()) ? config.getUrl() : config.getName();
         }
-        // 用系统单选列表保证点击可切换；自定义条目让长地址横向滚动显示
+        // 用系统单选列表保证点击可切换；自定义条目让长地址 marquee 单行横向滚动
         android.widget.ArrayAdapter<String> lineAdapter = new android.widget.ArrayAdapter<String>(requireActivity(),
                 R.layout.item_line_switch, android.R.id.text1, names) {
             @NonNull
@@ -202,12 +202,18 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
                 android.view.View v = super.getView(position, convertView, parent);
                 android.widget.CheckedTextView tv = v.findViewById(android.R.id.text1);
                 if (tv != null) {
-                    // 重要：不要 setMovementMethod，它会消费触摸导致 AdapterView 收不到点击。
-                    // 长地址改用多行 + 按字符换行完整显示。
-                    tv.setSingleLine(false);
-                    tv.setMaxLines(4);
-                    tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                    tv.setHorizontallyScrolling(false);
+                    // 重要：此处禁止给 TextView 挂任何触摸移动处理器，否则会吞掉 AdapterView 的列表点击。
+                    // 长地址用 marquee 单行横向滚动；启动要等 View 测量完有宽度，故用 post。
+                    tv.setSingleLine(true);
+                    tv.setEllipsize(android.text.TextUtils.TruncateAt.MARQUEE);
+                    tv.setMarqueeRepeatLimit(-1);
+                    tv.setFocusable(false);
+                    tv.setFocusableInTouchMode(false);
+                    tv.setSelected(false);
+                    tv.post(() -> {
+                        tv.setSelected(false);
+                        tv.setSelected(true);
+                    });
                 }
                 return v;
             }

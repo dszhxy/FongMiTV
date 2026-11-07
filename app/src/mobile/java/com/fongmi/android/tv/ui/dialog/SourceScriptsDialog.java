@@ -119,6 +119,7 @@ public class SourceScriptsDialog extends Dialog {
                 if (listener != null) listener.onScriptSelect(f, true);
                 dismiss();
             });
+            pyAdapter.setOnItemLongClickListener(this::showPreview);
             rvPy.setAdapter(pyAdapter);
 
             rvJs.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -126,6 +127,7 @@ public class SourceScriptsDialog extends Dialog {
                 if (listener != null) listener.onScriptSelect(f, false);
                 dismiss();
             });
+            jsAdapter.setOnItemLongClickListener(this::showPreview);
             rvJs.setAdapter(jsAdapter);
 
             scrollToCurrent(rvPy, allPyFiles);
@@ -191,6 +193,114 @@ public class SourceScriptsDialog extends Dialog {
                 rv.scrollToPosition(i);
                 break;
             }
+        }
+    }
+
+    /** 长按脚本条目：预览文件内容。纯代码弹窗，颜色全部走当前弹窗风格的语义色。 */
+    private void showPreview(File file) {
+        final Context ctx = getContext();
+        final float d = ctx.getResources().getDisplayMetrics().density;
+        Dialog dlg = new Dialog(ctx, DialogThemeHelper.getTheme());
+        dlg.setCancelable(true);
+        dlg.setCanceledOnTouchOutside(true);
+
+        LinearLayout root = new LinearLayout(ctx);
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (14 * d);
+        root.setPadding(pad, pad, pad, pad);
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(DialogThemeHelper.resolveColor(ctx, R.attr.dialogCardColor));
+        bg.setCornerRadius(16 * d);
+        root.setBackground(bg);
+
+        TextView title = new TextView(ctx);
+        title.setText(file.getName());
+        title.setTextColor(DialogThemeHelper.primaryText(ctx));
+        title.setTextSize(16f);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setSingleLine(true);
+        title.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        root.addView(title, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView sub = new TextView(ctx);
+        sub.setText(ctx.getString(R.string.script_preview_path, file.getAbsolutePath()));
+        sub.setTextColor(DialogThemeHelper.secondaryText(ctx));
+        sub.setTextSize(11f);
+        sub.setSingleLine(true);
+        sub.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        sub.setPadding(0, (int) (4 * d), 0, (int) (10 * d));
+        root.addView(sub, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        android.widget.ScrollView sv = new android.widget.ScrollView(ctx);
+        sv.setFillViewport(true);
+        TextView body = new TextView(ctx);
+        body.setText(readPreview(file));
+        body.setTextColor(DialogThemeHelper.primaryText(ctx));
+        body.setTextSize(12f);
+        body.setTypeface(android.graphics.Typeface.MONOSPACE);
+        body.setPadding(0, 0, 0, (int) (8 * d));
+        sv.addView(body, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT));
+        root.addView(sv, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        // 按钮规范：底色 = dialogAccent，字色 = dialogOnAccent（跟随当前风格）
+        TextView close = new TextView(ctx);
+        close.setText(R.string.script_preview_close);
+        close.setTextColor(DialogThemeHelper.resolveColor(ctx, R.attr.dialogOnAccent));
+        close.setTextSize(14f);
+        close.setGravity(android.view.Gravity.CENTER);
+        close.setPadding((int) (16 * d), (int) (10 * d), (int) (16 * d), (int) (10 * d));
+        android.graphics.drawable.GradientDrawable btn = new android.graphics.drawable.GradientDrawable();
+        btn.setColor(DialogThemeHelper.accent(ctx));
+        btn.setCornerRadius(10 * d);
+        close.setBackground(btn);
+        close.setOnClickListener(v -> dlg.dismiss());
+        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        clp.topMargin = (int) (12 * d);
+        root.addView(close, clp);
+
+        dlg.setContentView(root);
+        if (dlg.getWindow() != null) {
+            dlg.getWindow().setGravity(android.view.Gravity.CENTER);
+            dlg.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            android.view.WindowManager.LayoutParams lp = dlg.getWindow().getAttributes();
+            lp.width = (int) (ctx.getResources().getDisplayMetrics().widthPixels * 0.92f);
+            lp.height = (int) (ctx.getResources().getDisplayMetrics().heightPixels * 0.75f);
+            dlg.getWindow().setAttributes(lp);
+        }
+        dlg.show();
+    }
+
+    /** 读脚本内容做文本预览，限制 256KB 防大文件卡顿；用传统流 API 保证 minSdk 24 兼容。 */
+    private String readPreview(File f) {
+        final int cap = 256 * 1024;
+        java.io.FileInputStream in = null;
+        try {
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            in = new java.io.FileInputStream(f);
+            byte[] buf = new byte[8192];
+            int n;
+            boolean truncated = false;
+            while ((n = in.read(buf)) > 0) {
+                if (bos.size() + n > cap) {
+                    bos.write(buf, 0, cap - bos.size());
+                    truncated = true;
+                    break;
+                }
+                bos.write(buf, 0, n);
+            }
+            String text = new String(bos.toByteArray(), "UTF-8");
+            if (truncated) text = text + getContext().getString(R.string.script_preview_truncated);
+            return text;
+        } catch (Exception e) {
+            return getContext().getString(R.string.script_preview_error, String.valueOf(e.getMessage()));
+        } finally {
+            try { if (in != null) in.close(); } catch (Exception ignored) {}
         }
     }
 }
